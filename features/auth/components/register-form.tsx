@@ -31,7 +31,6 @@ export const RegisterForm = () => {
     setIsLoading(true);
 
     try {
-      // simulasi request register
       await new Promise((resolve) =>
         setTimeout(resolve, 1500)
       );

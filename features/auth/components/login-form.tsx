@@ -18,7 +18,6 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // simulasi login
       await new Promise((resolve) =>
         setTimeout(resolve, 1500)
       );
