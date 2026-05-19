@@ -1,4 +1,4 @@
-# Frontend AI Interview
+# Frontend Glucose Clamp
 
 Modern frontend application built with:
 
@@ -32,13 +32,13 @@ npm -v
 Clone repository:
 
 ```bash
-git clone https://github.com/adrianeka/frontend-ai-interview-redesign.git
+git clone https://github.com/adrianeka/glucose-clamp-fe.git
 ```
 
 Masuk ke project:
 
 ```bash
-cd frontend-ai-interview-redesing
+cd glucose-clamp-fe
 ```
 
 Install dependencies:
@@ -46,24 +46,6 @@ Install dependencies:
 ```bash
 npm install
 ```
-
----
-
-# Environment Variables
-
-Buat file:
-
-```bash
-.env
-```
-
-Isi:
-
-```env
-NEXT_PUBLIC_API_BASE_URL=https://ai-interview.jiwamu.de/api
-```
-
-Sesuaikan URL API dengan backend yang digunakan.
 
 ---
 
