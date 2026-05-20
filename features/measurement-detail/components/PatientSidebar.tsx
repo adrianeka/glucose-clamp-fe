@@ -6,7 +6,7 @@ export function PatientSidebar() {
   return (
     <div className="flex w-[483px] flex-col gap-8 bg-white px-10 py-8 border-r border-gray-100 min-h-[calc(100vh-93px)]">
       <Button variant="ghost" asChild className="w-fit text-[#707784] hover:bg-gray-100">
-        <Link href="/">
+        <Link href="/measurement">
           <ArrowLeft className="mr-2 h-5 w-5" />
           Back
         </Link>

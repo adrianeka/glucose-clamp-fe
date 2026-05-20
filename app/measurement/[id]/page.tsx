@@ -1,12 +1,15 @@
-import { TopNavigation } from "@/features/measurement-list/components/TopNavigation";
+import { TopNavigation } from "@/components/ui/TopNavigation";
 import { PatientSidebar } from "@/features/measurement-detail/components/PatientSidebar";
 import { MeasurementDashboard } from "@/features/measurement-detail/components/MeasurementDashboard";
 
 export default function MeasurementDetailPage() {
+  const currentUser = {
+    role: "Analyzer Operator"
+  };  
   return (
     <main className="h-screen w-full bg-[#FAFAFA] flex flex-col font-sans overflow-hidden">
       <div className="shrink-0 z-50 relative">
-        <TopNavigation />
+        <TopNavigation operatorRole={currentUser.role} />
       </div>
       
       <div className="flex w-full flex-1 overflow-hidden">
