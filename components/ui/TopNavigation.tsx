@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { AlertOctagon, LogOut, User } from "lucide-react";
 
-export function TopNavigation() {
+interface TopNavigationProps {
+  operatorName?: string;
+  operatorRole?: string;
+}
+
+export function TopNavigation({
+  operatorName = "Maghfira Whatley",
+  operatorRole = "Admin",
+}: TopNavigationProps) {
   return (
     <header className="flex w-full items-center justify-between bg-white px-16 py-6 shadow-sm">
       <div className="flex items-center gap-6">
@@ -14,10 +22,10 @@ export function TopNavigation() {
       <div className="flex items-center gap-8">
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end gap-1">
-            <span className="text-base text-[#212121]">Crystin Lee</span>
+            <span className="text-base text-[#212121]">{operatorName}</span>
             <div className="flex items-center justify-center rounded-full border border-[#C4EAEE] bg-[#F1F9FA] px-2 py-1">
               <span className="text-sm font-medium text-[#0076D2]">
-                Analyzer Operator
+                {operatorRole}
               </span>
             </div>
           </div>

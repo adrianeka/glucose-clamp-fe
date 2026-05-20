@@ -60,7 +60,7 @@ export function MeasurementDashboard() {
       value: val,
       cycle: cycle,
       status: isRange ? "In-Range" : "Out-Range",
-      user: "Crystin Lee",
+      user: "Maghfira Whatley",
     };
 
     setLogs((prev) => [newLog, ...prev]);
