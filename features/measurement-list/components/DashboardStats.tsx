@@ -1,6 +1,27 @@
+"use client";
+
 import { Users, Activity, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export function DashboardStats() {
+  const [systemTime, setSystemTime] = useState<string>("--:--:-- --");
+
+  useEffect(() => {
+    setSystemTime(new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    const clockInterval = setInterval(() => {
+      setSystemTime(new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 1000);
+    return () => clearInterval(clockInterval);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    if (seconds <= 0) return "00:00";
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+
   return (
     <div className="flex w-full items-center gap-8 px-16 py-8">
       <div className="flex flex-1 items-center gap-6">
@@ -46,7 +67,7 @@ export function DashboardStats() {
 
       <div className="flex flex-col items-end justify-center gap-1">
         <span className="text-base font-medium text-[#8C929D]">System Time</span>
-        <span className="text-[42px] font-bold text-[#43474F]">10:06:06 AM</span>
+        <span className="text-[42px] font-bold text-[#43474F]">{systemTime}</span>
       </div>
     </div>
   );

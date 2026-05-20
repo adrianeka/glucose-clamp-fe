@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { AlertOctagon, LogOut, User } from "lucide-react";
+import Image from "next/image";
 
 interface TopNavigationProps {
   operatorName?: string;
@@ -13,8 +14,13 @@ export function TopNavigation({
   return (
     <header className="flex w-full items-center justify-between bg-white px-16 py-6 shadow-sm">
       <div className="flex items-center gap-6">
-        <div className="h-11 w-11 rounded-md bg-gray-200 object-cover overflow-hidden flex justify-center items-center">
-            <span className="text-xs text-gray-500">Logo</span>
+        <div className="relative h-11 w-11 overflow-hidden rounded-md bg-white">
+          <Image 
+            src="/LogoNavbar.png" 
+            alt="Glucose Clamp Logo" 
+            fill
+            className="object-cover"
+          />
         </div>
         <h1 className="text-[28px] font-bold text-[#0076D2]">Glucose Clamp</h1>
       </div>
