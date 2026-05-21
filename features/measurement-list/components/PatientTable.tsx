@@ -54,10 +54,10 @@ export function PatientTable() {
         </p>
       </div>
 
-      <div className="rounded-lg bg-transparent">
-        <Table>
+    <div className="rounded-lg bg-transparent">
+        <Table className="border-separate border-spacing-y-3">
           <TableHeader>
-            <TableRow className="border-none bg-[#F1F9FA] hover:bg-[#F1F9FA]">
+            <TableRow className="border-0 bg-[#F1F9FA] hover:bg-[#F1F9FA]">
               <TableHead className="rounded-l-lg py-4 text-base font-semibold text-[#0076D2]">Patient Name</TableHead>
               <TableHead className="py-4 text-base font-semibold text-[#0076D2]">Patient ID</TableHead>
               <TableHead className="py-4 text-base font-semibold text-[#0076D2]">Room</TableHead>
@@ -68,7 +68,7 @@ export function PatientTable() {
           </TableHeader>
           <TableBody>
             {mockPatients.map((patient) => (
-              <TableRow key={patient.id} className="border-y-[8px] border-transparent bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.05)] hover:bg-gray-50">
+              <TableRow key={patient.id} className="border-0 bg-white shadow-[0px_1px_3px_rgba(0,0,0,0.05)] hover:bg-gray-50">
                 <TableCell className="rounded-l-lg py-5 text-base text-[#212121]">{patient.name}</TableCell>
                 <TableCell className="py-5 text-base text-[#212121]">{patient.patientId}</TableCell>
                 <TableCell className="py-5 text-base text-[#212121]">{patient.room}</TableCell>
