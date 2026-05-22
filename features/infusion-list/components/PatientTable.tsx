@@ -50,7 +50,7 @@ export function PatientTable() {
       </div>
 
       <div className="rounded-lg bg-transparent">
-        <Table>
+        <Table className="border-separate border-spacing-y-3">
           <TableHeader>
             <TableRow className="border-none bg-[#F1F9FA] hover:bg-[#F1F9FA]">
               <TableHead className="rounded-l-lg py-4 text-base font-semibold text-[#0076D2]">Patient Name</TableHead>

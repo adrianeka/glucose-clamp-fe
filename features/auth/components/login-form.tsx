@@ -10,7 +10,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Globe, User, Lock, Mail } from "lucide-react";
+import { ChevronDown, User, Lock, Mail } from "lucide-react";
+import { TopNavigation } from "@/components/ui/TopNavigation"; 
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,29 +21,32 @@ export default function LoginForm() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/");
+    
+    localStorage.setItem("is_logged_in", "true");
+    localStorage.setItem("operator_role", role);
+    localStorage.setItem("operator_email", email);
+    
+    const mockName = email.split("@")[0].replace(".", " ");
+    localStorage.setItem(
+      "operator_name", 
+      mockName.charAt(0).toUpperCase() + mockName.slice(1)
+    );
+
+    // Conditional Redirection logic based on role selection
+    if (role === "Pump Operator") {
+      router.push("/infusion");
+    } else {
+      router.push("/measurement");
+    }
   };
 
   return (
     <main className="flex h-screen w-full flex-col bg-white font-sans overflow-hidden">
       
-      <header className="flex w-full items-center justify-between bg-white px-16 py-6 shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] z-50 shrink-0">
-        <div className="flex items-center gap-6">
-          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-md bg-gray-200">
-            <span className="text-xs text-gray-500">Logo</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <h1 className="text-[28px] font-bold text-[#0076D2] leading-tight">Glucose Clamp</h1>
-            <span className="text-lg font-medium text-[#707784]">Monitoring Dashboard</span>
-          </div>
-        </div>
-
-        <Button variant="ghost" className="h-11 rounded-full px-6 text-[#0076D2] hover:bg-blue-50">
-          <Globe className="mr-2 h-5 w-5" />
-          <span className="text-lg font-medium">English</span>
-          <ChevronDown className="ml-2 h-5 w-5" />
-        </Button>
-      </header>
+      <TopNavigation 
+        subtitle="Monitoring Dashboard" 
+        showLanguageSelector={true} 
+      />
 
       <div className="flex w-full flex-1 overflow-hidden">
         
@@ -67,13 +71,13 @@ export default function LoginForm() {
               className="absolute -bottom-0 -right-8 h-[80%] object-contain object-bottom pointer-events-none z-20 drop-shadow-2xl" 
             />
 
-            <div className="relative z-10 flex flex-col gap-4 w-[65%] w-full">
+            <div className="relative z-10 flex flex-col gap-4 w-full">
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-white whitespace-nowrap">Get Started</span>
                 <div className="h-px flex-1 bg-white/40" />
               </div>
             </div>  
-            <div className="relative z-10 flex flex-col gap-4 w-[65%]">                        
+            <div className="relative z-10 flex flex-col gap-4 w-[65%] mt-4">                        
               <h2 className="text-[42px] font-bold leading-tight text-white">Welcome!</h2>
               <p className="text-base font-medium leading-relaxed text-white/90">
                 Precision monitoring starts here. <br />
@@ -120,8 +124,8 @@ export default function LoginForm() {
                     <DropdownMenuItem onClick={() => setRole("Analyzer Operator")} className="text-lg cursor-pointer">
                       Analyzer Operator
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setRole("Clinical Supervisor")} className="text-lg cursor-pointer">
-                      Clinical Supervisor
+                    <DropdownMenuItem onClick={() => setRole("Pump Operator")} className="text-lg cursor-pointer">
+                      Pump Operator
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
