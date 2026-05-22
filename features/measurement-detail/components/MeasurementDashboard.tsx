@@ -15,9 +15,15 @@ type Log = {
   user: string;
 };
 
+interface MeasurementDashboardProps {
+  operatorName?: string;
+}
+
 const DEBUG_SPEED_MULTIPLIER = 50;
 
-export function MeasurementDashboard() {
+export function MeasurementDashboard({
+  operatorName = "Maghfira Whatley",
+}: MeasurementDashboardProps) {
   const [cycle, setCycle] = useState(1);
   const [inputValue, setInputValue] = useState("");
   const [currentReading, setCurrentReading] = useState<number | null>(null);
@@ -60,7 +66,7 @@ export function MeasurementDashboard() {
       value: val,
       cycle: cycle,
       status: isRange ? "In-Range" : "Out-Range",
-      user: "Maghfira Whatley",
+      user: operatorName,
     };
 
     setLogs((prev) => [newLog, ...prev]);
