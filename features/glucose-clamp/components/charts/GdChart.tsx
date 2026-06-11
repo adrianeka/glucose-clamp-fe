@@ -1,7 +1,8 @@
 "use client";
 
 import {
-  LineChart,
+  ComposedChart,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -41,7 +42,13 @@ export function GdChart({
   return (
     <div className="w-full h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
+        <ComposedChart data={data} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorGlucose" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis
             dataKey="label"
@@ -83,12 +90,13 @@ export function GdChart({
             strokeDasharray="6 4"
             label={{ value: `Max ${targetMax}`, fontSize: 9, fill: "#16a34a", position: "insideTopRight" }}
           />
-          <Line
+          <Area
             yAxisId="glucose"
             type="monotone"
             dataKey="glucose"
             name="Glucose (mg/dL)"
             stroke="#2563eb"
+            fill="url(#colorGlucose)"
             strokeWidth={2}
             dot={{ r: 3 }}
             activeDot={{ r: 5 }}
@@ -104,7 +112,7 @@ export function GdChart({
             dot={false}
             connectNulls
           />
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );

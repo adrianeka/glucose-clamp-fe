@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -26,7 +26,13 @@ export function CPeptideChart({ labels, cpData }: CPeptideChartProps) {
   return (
     <div className="w-full h-[180px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorCp" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis
             dataKey="label"
@@ -39,17 +45,18 @@ export function CPeptideChart({ labels, cpData }: CPeptideChartProps) {
           />
           <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} labelStyle={{ fontWeight: 700 }} />
           <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
-          <Line
+          <Area
             type="monotone"
             dataKey="cp"
             name="C-Peptide (ng/mL)"
             stroke="#ec4899"
+            fill="url(#colorCp)"
             strokeWidth={2}
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
-            connectNulls={false}
+            connectNulls
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
