@@ -14,8 +14,8 @@ export function ConfirmExecutionDialog({
   isOpen,
   onClose,
   executedGir,
-  patientId,
-  onConfirm,
+    patientId,
+    onConfirm,
 }: ConfirmExecutionDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -35,7 +35,7 @@ export function ConfirmExecutionDialog({
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="flex-1 h-[48px] rounded-full border-none bg-[#FAFAFA] text-base font-semibold text-[#0076D2] hover:bg-gray-100 shadow-none"
+            className="flex-1 h-[48px] rounded-full border-none bg-[#FAFAFA] text-base font-semibold text-[#0076D2] hover:bg-gray-100 hover:text-[#0076D2] shadow-none"
           >
             Edit Value
           </Button>
