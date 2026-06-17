@@ -5,7 +5,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { XIcon } from "lucide-react"
+import { MinusIcon, XIcon } from "lucide-react"
 
 function Dialog({
   ...props
@@ -51,9 +51,11 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeIconType = "close",
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  closeIconType?: "close" | "minimize" // Tambah type definition
 }) {
   return (
     <DialogPortal>
@@ -74,9 +76,15 @@ function DialogContent({
               className="absolute top-2 right-2"
               size="icon-sm"
             >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
+              {/* Tampilkan icon dinamis sesuai closeIconType */}
+              {closeIconType === "minimize" ? (
+                <MinusIcon className="h-4 w-4" />
+              ) : (
+                <XIcon className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {closeIconType === "minimize" ? "Minimize" : "Close"}
+              </span>
             </Button>
           </DialogPrimitive.Close>
         )}

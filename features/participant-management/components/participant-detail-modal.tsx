@@ -1,6 +1,6 @@
 "use client";
 
-import { X, PilcrowSquare, FileText, User, CalendarDays, Phone } from "lucide-react";
+import { X, FileText, User, CalendarDays, Phone, Hash, Calendar } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,39 +10,68 @@ import {
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { type Participant } from "../../../lib/data";
 
-function formatDob(dob: string): string {
+function calculateAge(dob: string): string {
   if (!dob) return "—";
-  const date = new Date(dob);
-  const formatted = date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const ageDiff = Date.now() - date.getTime();
-  const age = Math.abs(new Date(ageDiff).getUTCFullYear() - 1970);
-  return `${formatted} (${age} yo)`;
+  const birth = new Date(dob);
+  const now = new Date();
+
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+
+  if (now.getDate() < birth.getDate()) {
+    months -= 1;
+  }
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  return `${years}y ${months}m`;
 }
 
-function DetailRow({
-  icon,
-  label,
-  value,
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatAuditDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  const date = new Date(dateStr);
+  return date.toLocaleString("en-GB", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function DetailTable({
+  rows,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
+  rows: { icon: React.ReactNode; label: string; value: string }[];
 }) {
   return (
-    <div className="self-stretch flex items-start gap-3">
-      <div className="w-4 h-4 mt-0.5 shrink-0 text-[#99A1AF]">{icon}</div>
-      <div className="flex-1 flex justify-between items-start">
-        <span className="text-[#43474F] text-sm font-normal leading-4">
-          {label}
-        </span>
-        <span className="text-[#101828] text-sm font-normal leading-5 text-right">
-          {value}
-        </span>
-      </div>
+    <div className="self-stretch border border-[#E2E4E6] rounded-lg overflow-hidden">
+      {rows.map((row, i) => (
+        <div
+          key={row.label}
+          className={`flex ${i !== rows.length - 1 ? "border-b border-[#E2E4E6]" : ""}`}
+        >
+          <div className="flex-1 flex items-center gap-2 px-4 py-3 border-r border-[#E2E4E6] text-[#43474F] text-sm">
+            <span className="w-4 h-4 shrink-0 text-[#99A1AF]">{row.icon}</span>
+            {row.label}
+          </div>
+          <div className="flex-1 flex items-center justify-end px-4 py-3 text-[#101828] text-sm font-medium text-right">
+            {row.value}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -70,7 +99,7 @@ export function ParticipantDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="p-0 gap-0 rounded-xl overflow-hidden w-[360px] max-w-[360px] border-0 shadow-xl [&>button]:hidden">
+      <DialogContent className="p-0 gap-0 rounded-xl overflow-hidden !w-[600px] !max-w-[600px] border-0 shadow-xl [&>button]:hidden">
         <VisuallyHidden>
           <DialogTitle>Participant Detail — {participant.name}</DialogTitle>
         </VisuallyHidden>
@@ -92,57 +121,46 @@ export function ParticipantDetailModal({
         </DialogHeader>
 
         <div className="p-5 bg-[#FAFAFA] rounded-b-xl flex flex-col gap-5">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <SectionLabel>Medical Identity</SectionLabel>
-            <DetailRow
-              icon={<PilcrowSquare size={16} className="text-[#99A1AF]" />}
-              label="Participant ID"
-              value={participant.id}
-            />
-            <DetailRow
-              icon={<FileText size={16} className="text-[#99A1AF]" />}
-              label="Medical Record No."
-              value={participant.medicalRecord}
+            <DetailTable
+              rows={[
+                { icon: <Hash size={16} />, label: "Participant ID", value: participant.participantId },
+                { icon: <FileText size={16} />, label: "Medical Record No.", value: participant.medicalRecordNo },
+              ]}
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <SectionLabel>Personal Data</SectionLabel>
-            <DetailRow
-              icon={<User size={16} className="text-[#99A1AF]" />}
-              label="Gender"
-              value={participant.gender}
-            />
-            <DetailRow
-              icon={<CalendarDays size={16} className="text-[#99A1AF]" />}
-              label="Date of Birth"
-              value={formatDob(participant.dob)}
-            />
-            <DetailRow
-              icon={<Phone size={16} className="text-[#99A1AF]" />}
-              label="Phone Number"
-              value={`+62${participant.phone}`}
+            <DetailTable
+              rows={[
+                { icon: <User size={16} />, label: "Gender", value: participant.gender },
+                { icon: <Calendar size={16} />, label: "Age", value: calculateAge(participant.dob) },
+                { icon: <CalendarDays size={16} />, label: "Date of Birth", value: formatDate(participant.dob) },
+                { icon: <Phone size={16} />, label: "Phone Number", value: `+62${participant.numberPhone}` },
+              ]}
             />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <SectionLabel>Audit Trail</SectionLabel>
-            <div className="self-stretch h-5 flex justify-between items-center">
-              <span className="text-[#43474F] text-sm font-normal leading-4">
-                Created by
-              </span>
-              <span className="text-[#101828] text-sm font-normal leading-5 text-right">
-                Admin · 10/01/2024, 15:00:00
-              </span>
-            </div>
-            <div className="self-stretch h-5 flex justify-between items-start">
-              <span className="text-[#43474F] text-sm font-normal leading-4">
-                Updated by
-              </span>
-              <span className="text-[#101828] text-sm font-normal leading-5 text-right">
-                Admin · 10/06/2026, 10:55:19
-              </span>
-            </div>
+            <DetailTable
+              rows={[
+                {
+                  icon: <User size={16} />,
+                  label: "Created by",
+                  value: `${participant.createdBy ?? "Admin"} · ${formatAuditDate(participant.createdAt)}`,
+                },
+                {
+                  icon: <User size={16} />,
+                  label: "Updated by",
+                  value: participant.updatedAt
+                    ? `${participant.updatedBy ?? "Admin"} · ${formatAuditDate(participant.updatedAt)}`
+                    : "-",
+                },
+              ]}
+            />
           </div>
         </div>
       </DialogContent>

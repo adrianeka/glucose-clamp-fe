@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { ConfirmDeleteDialog } from "@/components/ui/delete";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
+import { EditParticipantModal } from "./edit-participant-modal";
 import {
   Eye,
   Pencil,
@@ -15,15 +18,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { PARTICIPANTS, type Participant } from "../../../lib/data";
+import { getAllParticipants, searchParticipants, deleteParticipant } from "../services";
+import { Participant } from "../types";
 import { ParticipantDetailModal } from "./participant-detail-modal";
 
 const ITEMS_PER_PAGE = 6;
 
-// Status Badge
-
 function StatusBadge({ status }: { status: Participant["status"] }) {
-  if (status === "Active") {
+  if (status === "ACTIVE") {
     return (
       <div className="flex items-center gap-1 px-1.5 py-1 bg-[#EEF8F4] rounded-full border border-[#C9EBDE]">
         <CheckCircle2 size={16} className="text-[#52BD94]" />
@@ -58,31 +60,32 @@ function MrBadge({ mr }: { mr: string }) {
 function TableRow({
   participant,
   onView,
+  onEdit,
+  onDelete,
 }: {
   participant: Participant;
   onView: (p: Participant) => void;
+  onEdit: (p: Participant) => void;
+  onDelete: (p: Participant) => void;
 }) {
   return (
     <div className="flex items-start w-full bg-[#FAFAFA] rounded-lg overflow-hidden py-1">
-      <div className="w-[100px] flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
-        <IdBadge id={participant.id} />
-      </div>
-      <div className="w-[160px] flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
-        <MrBadge mr={participant.medicalRecord} />
+      <div className="flex-1 flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
+        <MrBadge mr={participant.medicalRecordNo} />
       </div>
       <div className="flex-1 h-[60px] px-4 py-2 flex items-start">
         <span className="text-[#43474F] text-sm font-normal leading-5">{participant.name}</span>
       </div>
-      <div className="w-[120px] flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
+      <div className="flex-1 flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
         <span className="text-[#43474F] text-sm font-normal leading-5">{participant.gender}</span>
       </div>
-      <div className="w-[120px] flex-shrink-0 h-[60px] px-4 py-2 flex flex-col items-start gap-0.5">
-        <span className="text-[#212121] text-sm font-normal leading-5">{participant.dob}</span>
+      <div className="flex-1 flex-shrink-0 h-[60px] px-4 py-2 flex flex-col items-start gap-0.5">
+        <span className="text-[#212121] text-sm font-normal leading-5">{participant.age}</span>
       </div>
       <div className="flex-1 h-[60px] px-4 py-2 flex items-start">
-        <span className="text-[#43474F] text-sm font-normal leading-5">{participant.phone}</span>
+        <span className="text-[#43474F] text-sm font-normal leading-5">{participant.numberPhone}</span>
       </div>
-      <div className="w-[120px] flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
+      <div className="flex-1 flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
         <StatusBadge status={participant.status} />
       </div>
       <div className="flex-1 h-[60px] px-4 py-2 flex items-start gap-3">
@@ -93,10 +96,18 @@ function TableRow({
         >
           <Eye size={18} className="text-[#0076D2]" />
         </button>
-        <button className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity" aria-label="Edit">
+        <button
+          onClick={() => onEdit(participant)}
+          className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity"
+          aria-label="Edit"
+        >
           <Pencil size={18} className="text-[#FABA00]" />
         </button>
-        <button className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity" aria-label="Delete">
+        <button
+          onClick={() => onDelete(participant)}
+          className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity"
+          aria-label="Delete"
+        >
           <Trash2 size={18} className="text-[#FF5630]" />
         </button>
       </div>
@@ -150,29 +161,112 @@ function Pagination({
   );
 }
 
-export function ParticipantTable() {
+interface ParticipantTableProps {
+  onAddParticipant: () => void;
+  refreshKey?: number;
+}
+
+export function ParticipantTable({
+  onAddParticipant,
+  refreshKey,
+}: ParticipantTableProps) {
   const router = useRouter();
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const filtered = PARTICIPANTS.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.id.toLowerCase().includes(search.toLowerCase()) ||
-      p.medicalRecord.toLowerCase().includes(search.toLowerCase())
-  );
+  const [deleteTarget, setDeleteTarget] = useState<Participant | null>(null);
+  const [editTarget, setEditTarget] = useState<Participant | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const paginated = filtered.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // debounce search input
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setCurrentPage(1);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  useEffect(() => {
+    const refresh = async () => {
+      try {
+        await refetchData();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    refresh();
+  }, [refreshKey]);
+
+  const refetchData = async () => {
+    const result = debouncedSearch
+      ? await searchParticipants(debouncedSearch, currentPage, ITEMS_PER_PAGE)
+      : await getAllParticipants(currentPage, ITEMS_PER_PAGE);
+
+    setParticipants(result.data.content);
+    setTotalElements(result.data.totalElements);
+    setTotalPages(Math.max(1, result.data.totalPages));
+  };
+
+  // fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        await refetchData();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Gagal memuat data participant");
+        setParticipants([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [debouncedSearch, currentPage]);
+
 
   const handleView = (p: Participant) => {
     setSelectedParticipant(p);
     setModalOpen(true);
+  };
+
+  const handleDeleteClick = (p: Participant) => {
+    setDeleteTarget(p);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteParticipant(deleteTarget.participantId);
+      setDeleteTarget(null);
+      await refetchData();
+      showToast("Delete participant successfully");
+    } catch (err) {
+      showToast("Failed to delete participant", "error");
+    }
+  };
+
+  const handleEditClick = (p: Participant) => {
+    setEditTarget(p);
+    setEditModalOpen(true);
   };
 
   return (
@@ -187,48 +281,35 @@ export function ParticipantTable() {
               Manage and view all registered study participants
             </p>
           </div>
-          <Button
-            onClick={() => router.push("/participant-management/add")}
-            className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
-          >
-            <Plus size={20} className="text-[#FAFAFA]" />
-            Add Participant
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="relative w-[346px]">
-            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D2F35]" />
-            <Input
-              placeholder="Search"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2]"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[#43474F] text-sm font-semibold leading-4 tracking-wide uppercase">
-              Participant Registry
-            </span>
-            <Badge
-              variant="outline"
-              className="bg-[#F1F9FA] border-[#C4EAEE] text-[#0076D2] text-xs font-medium leading-[14px] rounded-full px-2 py-1"
+          <div className="flex items-center gap-3">
+            <div className="relative w-[260px]">
+              <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D2F35]" />
+              <Input
+                placeholder="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2]"
+              />
+            </div>
+            <Button
+              onClick={onAddParticipant}
+              className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
             >
-              {filtered.length}
-            </Badge>
+              <Plus size={20} className="text-[#FAFAFA]" />
+              Add
+            </Button>
           </div>
         </div>
 
         <div className="flex flex-col gap-2 bg-[#FAFAFA]">
           <div className="flex items-center w-full bg-[#F1F9FA] rounded-lg overflow-hidden">
             {[
-              { label: "ID", width: "w-[100px]" },
-              { label: "Medical Record", width: "w-[160px]" },
+              { label: "Medical Record", width: "flex-1" },
               { label: "Participant", width: "flex-1" },
-              { label: "Gender", width: "w-[120px]" },
-              { label: "DOB", width: "w-[120px]" },
+              { label: "Gender", width: "flex-1" },
+              { label: "Age", width: "flex-1" },
               { label: "Phone", width: "flex-1" },
-              { label: "Status", width: "w-[120px]" },
+              { label: "Status", width: "flex-1" },
               { label: "Actions", width: "flex-1" },
             ].map(({ label, width }) => (
               <div
@@ -243,9 +324,21 @@ export function ParticipantTable() {
           </div>
 
           <div className="flex flex-col gap-2">
-            {paginated.length > 0 ? (
-              paginated.map((p) => (
-                <TableRow key={p.id} participant={p} onView={handleView} />
+            {loading ? (
+              <div className="py-10 text-center text-[#707784] text-sm">
+                Memuat data...
+              </div>
+            ) : error ? (
+              <div className="py-10 text-center text-red-500 text-sm">{error}</div>
+            ) : participants.length > 0 ? (
+              participants.map((p) => (
+                <TableRow
+                  key={p.participantId}
+                  participant={p}
+                  onView={handleView}
+                  onEdit={handleEditClick}
+                  onDelete={handleDeleteClick}
+                />
               ))
             ) : (
               <div className="py-10 text-center text-[#707784] text-sm">
@@ -268,6 +361,22 @@ export function ParticipantTable() {
         participant={selectedParticipant}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+      />
+
+      {deleteTarget && (
+        <ConfirmDeleteDialog
+          open={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Participant?"
+          itemName={deleteTarget.name}
+        />
+      )}
+      <EditParticipantModal
+        participant={editTarget}
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={refetchData}
       />
     </>
   );

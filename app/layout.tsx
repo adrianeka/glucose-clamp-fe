@@ -7,6 +7,7 @@ import Sidebar from "@/components/sidebar";
 import Footer from "@/components/footer";
 import Providers from "@/app/provider";
 import { Toaster } from "@/components/ui/sonner";
+import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,7 +35,8 @@ export default function RootLayout({
               <Sidebar />
 
               <main className="flex-1 p-6" style={{ backgroundColor: "#FAFAFA" }}>
-                {children}
+                <ToastProvider>
+          {children}
                 <Toaster/>
               </main>
             </div>
@@ -42,6 +44,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </Providers>
+        </ToastProvider>
       </body>
     </html>
   );
