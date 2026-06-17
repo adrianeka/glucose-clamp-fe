@@ -1,6 +1,12 @@
 import { AxiosError } from "axios";
-import api from "@/lib/axios"; // sesuaikan path sesuai struktur project kamu
-import { ApiErrorResponse, ApiResponse, LoginRequest, LoginResponseData } from "@/types/auth";
+import api from "@/lib/axios";
+import {
+  ApiErrorResponse,
+  ApiResponse,
+  LoginRequest,
+  LoginResponseData,
+  RoleOption,
+} from "./types";
 
 export const login = async (payload: LoginRequest) => {
   try {
@@ -12,7 +18,12 @@ export const login = async (payload: LoginRequest) => {
   } catch (error) {
     const axiosError = error as AxiosError<ApiErrorResponse>;
     const message =
-      axiosError.response?.data?.message ?? "Terjadi kesalahan, coba lagi";
+      axiosError.response?.data?.message ?? "Username atau password salah";
     throw new Error(message);
   }
+};
+
+export const getRoleOptions = async () => {
+  const { data } = await api.get<ApiResponse<RoleOption[]>>("/roles/options");
+  return data;
 };

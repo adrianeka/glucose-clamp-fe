@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 
 interface LoginPayload {
-  email: string;
+  username: string;
   password: string;
 }
 

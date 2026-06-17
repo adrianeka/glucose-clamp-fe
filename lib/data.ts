@@ -1,7 +1,6 @@
 export type ParticipantStatus = "Active" | "Inactive";
 
 export interface Participant {
-  id: string;
   medicalRecord: string;
   name: string;
   gender: "Male" | "Female";
@@ -12,7 +11,6 @@ export interface Participant {
 
 export const PARTICIPANTS: Participant[] = [
   {
-    id: "PAT001",
     medicalRecord: "MR889100",
     name: "Adrian Saputra",
     gender: "Male",
@@ -21,7 +19,6 @@ export const PARTICIPANTS: Participant[] = [
     status: "Active",
   },
   {
-    id: "PAT002",
     medicalRecord: "MR889101",
     name: "Lisa Wong",
     gender: "Female",
@@ -30,7 +27,6 @@ export const PARTICIPANTS: Participant[] = [
     status: "Active",
   },
   {
-    id: "PAT003",
     medicalRecord: "MR889102",
     name: "Carlos Mendez",
     gender: "Male",
@@ -39,7 +35,6 @@ export const PARTICIPANTS: Participant[] = [
     status: "Inactive",
   },
   {
-    id: "PAT004",
     medicalRecord: "MR889103",
     name: "Aisha Khan",
     gender: "Female",
@@ -48,7 +43,6 @@ export const PARTICIPANTS: Participant[] = [
     status: "Inactive",
   },
   {
-    id: "PAT005",
     medicalRecord: "MR889104",
     name: "James Smith",
     gender: "Male",
@@ -57,7 +51,6 @@ export const PARTICIPANTS: Participant[] = [
     status: "Active",
   },
   {
-    id: "PAT006",
     medicalRecord: "MR889105",
     name: "Emily Johnson",
     gender: "Female",
