@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ 
+import Navbar from "@/components/navbar";
+import Sidebar from "@/components/sidebar";
+import Footer from "@/components/footer";
+import Providers from "@/app/provider";
+import { Toaster } from "@/components/ui/sonner";
+
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans", 
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -20,7 +26,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+        <Providers>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+
+            <div className="flex flex-1">
+              <Sidebar />
+
+              <main className="flex-1 p-6" style={{ backgroundColor: "#FAFAFA" }}>
+                {children}
+                <Toaster/>
+              </main>
+            </div>
+
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );
