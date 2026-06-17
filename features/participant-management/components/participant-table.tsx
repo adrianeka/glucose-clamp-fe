@@ -281,35 +281,23 @@ export function ParticipantTable({
               Manage and view all registered study participants
             </p>
           </div>
-          <Button
-            onClick={onAddParticipant}
-            className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
-          >
-            <Plus size={20} className="text-[#FAFAFA]" />
-            Add
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="relative w-[346px]">
-            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D2F35]" />
-            <Input
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2]"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[#43474F] text-sm font-semibold leading-4 tracking-wide uppercase">
-              Participant Registry
-            </span>
-            <Badge
-              variant="outline"
-              className="bg-[#F1F9FA] border-[#C4EAEE] text-[#0076D2] text-xs font-medium leading-[14px] rounded-full px-2 py-1"
+          <div className="flex items-center gap-3">
+            <div className="relative w-[260px]">
+              <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D2F35]" />
+              <Input
+                placeholder="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2]"
+              />
+            </div>
+            <Button
+              onClick={onAddParticipant}
+              className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
             >
-              {totalElements}
-            </Badge>
+              <Plus size={20} className="text-[#FAFAFA]" />
+              Add
+            </Button>
           </div>
         </div>
 
