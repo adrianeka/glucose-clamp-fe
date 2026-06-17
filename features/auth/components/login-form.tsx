@@ -10,9 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, User, Lock, Loader2 } from "lucide-react";
-import { TopNavigation } from "@/components/ui/TopNavigation";
 import { login } from "../services";
+import { ChevronDown, User, Lock, Mail, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { TopNavigation } from "@/components/ui/TopNavigation"; 
+import api from "@/lib/axios";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -22,7 +23,18 @@ export default function LoginForm() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
+
+  // Auto-close alert error setelah 5 detik
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  const handleLogin = async (e: React.FormEvent) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -42,6 +54,52 @@ export default function LoginForm() {
       setError(err instanceof Error ? err.message : "Login gagal");
     } finally {
       setIsLoading(false);
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    // Kita catat waktu mulai request untuk menghitung durasi proses
+    const startTime = Date.now();
+
+    try {
+      const response = await api.post("/user-management/users/sign-in", {
+        username,
+        password,
+      });
+      console.log("ini responsenya", response);
+
+      // Ambil data yang dikembalikan oleh database (API)
+      const userRole = response.data.data.role; // Misalnya: "Pump Operator" atau "Analyzer Operator"
+      const token = response.data.data.token;
+      const userId = response.data.data.id;
+      const userNameRes = response.data.data.username;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user_id", userId);
+      localStorage.setItem("role", userRole);
+      localStorage.setItem("username", userNameRes);
+      localStorage.setItem("is_logged_in", "true");
+
+      setSuccess("Login berhasil! Membuka sistem...");
+
+      setTimeout(() => {
+        if (userRole === "Pump Operator") {
+          router.push("/infusion");
+        } else {
+          router.push("/measurement");
+        }
+      }, 1500);
+
+    } catch (err: any) {
+      const elapsedTime = Date.now() - startTime;
+      const minimumDelay = 800;
+      const remainingDelay = Math.max(0, minimumDelay - elapsedTime);
+
+      setTimeout(() => {
+        setIsLoading(false);
+        const serverMessage = err.response?.data?.message || err.response?.data?.error;
+        setError(serverMessage || "Gagal masuk. Periksa kembali username dan password Anda.");
+      }, remainingDelay);
     }
   };
 
@@ -53,9 +111,42 @@ export default function LoginForm() {
         showLanguageSelector={true}
       />
 
+      {/* --- FLOATING SNACKBAR / TOAST NOTIFICATION --- */}
+      <div className="fixed top-24 right-6 z-50 flex flex-col gap-3 max-w-sm w-full px-4 md:px-0">
+        {/* Toast Sukses */}
+        {success && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4 shadow-lg animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+              <p className="text-sm font-medium text-emerald-800">{success}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Toast Gagal */}
+        {error && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-red-100 bg-red-50 p-4 shadow-lg animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+              <p className="text-sm font-medium text-red-800">{error}</p>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setError(null)}
+              className="rounded-lg p-1 text-red-600 hover:bg-red-100 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="flex w-full flex-1 overflow-hidden">
 
         <div
+        
+        {/* Kolom Kiri: Ilustrasi */}
+        <div 
           className="relative hidden lg:flex flex-1 flex-col items-center justify-center p-12 bg-cover bg-center"
           style={{ backgroundImage: "url('/Frame 114 - background.png')" }}
         >
@@ -86,11 +177,13 @@ export default function LoginForm() {
               <h2 className="text-[42px] font-bold leading-tight text-white">Welcome!</h2>
               <p className="text-base font-medium leading-relaxed text-white/90">
                 Precision monitoring starts here. <br />
+                Login to access your clinical dashboard.
               </p>
             </div>
 
           </div>
         </div>
+
         <div className="flex flex-1 flex-col overflow-y-auto bg-white px-8 py-12">
 
           <div className="m-auto flex w-full max-w-[398px] flex-col gap-10">
@@ -139,8 +232,10 @@ export default function LoginForm() {
                   <Input
                     type="password"
                     required
+                    disabled={isLoading}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
                     className="h-14 w-full rounded-xl border-[#E2E4E6] bg-[#FAFAFA] pl-12 pr-4 text-lg text-[#2D2F35]"
                   />
                 </div>
