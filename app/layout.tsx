@@ -2,12 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "@/components/navbar";
-import Sidebar from "@/components/sidebar";
-import Footer from "@/components/footer";
 import Providers from "@/app/provider";
-import { Toaster } from "@/components/ui/sonner";
-import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,30 +16,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-
-            <div className="flex flex-1">
-              <Sidebar />
-
-              <main className="flex-1 p-6" style={{ backgroundColor: "#FAFAFA" }}>
-                <ToastProvider>
           {children}
-                <Toaster/>
-              </main>
-            </div>
-
-            <Footer />
-          </div>
         </Providers>
-        </ToastProvider>
       </body>
     </html>
   );
