@@ -13,6 +13,7 @@ import {
   Plus,
   CheckCircle2,
   XCircle,
+  ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,23 +24,7 @@ import { Participant } from "../types";
 import { ParticipantDetailModal } from "./participant-detail-modal";
 
 const ITEMS_PER_PAGE = 6;
-
-function StatusBadge({ status }: { status: Participant["status"] }) {
-  if (status === "ACTIVE") {
-    return (
-      <div className="flex items-center gap-1 px-1.5 py-1 bg-[#EEF8F4] rounded-full border border-[#C9EBDE]">
-        <CheckCircle2 size={16} className="text-[#52BD94]" />
-        <span className="text-[#4BAC87] text-xs font-medium leading-[14px]">Active</span>
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-1 px-1.5 py-1 bg-[#FAFAFA] rounded-full border border-[#E2E4E6]">
-      <XCircle size={16} className="text-[#595F6A]" />
-      <span className="text-[#595F6A] text-xs font-medium leading-[14px]">Inactive</span>
-    </div>
-  );
-}
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 function IdBadge({ id }: { id: string }) {
   return (
@@ -85,9 +70,6 @@ function TableRow({
       <div className="flex-1 h-[60px] px-4 py-2 flex items-start">
         <span className="text-[#43474F] text-sm font-normal leading-5">{participant.numberPhone}</span>
       </div>
-      <div className="flex-1 flex-shrink-0 h-[60px] px-4 py-2 flex items-start">
-        <StatusBadge status={participant.status} />
-      </div>
       <div className="flex-1 h-[60px] px-4 py-2 flex items-start gap-3">
         <button
           onClick={() => onView(participant)}
@@ -118,45 +100,82 @@ function TableRow({
 function Pagination({
   currentPage,
   totalPages,
+  totalElements,
+  pageSize,
   onPageChange,
+  onPageSizeChange,
 }: {
   currentPage: number;
   totalPages: number;
+  totalElements: number;
+  pageSize: number;
   onPageChange: (p: number) => void;
+  onPageSizeChange: (size: number) => void;
 }) {
+  const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
-    <div className="flex items-center gap-1 justify-end">
-      <button
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-        className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
-      >
-        <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
-          <path d="M9 1L5 4L1 1" stroke="#707784" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      {pages.map((page) => (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2 relative">
         <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={cn(
-            "w-11 h-11 flex items-center justify-center rounded-lg text-lg font-medium leading-5 transition-colors",
-            page === currentPage ? "bg-[#DBF2F3] text-[#0076D2]" : "text-[#707784] hover:bg-gray-100"
-          )}
+          onClick={() => setSizeDropdownOpen((o) => !o)}
+          className="flex items-center gap-1.5 px-3 py-2 border border-[#E2E4E6] rounded-lg text-[#43474F] text-sm font-medium hover:bg-gray-50 transition-colors"
         >
-          {page}
+          {pageSize} Entries
+          <ChevronDown size={14} className="text-[#707784]" />
         </button>
-      ))}
-      <button
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-        className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
-      >
-        <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
-          <path d="M1 4L5 1L9 4" stroke="#707784" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+        {sizeDropdownOpen && (
+          <div className="absolute bottom-full mb-1 left-0 bg-white border border-[#E2E4E6] rounded-lg shadow-lg py-1 w-32 z-10">
+            {PAGE_SIZE_OPTIONS.map((size) => (
+              <button
+                key={size}
+                onClick={() => {
+                  onPageSizeChange(size);
+                  setSizeDropdownOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm text-[#43474F] hover:bg-gray-50"
+              >
+                {size} Entries
+              </button>
+            ))}
+          </div>
+        )}
+        <span className="text-[#707784] text-sm">of {totalElements} entries</span>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
+        >
+          <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
+            <path d="M9 1L5 4L1 1" stroke="#707784" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {pages.map((page) => (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={cn(
+              "w-11 h-11 flex items-center justify-center rounded-lg text-lg font-medium leading-5 transition-colors",
+              page === currentPage ? "bg-[#DBF2F3] text-[#0076D2]" : "text-[#707784] hover:bg-gray-100"
+            )}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
+        >
+          <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
+            <path d="M1 4L5 1L9 4" stroke="#707784" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
@@ -172,10 +191,12 @@ export function ParticipantTable({
 }: ParticipantTableProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPage, setCurrentPage] = useState(1);
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -215,8 +236,8 @@ export function ParticipantTable({
 
   const refetchData = async () => {
     const result = debouncedSearch
-      ? await searchParticipants(debouncedSearch, currentPage, ITEMS_PER_PAGE)
-      : await getAllParticipants(currentPage, ITEMS_PER_PAGE);
+      ? await searchParticipants(debouncedSearch, currentPage, pageSize)
+      : await getAllParticipants(currentPage, pageSize);
 
     setParticipants(result.data.content);
     setTotalElements(result.data.totalElements);
@@ -240,7 +261,7 @@ export function ParticipantTable({
     };
 
     fetchData();
-  }, [debouncedSearch, currentPage]);
+  }, [debouncedSearch, currentPage, pageSize]);
 
 
   const handleView = (p: Participant) => {
@@ -267,6 +288,11 @@ export function ParticipantTable({
   const handleEditClick = (p: Participant) => {
     setEditTarget(p);
     setEditModalOpen(true);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
   };
 
   return (
@@ -309,7 +335,6 @@ export function ParticipantTable({
               { label: "Gender", width: "flex-1" },
               { label: "Age", width: "flex-1" },
               { label: "Phone", width: "flex-1" },
-              { label: "Status", width: "flex-1" },
               { label: "Actions", width: "flex-1" },
             ].map(({ label, width }) => (
               <div
@@ -348,13 +373,14 @@ export function ParticipantTable({
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
 
       <ParticipantDetailModal
