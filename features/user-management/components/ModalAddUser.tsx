@@ -33,7 +33,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/toast";
 
 interface AddUserModalProps {
   open: boolean;
@@ -48,13 +48,10 @@ export default function ModalAddUser({
     pageNumber: 1,
     pageSize: 100,
   });
-
   const [repeatPassword, setRepeatPassword] = useState("");
-
   const addUserMutation = useAddUser();
-
   const roles = rolesData?.data?.content ?? [];
-
+  const { showToast } = useToast();
   const [form, setForm] = useState<AddUserRequest>({
     roleId: 0,
     positionName: "",
@@ -120,6 +117,9 @@ export default function ModalAddUser({
     if (!form.email.trim()) {
       newErrors.email = "Email is required";
       isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      newErrors.email = "Email is invalid";
+      isValid = false;
     }
 
     if (!form.status) {
@@ -170,15 +170,16 @@ export default function ModalAddUser({
         password: "",
       });
 
-      toast.success(
-        "Add user successfully"
-      );
+      showToast("Add user successfully");
 
       onOpenChange(false);
-    } catch (error) {
-      toast.error(
-        "Failed to add user"
-      );
+    }catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        "Failed to add user";
+
+      showToast(message, "error");
+
       console.error(error);
     }
   };
