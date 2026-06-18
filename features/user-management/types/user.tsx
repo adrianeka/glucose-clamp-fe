@@ -46,6 +46,7 @@ export interface EditUserRequest {
     name : string;
     username : string;
     email : string;
+    status : string;
     password : string;
 }
 

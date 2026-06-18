@@ -30,6 +30,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import { useToast } from "@/components/ui/toast";
+import { X } from "lucide-react";
+
 interface EditUserModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,12 +60,15 @@ export default function ModalEditUser({
 
   const roles = rolesData?.data?.content ?? [];
 
+  const { showToast } = useToast();
+
   const [form, setForm] = useState<EditUserRequest>({
     roleId: 0,
     positionName: "",
     name: "",
     username: "",
     email: "",
+    status: "ACTIVE",
     password: "",
   });
 
@@ -72,6 +78,7 @@ export default function ModalEditUser({
     name: "",
     username: "",
     email: "",
+    status: "Active",
     password: "",
   });
 
@@ -83,6 +90,7 @@ export default function ModalEditUser({
         name: data.name,
         username: data.username,
         email: data.email,
+        status: data.status,
         password: "",
       });
 
@@ -138,16 +146,28 @@ export default function ModalEditUser({
       isValid = false;
     }
 
-    if (!form.password.trim()) {
-      newErrors.password =
-        "Password is required";
+    if (form.email.trim()) {
+      const emailRegex =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        newErrors.email = "Invalid email format";
+        isValid = false;
+      }
+    }
+
+    if (!form.status) {
+      newErrors.status = "Status is required";
       isValid = false;
-    } else if (
-      !validatePassword(form.password)
-    ) {
-      newErrors.password =
-        "Minimum 6 characters, uppercase and lowercase letters required";
-      isValid = false;
+    }
+
+    const password = form.password.trim();
+
+    if (password.length > 0) {
+      if (!validatePassword(password)) {
+        newErrors.password =
+          "Minimum 6 characters, uppercase and lowercase letters required";
+        isValid = false;
+      }
     }
 
     setErrors(newErrors);
@@ -156,7 +176,12 @@ export default function ModalEditUser({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      showToast("Please fix the errors in the form", "error");
+      console.log("Validation failed");
+
+      return;
+    } 
 
     const payload = {
       ...form,
@@ -177,6 +202,7 @@ export default function ModalEditUser({
         name: "",
         username: "",
         email: "",
+        status: "",
         password: "",
       });
 
@@ -186,15 +212,23 @@ export default function ModalEditUser({
         name: "",
         username: "",
         email: "",
+        status: "",
         password: "",
       });
 
       setConfirmPassword("");
       setChangePassword(false);
 
+      showToast("Edit user successfully");
+
       onOpenChange(false);
-    } catch (error) {
+    } catch (error:any) {
       console.error(error);
+      const message =
+        error?.response?.data?.message ||
+        "Failed to add user";
+
+      showToast(message, "error");
     }
   };
 
@@ -281,6 +315,164 @@ export default function ModalEditUser({
               )}
             </div>
 
+            {/* Position */}
+            <div className="space-y-2">
+              <label className="text-sm text-[#595F6A]">
+                  Position
+                  <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                  placeholder="Enter position"
+                  className={
+                  errors.positionName
+                      ? "border-red-500"
+                      : ""
+                  }
+                  value={form.positionName}
+                  onChange={(e) => {
+                  setForm({
+                      ...form,
+                      positionName: e.target.value,
+                  });
+
+                  setErrors({
+                      ...errors,
+                      positionName: "",
+                  });
+                  }}
+              />
+
+              {errors.positionName && (
+                  <p className="text-xs text-red-500">
+                  {errors.positionName}
+                  </p>
+              )}
+            </div>
+
+            {/* Username */}
+            <div className="space-y-2">
+              <label className="text-sm text-[#595F6A]">
+                Username
+                <span className="text-red-500">
+                  *
+                </span>
+              </label>
+
+              <Input
+                placeholder="johndoe"
+                className={
+                  errors.username
+                    ? "border-red-500"
+                    : ""
+                }
+                value={form.username}
+                onChange={(e) => {
+                  setForm({
+                    ...form,
+                    username:
+                      e.target.value,
+                  });
+
+                  setErrors({
+                    ...errors,
+                    username: "",
+                  });
+                }}
+              />
+
+              {errors.username && (
+                <p className="text-xs text-red-500">
+                  {errors.username}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-sm text-[#595F6A]">
+                Email
+                <span className="text-red-500">
+                  *
+                </span>
+              </label>
+
+              <Input
+                type="email"
+                placeholder="john@email.com"
+                className={
+                  errors.email
+                    ? "border-red-500"
+                    : ""
+                }
+                value={form.email}
+                onChange={(e) => {
+                  setForm({
+                    ...form,
+                    email: e.target.value,
+                  });
+
+                  setErrors({
+                    ...errors,
+                    email: "",
+                  });
+                }}
+              />
+
+              {errors.email && (
+                <p className="text-xs text-red-500">
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Status */}
+            <div className="space-y-2">
+              <label className="text-sm text-[#595F6A]">
+                Status
+                <span className="text-red-500">
+                  *
+                </span>
+              </label>
+
+              <Select
+                value={form.status}
+                onValueChange={(value) => {
+                  setForm({
+                    ...form,
+                    status: value,
+                  });
+
+                  setErrors({
+                    ...errors,
+                    status: "",
+                  });
+                }}
+              >
+                <SelectTrigger
+                  className={`w-full ${errors.status ? "border-red-500" : ""}`}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="ACTIVE">
+                    Active
+                  </SelectItem>
+
+                  <SelectItem value="INACTIVE">
+                    Inactive
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              {errors.status && (
+                <p className="text-xs text-red-500">
+                  {errors.status}
+                </p>
+              )}
+            </div>
+
             {/* Role */}
             <div className="space-y-2">
               <label className="text-sm text-[#595F6A]">
@@ -345,117 +537,6 @@ export default function ModalEditUser({
               )}
             </div>
 
-            {/* Username */}
-            <div className="space-y-2">
-              <label className="text-sm text-[#595F6A]">
-                Username
-                <span className="text-red-500">
-                  *
-                </span>
-              </label>
-
-              <Input
-                placeholder="johndoe"
-                className={
-                  errors.username
-                    ? "border-red-500"
-                    : ""
-                }
-                value={form.username}
-                onChange={(e) => {
-                  setForm({
-                    ...form,
-                    username:
-                      e.target.value,
-                  });
-
-                  setErrors({
-                    ...errors,
-                    username: "",
-                  });
-                }}
-              />
-
-              {errors.username && (
-                <p className="text-xs text-red-500">
-                  {errors.username}
-                </p>
-              )}
-            </div>
-
-            {/* Position */}
-            <div className="space-y-2">
-            <label className="text-sm text-[#595F6A]">
-                Position
-                <span className="text-red-500">*</span>
-            </label>
-
-            <Input
-                placeholder="Enter position"
-                className={
-                errors.positionName
-                    ? "border-red-500"
-                    : ""
-                }
-                value={form.positionName}
-                onChange={(e) => {
-                setForm({
-                    ...form,
-                    positionName: e.target.value,
-                });
-
-                setErrors({
-                    ...errors,
-                    positionName: "",
-                });
-                }}
-            />
-
-            {errors.positionName && (
-                <p className="text-xs text-red-500">
-                {errors.positionName}
-                </p>
-            )}
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-sm text-[#595F6A]">
-                Email
-                <span className="text-red-500">
-                  *
-                </span>
-              </label>
-
-              <Input
-                type="email"
-                placeholder="john@email.com"
-                className={
-                  errors.email
-                    ? "border-red-500"
-                    : ""
-                }
-                value={form.email}
-                onChange={(e) => {
-                  setForm({
-                    ...form,
-                    email: e.target.value,
-                  });
-
-                  setErrors({
-                    ...errors,
-                    email: "",
-                  });
-                }}
-              />
-
-              {errors.email && (
-                <p className="text-xs text-red-500">
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
             {/* Password */}
             <div className="col-span-2 space-y-3">
               <label className="text-sm text-[#595F6A]">
@@ -463,17 +544,32 @@ export default function ModalEditUser({
               </label>
 
               {!changePassword ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setChangePassword(true)}
-                  className="border-[#0076D2] text-[#0076D2] ml-5 hover:bg-[#DFF4F5] hover:text-[#0076D2] rounded-lg"
-                >
-                  Change Password
-                </Button>
+                <div className="flex items-start gap-3">
+                  <Input
+                    type="password"
+                    value="********"
+                    disabled
+                    className="w-60 bg-gray-100 cursor-not-allowed"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setChangePassword(true);
+                      setForm({
+                        ...form,
+                        password: "",
+                      });
+                    }}
+                    className="border-[#0076D2] text-[#0076D2] hover:bg-[#DFF4F5] hover:text-[#0076D2] rounded-lg whitespace-nowrap"
+                  >
+                    Change Password
+                  </Button>
+                </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-[1fr_1fr_auto] gap-4 items-start">
                     {/* New Password */}
                     <div>
                       <label className="text-xs text-[#595F6A] mb-1 block">
@@ -552,10 +648,12 @@ export default function ModalEditUser({
 
                     {/* Repeat Password */}
                     <div className="space-y-2">
-                      <label className="text-xs text-[#595F6A] mb-1 block">
-                        Repeat Password
-                        <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs text-[#595F6A] block">
+                          Repeat Password
+                          <span className="text-red-500">*</span>
+                        </label>
+                      </div>
 
                       <Input
                         type="password"
@@ -566,18 +664,35 @@ export default function ModalEditUser({
                         }
                       />
 
-                      {repeatPassword &&
-                        !passwordMatch && (
-                          <p className="text-xs text-red-500">
-                            Password does not match
-                          </p>
-                        )}
+                      {repeatPassword && !passwordMatch && (
+                        <p className="text-xs text-red-500">
+                          Password does not match
+                        </p>
+                      )}
 
                       {passwordMatch && (
                         <p className="text-xs text-green-600">
                           Password matched
                         </p>
                       )}
+                    </div>
+
+                    <div className="pt-6">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setChangePassword(false);
+                          setRepeatPassword("");
+                          setForm({
+                            ...form,
+                            password: "",
+                          });
+                        }}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Cancel change password"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
                     </div>
                   </div>
                 </>
