@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-// import { type Participant } from "../../../lib/data";
 import { Participant } from "../types"
 
 function calculateAge(dob: string): string {

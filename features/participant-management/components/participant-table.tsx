@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getAllParticipants, searchParticipants, deleteParticipant } from "../services";
-import { Participant } from "../types";
+import {Participant} from "../types";
 import { ParticipantDetailModal } from "./participant-detail-modal";
 
 const ITEMS_PER_PAGE = 6;
