@@ -44,21 +44,20 @@ export default function LoginForm() {
       const token = response.data.data.token;
       const userId = response.data.data.id;
       const userNameRes = response.data.data.username;
+      const name = response.data.data.name;
 
       localStorage.setItem("token", token);
       localStorage.setItem("user_id", userId);
       localStorage.setItem("role", userRole);
       localStorage.setItem("username", userNameRes);
+      localStorage.setItem("name", name);
+
       localStorage.setItem("is_logged_in", "true");
 
       setSuccess("Login berhasil! Membuka sistem...");
 
       setTimeout(() => {
-        if (userRole === "Pump Operator") {
-          router.push("/infusion");
-        } else {
-          router.push("/measurement");
-        }
+          router.push("/participant-management");
       }, 1500);
     } catch (err: any) {
       const elapsedTime = Date.now() - startTime;
