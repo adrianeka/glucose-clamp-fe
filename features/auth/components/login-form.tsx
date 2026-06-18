@@ -18,6 +18,13 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/participant-management");
+    }
+  }, [router]);
+
   // Auto-close alert error setelah 5 detik
   useEffect(() => {
     if (error) {
