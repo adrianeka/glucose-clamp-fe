@@ -281,7 +281,8 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
                   >
                     <option value={5}>5 Entries</option>
                     <option value={10}>10 Entries</option>
-                    <option value={20}>20 Entries</option>
+                    <option value={25}>25 Entries</option>
+                    <option value={50}>50 Entries</option>
                   </select>
                   <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
                     <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
