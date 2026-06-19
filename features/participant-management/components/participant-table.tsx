@@ -11,28 +11,15 @@ import {
   Trash2,
   Search,
   Plus,
-  CheckCircle2,
-  XCircle,
-  ChevronDown,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getAllParticipants, searchParticipants, deleteParticipant } from "../services";
-import {Participant} from "../types";
+import { Participant } from "../types";
 import { ParticipantDetailModal } from "./participant-detail-modal";
-
-const ITEMS_PER_PAGE = 6;
-const PAGE_SIZE_OPTIONS = [10, 25, 50];
-
-function IdBadge({ id }: { id: string }) {
-  return (
-    <div className="px-1.5 py-1 bg-[#F1F9FA] rounded-full border border-[#C4EAEE]">
-      <span className="text-[#0076D2] text-xs font-medium leading-[14px]">{id}</span>
-    </div>
-  );
-}
+// Mengimpor komponen TablePagination yang reusable
+import { TablePagination } from "@/components/ui/table-pagination";
 
 function MrBadge({ mr }: { mr: string }) {
   return (
@@ -97,89 +84,6 @@ function TableRow({
   );
 }
 
-function Pagination({
-  currentPage,
-  totalPages,
-  totalElements,
-  pageSize,
-  onPageChange,
-  onPageSizeChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  pageSize: number;
-  onPageChange: (p: number) => void;
-  onPageSizeChange: (size: number) => void;
-}) {
-  const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 relative">
-        <button
-          onClick={() => setSizeDropdownOpen((o) => !o)}
-          className="flex items-center gap-1.5 px-3 py-2 border border-[#E2E4E6] rounded-lg text-[#43474F] text-sm font-medium hover:bg-gray-50 transition-colors"
-        >
-          {pageSize} Entries
-          <ChevronDown size={14} className="text-[#707784]" />
-        </button>
-        {sizeDropdownOpen && (
-          <div className="absolute bottom-full mb-1 left-0 bg-white border border-[#E2E4E6] rounded-lg shadow-lg py-1 w-32 z-10">
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <button
-                key={size}
-                onClick={() => {
-                  onPageSizeChange(size);
-                  setSizeDropdownOpen(false);
-                }}
-                className="w-full text-left px-3 py-2 text-sm text-[#43474F] hover:bg-gray-50"
-              >
-                {size} Entries
-              </button>
-            ))}
-          </div>
-        )}
-        <span className="text-[#707784] text-sm">of {totalElements} entries</span>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-          className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
-        >
-          <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
-            <path d="M9 1L5 4L1 1" stroke="#707784" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        {pages.map((page) => (
-          <button
-            key={page}
-            onClick={() => onPageChange(page)}
-            className={cn(
-              "w-11 h-11 flex items-center justify-center rounded-lg text-lg font-medium leading-5 transition-colors",
-              page === currentPage ? "bg-[#DBF2F3] text-[#0076D2]" : "text-[#707784] hover:bg-gray-100"
-            )}
-          >
-            {page}
-          </button>
-        ))}
-        <button
-          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
-          className="w-11 h-11 flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-40 transition-colors"
-        >
-          <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
-            <path d="M1 4L5 1L9 4" stroke="#707784" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
 interface ParticipantTableProps {
   onAddParticipant: () => void;
   refreshKey?: number;
@@ -196,7 +100,6 @@ export function ParticipantTable({
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  // const [currentPage, setCurrentPage] = useState(1);
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -373,14 +276,17 @@ export function ParticipantTable({
           </div>
         </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalElements={totalElements}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={handlePageSizeChange}
-        />
+        {!loading && totalElements > 0 && (
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+            pageSizeOptions={[10, 25, 50]}
+          />
+        )}
       </div>
 
       <ParticipantDetailModal

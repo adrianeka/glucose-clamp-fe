@@ -47,5 +47,11 @@ export const phaseService = {
 
   async deletePhase(id: string | number): Promise<void> {
     await api.delete(`/phase-configuration/${id}`);
+  },
+
+  async updatePriorities(payload: { priorities: { id: number | string; priority: number }[] }) {
+    // Ganti Axios / Fetch sesuai helper HTTP library yang Anda pakai di project
+    const response = await api.put("/phase-configuration/priority", payload);
+    return response.data;
   }
 };
