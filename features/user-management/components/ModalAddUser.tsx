@@ -106,6 +106,9 @@ export default function ModalAddUser({
     if (!form.username.trim()) {
       newErrors.username = "Username is required";
       isValid = false;
+    } else if (form.username.includes(" ")) {
+      newErrors.username = "Username cannot contain spaces";
+      isValid = false;
     }
 
     if (!form.positionName) {
