@@ -68,7 +68,7 @@ export default function ModalEditUser({
     name: "",
     username: "",
     email: "",
-    status: "ACTIVE",
+    status: "",
     password: "",
   });
 
@@ -78,7 +78,7 @@ export default function ModalEditUser({
     name: "",
     username: "",
     email: "",
-    status: "Active",
+    status: "",
     password: "",
   });
 
@@ -132,6 +132,9 @@ export default function ModalEditUser({
 
     if (!form.username.trim()) {
       newErrors.username = "Username is required";
+      isValid = false;
+    } else if (form.username.includes(" ")) {
+      newErrors.username = "Username cannot contain spaces";
       isValid = false;
     }
 

@@ -5,7 +5,7 @@ import { useDebounce } from "use-debounce";
 
 import UserManagementHeader from "./UserManagementHeader";
 import UserManagementTable from "./UserManagementTable";
-import UserManagementPagination from "./UserManagementPagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 import ModalAddUser from "./ModalAddUser";
 import ModalEditUser from "./ModalEditUser";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useUsers } from "@/features/user-management/hooks/UserManagementHook";
 import { UserManagementResponse } from "../types/user";
 import { deleteUserById } from "@/features/user-management/services/UserManagementService";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
 
 export default function TableManagement() {
   const [search, setSearch] = useState("");
@@ -75,11 +76,13 @@ export default function TableManagement() {
   const users = data?.data?.content ?? [];
   const totalPages = data?.data?.totalPages ?? 0;
 
+
   if (isLoading) {
     return (
-      <div className="bg-white rounded-3xl p-6">
-        Loading users...
-      </div>
+      <TableSkeleton
+        rows={6}
+        columns={6}
+      />
     );
   }
 
@@ -94,35 +97,38 @@ export default function TableManagement() {
   return (
     <>
         <div className="bg-white rounded-3xl p-6 space-y-6">
-        <UserManagementHeader 
-            search={search}
-            setSearch={(value) => {
-                setSearch(value);
-                setPageNumber(1);
-            }} 
-            onAddUser={() => setIsAddUserModalOpen(true)}
-        />
+          <UserManagementHeader 
+              search={search}
+              setSearch={(value) => {
+                  setSearch(value);
+                  setPageNumber(1);
+              }} 
+              onAddUser={() => setIsAddUserModalOpen(true)}
+          />
 
-        <div className="border rounded-lg">
-            <UserManagementTable
-                users={users}
-                onEdit={handleEditUser}
-                onView={handleViewUser}
-                onDelete={openDeleteUser}
-            />
-        </div>
+          <div className="border rounded-lg">
+              <UserManagementTable
+                  users={users}
+                  onEdit={handleEditUser}
+                  onView={handleViewUser}
+                  onDelete={openDeleteUser}
+              />
+          </div>
 
-        <UserManagementPagination
-          currentPage={pageNumber}
-          totalPages={totalPages}
-          totalElements={totalElements}
-          pageSize={pageSize}
-          onPageChange={setPageNumber}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPageNumber(0);
-          }}
-        />
+          <TablePagination
+            currentPage={pageNumber + 1}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={(page) => {
+              setPageNumber(page - 1);
+            }}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPageNumber(0);
+            }}
+            disabled={isLoading}
+          />
         </div>
         <ModalAddUser
             open={isAddUserModalOpen}
