@@ -47,6 +47,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd ~/glucose-clamp-fe
+            git pull origin dev
             docker compose pull
             docker compose up -d
             docker image prune -f
