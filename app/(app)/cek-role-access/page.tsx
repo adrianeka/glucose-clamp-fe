@@ -208,7 +208,7 @@ export default function CheckRoleAccessPage() {
                           >
                             {/* Diubah menjadi top-16 agar posisinya pas di bawah header saat melayang */}
                             <span className="sticky top-16 block">
-                              {menu.menuId}. {formatScreenName(menu.menuName)}
+                              {formatScreenName(menu.menuName)}
                             </span>
                           </td>
                         )}
