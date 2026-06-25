@@ -33,10 +33,8 @@ export default function Navbar() {
     router.push("/login");
   };
 
-  console.log("name ::" , name);
-
   return (
-    <header className="h-20 px-12 flex items-center justify-between bg-[#FAFAFA] shadow-[0px_-1px_0px_#E2E4E6_inset] flex-shrink-0">
+    <header className="h-15 px-12 flex items-center justify-between bg-[#FAFAFA] shadow-[0px_-1px_0px_#E2E4E6_inset] flex-shrink-0">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Image

@@ -4,8 +4,8 @@ import {
   useQuery
 } from "@tanstack/react-query";
 
-import { addSamplingSchedule, getSamplingSchedules, deleteSamplingSchedule } from "../services/SamplingScheduleService";
-import { SamplingShcedule } from "../types/SamplingSchedule";
+import { addSamplingSchedule, getSamplingSchedules, deleteSamplingSchedule, bulkUpdateSamplingSchedules } from "../services/SamplingScheduleService";
+import { SamplingShcedule, BulkUpdateSamplingScheduleRequest } from "../types/SamplingSchedule";
 
 export const useAddSamplingSchedule =
   () => {
@@ -56,5 +56,21 @@ export const useSamplingSchedules = (
       getSamplingSchedules(protocolId!),
     enabled:
       enabled && !!protocolId,
+  });
+};
+
+export const useBulkUpdateSamplingSchedules = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (
+      payload: BulkUpdateSamplingScheduleRequest
+    ) => bulkUpdateSamplingSchedules(payload),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["sampling-schedules"],
+      });
+    },
   });
 };

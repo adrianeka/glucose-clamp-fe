@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { AddSamplingScheduleRequest, SamplingShcedule } from "../types/SamplingSchedule";
+import { AddSamplingScheduleRequest, SamplingShcedule, BulkUpdateSamplingScheduleRequest } from "../types/SamplingSchedule";
 
 export const addSamplingSchedule =
   async (
@@ -29,15 +29,33 @@ export const getSamplingSchedules = async (
   return response.data.data;
 };
 
-export const deleteSamplingSchedule = async (
-  samplingScheduleId : number
-) => {
-  const response = await api.delete(`/protocol-management/sampling-schedules/${samplingScheduleId}`,
+interface DeleteSamplingScheduleParams {
+  protocolId: number;
+  phaseCode: string;
+}
+
+export const deleteSamplingSchedule = async ({
+  protocolId,
+  phaseCode
+}: DeleteSamplingScheduleParams) => {
+  const response = await api.delete(`/protocol-management/sampling-schedules/${protocolId}/${phaseCode}`,
     {
       params: {
-        samplingScheduleId,
+        protocolId,
+        phaseCode
       },
     }
   );
   return response.data;
 }
+
+export const bulkUpdateSamplingSchedules = async (
+  data: BulkUpdateSamplingScheduleRequest
+) => {
+  const response = await api.put(
+    "/protocol-management/sampling-schedules/bulk",
+    data
+  );
+
+  return response.data;
+};
