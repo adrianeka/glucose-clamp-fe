@@ -11,6 +11,7 @@ import {
   editProtocol,
   deleteProtocol,
   updateProtocolStatus,
+  getProtocolsDropdown
 } from "../services/ProtocolSamplingService";
 
 export const useProtocols = ({
@@ -38,6 +39,14 @@ export const useProtocols = ({
   });
 };
 
+export const useProtocolsDropdown = () => {
+  return useQuery({
+    queryKey: ["protocols-dropdown"],
+    queryFn: getProtocolsDropdown,
+    // Opsional: tambahkan staleTime jika data dropdown jarang berubah
+    staleTime: 5 * 60 * 1000, 
+  });
+};
 export const useProtocolDetail = (
   protocolId: number
 ) => {

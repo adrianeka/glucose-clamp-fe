@@ -3,6 +3,7 @@ import api from "@/lib/axios";
 import {
   AddProtocolRequest,
   UpdateProtocolRequest,
+  ProtocolDropdown
 } from "../types/Protocol";
 
 export const getProtocols = async ({
@@ -93,4 +94,12 @@ export const updateProtocolStatus =
     );
 
     return response.data;
+  };
+
+  export const getProtocolsDropdown = async (): Promise<ProtocolDropdown[]> => {
+    const response = await api.get(
+      "/protocol-management/protocols/dropdown"
+    );
+    // Mengambil field 'data' sesuai struktur ApiDataResponseBuilder
+    return response.data.data;
   };

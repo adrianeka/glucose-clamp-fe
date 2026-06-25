@@ -37,3 +37,9 @@ export interface Pagination {
   pageSize: number;
   keyword?: string;
 }
+
+export interface ProtocolDropdown {
+  protocolId: number;
+  protocolCode: string;
+  protocolName: string;
+}

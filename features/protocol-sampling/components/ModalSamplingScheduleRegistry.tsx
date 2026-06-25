@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,10 +22,11 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { Protocol } from "../types/Protocol";
 import {
-  useAddSamplingSchedule, useDeleteSamplingSchedule
+  useAddSamplingSchedule, useDeleteSamplingSchedule, useBulkUpdateSamplingSchedules
 } from "@/features/protocol-sampling/hooks/SamplingScheduleHook";
 import { useToast } from "@/components/ui/toast";
 import ModalLoadingSkeleton from "@/components/ui/modal-loading-skeleton";
+import { usePhaseConfigs } from "@/features/phase-management/hooks";
 
 interface ModalSamplingScheduleProps {
   open: boolean;
@@ -48,16 +49,15 @@ export default function ModalSamplingSchedule({
     useState("");
     const [labelPrefix, setLabelPrefix] =
     useState("");
-    const isFormValid =
-        phaseConfig.trim() !== "" &&
-        phaseDuration !== "" &&
-        interval.trim() !== "" &&
-        labelPrefix.trim() !== "";
 
+    const [showDiscardWarning, setShowDiscardWarning] = useState(false);
     const [showDeletePhase, setShowDeletePhase] = useState(false);
     const [selectedPhaseId, setSelectedPhaseId] = useState("");
     const addSamplingScheduleMutation = useAddSamplingSchedule();
     const deleteSamplingScheduleMutation = useDeleteSamplingSchedule();
+    const bulkUpdateSamplingSchedulesMutation = useBulkUpdateSamplingSchedules();
+    const [localSchedules, setLocalSchedules] = useState<any[]>([]);
+    const [isDirty, setIsDirty] = useState(false);
     const {
       data: schedulesData,
       isLoading,
@@ -65,34 +65,61 @@ export default function ModalSamplingSchedule({
       protocol?.protocol_id,
       open
     );
+    const {
+      data: phaseConfigs = [],
+      isLoading: phaseConfigLoading,
+    } = usePhaseConfigs();
+
+    const selectedPhase = useMemo(
+      () =>
+        phaseConfigs.find(
+          (phase) => phase.code.toLowerCase() === phaseConfig.toLowerCase()
+        ),
+      [phaseConfig, phaseConfigs]
+    );
     const { showToast } = useToast();
+
+    const phaseDurationNumber = Number(phaseDuration);
+    const intervalNumber = Number(interval);
+
+    const isPhaseDurationValid = phaseDurationNumber >= intervalNumber;
+
+    const isFormValid =
+      phaseConfig.trim() !== "" &&
+      phaseDuration !== "" &&
+      interval.trim() !== "" &&
+      labelPrefix.trim() !== "" &&
+      isPhaseDurationValid;
+
+    // Mendapatkan list object phase yang unik untuk ditampilkan di dropdown delete
+    const uniquePhases = useMemo(() => {
+      if (!schedulesData) return [];
+      
+      const seen = new Set();
+      return schedulesData.filter((item) => {
+        const duplicate = seen.has(item.phase_code);
+        seen.add(item.phase_code);
+        return !duplicate; // Hanya ambil yang belum pernah muncul
+      });
+    }, [schedulesData]);
 
     const handleAddSchedule =
         async () => {
             if (!protocol) return;
+            const isBloodDraw = phaseConfig.toLowerCase() === "base" || phaseConfig.toLowerCase().startsWith("ph");
 
             try {
             await addSamplingScheduleMutation.mutateAsync(
                 {
-                protocol_id:
-                    protocol.protocol_id,
-
-                phase_code:
-                    phaseConfig,
-
-                phase_name:
-                    phaseConfig,
-
-                phase_type:
-                    phaseConfig,
-
-                time_interval:
-                    Number(interval),
-
-                blood_raw: false,
-
+                protocol_id:protocol.protocol_id,
+                phase_code: selectedPhase?.code ?? "",
+                phase_name: selectedPhase?.name ?? "",
+                phase_type: selectedPhase?.type ?? "",
+                phase_duration: Number(phaseDuration),
+                time_interval:Number(interval),
+                label_prefix : labelPrefix,
+                blood_raw: isBloodDraw,
                 insulin_inject: false,
-
                 pk_sample_collection:
                     false,
                 }
@@ -111,12 +138,13 @@ export default function ModalSamplingSchedule({
 
 
     const handleDeleteSchedule = async () => {
-      if (!selectedPhaseId) return;
+      if (!selectedPhaseId || !protocol) return;
 
       try {
-        await deleteSamplingScheduleMutation.mutateAsync(
-          Number(selectedPhaseId)
-        );
+        await deleteSamplingScheduleMutation.mutateAsync({
+          protocolId: protocol.protocol_id,
+          phaseCode: selectedPhaseId,
+        });
 
         setSelectedPhaseId("");
         setShowDeletePhase(false);
@@ -135,12 +163,77 @@ export default function ModalSamplingSchedule({
       }
     };
 
+    const handleCheckboxLocalChange = (id: number, field: string, value: boolean) => {
+        setLocalSchedules(prev => 
+            prev.map(item => 
+                item.sampling_schedule_id === id ? { ...item, [field]: value } : item
+            )
+        );
+        setIsDirty(true);
+    };
+
+    const handleSaveAll = async () => {
+      try {
+        const payload = {
+          items: localSchedules.map((s) => ({
+            id: s.sampling_schedule_id,
+            bloodRaw: s.blood_raw,
+            insulinInject: s.insulin_inject,
+            pkSampleCollection:
+              s.pk_sample_collection,
+          })),
+        };
+
+        await bulkUpdateSamplingSchedulesMutation.mutateAsync(
+          payload
+        );
+
+        showToast(
+          "Sampling schedule updated successfully"
+        );
+
+        setIsDirty(false);
+      } catch (error: any) {
+        showToast(
+          error?.message || "Failed to update",
+          "error"
+        );
+      }
+    };
+
+    const handleRequestClose = (open: boolean) => {
+        // Jika mencoba menutup (open === false) dan ada perubahan (isDirty)
+        if (!open && isDirty) {
+          setShowDiscardWarning(true);
+        } else {
+          // Jika tidak ada perubahan atau sedang mencoba membuka, jalankan fungsi normal
+          onOpenChange(open);
+        }
+      };
+
+      const handleConfirmDiscard = () => {
+        setIsDirty(false);
+        setShowDiscardWarning(false);
+        onOpenChange(false); // Tutup modal utama
+      };
+
+    // Tambahkan logic ini di bawah deklarasi state
+    useEffect(() => {
+      if (
+        selectedPhase?.code?.toLowerCase() === "base"
+      ) {
+        setLabelPrefix("T");
+      }
+    }, [selectedPhase]);
+
+    useEffect(() => {
+      if (schedulesData) {
+        setLocalSchedules(schedulesData);
+      }
+    }, [schedulesData]);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={handleRequestClose}>
       <DialogContent
         className="!w-[1450px] !max-w-[1450px] p-0 overflow-hidden bg-[#FAFAFA]"
     >
@@ -185,58 +278,48 @@ export default function ModalSamplingSchedule({
                       </SelectTrigger>
 
                       <SelectContent>
-                        <SelectItem value="prep1">
-                          PREP 1 -
-                          Preparation
-                        </SelectItem>
-
-                        <SelectItem value="prep2">
-                          PREP 2 -
-                          Preparation
-                        </SelectItem>
-
-                        <SelectItem value="base">
-                          BASE -
-                          Pre-Insulin
-                        </SelectItem>
-
-                        <SelectItem value="ph1">
-                          PH1 -
-                          Post-Insulin
-                        </SelectItem>
-
-                        <SelectItem value="ph2">
-                          PH2 -
-                          Post-Insulin
-                        </SelectItem>
-
-                        <SelectItem value="ph3">
-                          PH3 -
-                          Post-Insulin
-                        </SelectItem>
-
-                        <SelectItem value="final">
-                          FINAL -
-                          Finalization
-                        </SelectItem>
+                        {phaseConfigs.map((phase) => (
+                          <SelectItem
+                            key={phase.id}
+                            value={phase.code.toLowerCase()}
+                          >
+                            {phase.code} - {phase.type}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
                     <label className="text-xs text-[#707784]">
-                      Phase Duration
-                      (minutes) *
+                      Phase Duration (minutes) *
                     </label>
 
                     <input
-                        type="number"
-                        value={phaseDuration}
-                        onChange={(e) =>
-                            setPhaseDuration(e.target.value)
+                      type="number"
+                      value={phaseDuration}
+                      onChange={(e) =>
+                        setPhaseDuration(e.target.value)
+                      }
+                      className={`
+                        w-full h-10 rounded-md px-3 bg-[#FAFAFA]
+                        ${
+                          phaseDuration &&
+                          interval &&
+                          Number(phaseDuration) < Number(interval)
+                            ? "border border-red-500"
+                            : "border border-[#E2E4E6]"
                         }
-                        className="w-full h-10 rounded-md border border-[#E2E4E6] px-3 bg-[#FAFAFA]"
+                      `}
                     />
+
+                    {phaseDuration &&
+                      interval &&
+                      Number(phaseDuration) < Number(interval) && (
+                        <p className="text-xs text-red-500 mt-1">
+                            Phase Duration cannot be less than Interval.
+                        </p>
+                    )}
                   </div>
 
                   <div>
@@ -266,6 +349,14 @@ export default function ModalSamplingSchedule({
                           15
                         </SelectItem>
 
+                        <SelectItem value="20">
+                          20
+                        </SelectItem>
+
+                        <SelectItem value="25">
+                          25
+                        </SelectItem>
+
                         <SelectItem value="30">
                           30
                         </SelectItem>
@@ -287,13 +378,22 @@ export default function ModalSamplingSchedule({
                       </SelectTrigger>
 
                       <SelectContent>
-                        <SelectItem value="gd">
-                          GD
-                        </SelectItem>
+                        {/* Jika phaseConfig adalah 'base', hanya tampilkan 'T' */}
+                        {phaseConfig === "base" ? (
+                          <SelectItem value="T">
+                            T
+                          </SelectItem>
+                        ) : (
+                          <>
+                            <SelectItem value="GD">
+                              GD
+                            </SelectItem>
 
-                        <SelectItem value="t">
-                          T
-                        </SelectItem>
+                            <SelectItem value="T">
+                              T
+                            </SelectItem>
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -339,18 +439,31 @@ export default function ModalSamplingSchedule({
 
                     {/* DELETE BUTTON + POPUP */}
                     <div className="relative flex-shrink-0">
-                        <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                            setShowDeletePhase(
-                            !showDeletePhase
-                            )
-                        }
-                        >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Phase
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setShowDeletePhase(!showDeletePhase)
+                            }
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Phase
+                          </Button>
+
+                          <Button
+                            disabled={
+                              !isDirty ||
+                              bulkUpdateSamplingSchedulesMutation.isPending
+                            }
+                            onClick={handleSaveAll}
+                            className="bg-[#0076D2]"
+                          >
+                            {bulkUpdateSamplingSchedulesMutation.isPending
+                              ? "Saving..."
+                              : "Save"}
+                          </Button>
+                        </div>
 
                         {showDeletePhase && (
                         <div
@@ -391,16 +504,15 @@ export default function ModalSamplingSchedule({
                                             sideOffset={4}
                                         >
                                             <div className="max-h-[220px] overflow-y-auto">
-                                                {schedulesData?.map(
-                                                  (schedule) => (
-                                                    <SelectItem
-                                                      key={schedule.sampling_schedule_id}
-                                                      value={String(schedule.sampling_schedule_id)}
-                                                    >
-                                                      {`${schedule.phase_code}-${schedule.sampling_schedule_id}`}
-                                                    </SelectItem>
-                                                  )
-                                                )}
+                                                {uniquePhases.map((phase) => (
+                                                  <SelectItem
+                                                    key={phase.phase_code}
+                                                    value={String(phase.phase_code)}
+                                                  >
+                                                    {/* Sekarang phase adalah object, jadi .phase_code bisa diakses */}
+                                                    {phase.phase_code}
+                                                  </SelectItem>
+                                                ))}
                                             </div>
                                         </SelectContent>
                                     </Select>
@@ -465,8 +577,8 @@ export default function ModalSamplingSchedule({
                       </thead>
 
                       <tbody className="bg-[#FAFAFA] ">
-                      {schedulesData?.length ? (
-                        schedulesData.map(
+                      {localSchedules?.length ? (
+                        localSchedules.map(
                           (schedule) => (
                               <tr
                               key={schedule.sampling_schedule_id}
@@ -480,41 +592,74 @@ export default function ModalSamplingSchedule({
                               "
                               >
                               <td className="px-4 py-3 text-[#212121]">
-                                  {schedule.phase_code}
+                                  {schedule.phase_name}
                               </td>
 
-                              <td className="px-4 py-3 text-[#212121]">
-                                  {schedule.sampling_schedule_id}
+                              <td className="px-4 py-3">
+                                <span
+                                  className="
+                                    inline-flex
+                                    items-center
+                                    px-2.5
+                                    py-0.5
+                                    rounded-full
+                                    text-xs
+                                    font-medium
+                                    bg-[#E8F7EF]
+                                    text-[#3BA272]
+                                    border
+                                    border-[#BFE6D0]
+                                  "
+                                >
+                                  {schedule.schedule_code}
+                                </span>
                               </td>
 
                               <td className="px-4 py-3 text-[#212121]">
                                   {schedule.relative_minute}
                               </td>
-
-                              <td className="px-4 py-3 text-center">
-                                  <input
+                            <td className="px-4 py-3 text-center">
+                                <input
                                   type="checkbox"
                                   checked={schedule.blood_raw}
-                                  readOnly
-                                  />
-                              </td>
+                                  onChange={(e) =>
+                                    handleCheckboxLocalChange(
+                                      schedule.sampling_schedule_id,
+                                      "blood_raw",
+                                      e.target.checked
+                                    )
+                                  }
+                                />
+                            </td>
 
                               <td className="px-4 py-3 text-center">
-                                  <input
+                                <input
                                   type="checkbox"
                                   checked={schedule.insulin_inject}
-                                  readOnly
-                                  />
-                              </td>
+                                  onChange={(e) =>
+                                    handleCheckboxLocalChange(
+                                      schedule.sampling_schedule_id,
+                                      "insulin_inject",
+                                      e.target.checked
+                                    )
+                                  }
+                                />
+                            </td>
 
                               <td className="px-4 py-3 text-center">
-                                  <input
-                                  type="checkbox"
-                                  checked={schedule.pk_sample_collection}
-                                  readOnly
+                                <input
+                                    type="checkbox"
+                                    checked={schedule.pk_sample_collection}
+                                    onChange={(e) =>
+                                      handleCheckboxLocalChange(
+                                        schedule.sampling_schedule_id,
+                                        "pk_sample_collection",
+                                        e.target.checked
+                                      )
+                                    }
                                   />
-                              </td>
-                              </tr>
+                            </td>
+                          </tr>
                           )
                           )
                       ) : (
@@ -541,6 +686,55 @@ export default function ModalSamplingSchedule({
           </div>
         </div>
       </DialogContent>
+      {/* MODAL PERINGATAN DISCARD CHANGES */}
+      <Dialog open={showDiscardWarning} onOpenChange={setShowDiscardWarning}>
+        <DialogContent className="max-w-[400px] p-8 text-center rounded-2xl">
+          <DialogTitle className="sr-only">
+            Waarning pop up change
+          </DialogTitle>
+          <div className="flex flex-col items-center justify-center">
+            {/* Icon Warning Kuning */}
+            <div className="mb-4">
+              <div className="rounded-full bg-amber-50 p-3">
+                <svg
+                  className="w-12 h-12 text-amber-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Unsaved Changes</h2>
+            <p className="text-sm text-gray-500 mb-8">
+              You have unsaved changes. If you leave now, your changes will be lost.
+            </p>
+
+            <div className="flex w-full gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 bg-cyan-50 border-none text-cyan-700 hover:bg-cyan-100 font-semibold h-12"
+                onClick={() => setShowDiscardWarning(false)}
+              >
+                Continue Editing
+              </Button>
+              <Button
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold h-12"
+                onClick={handleConfirmDiscard}
+              >
+                Discard Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
