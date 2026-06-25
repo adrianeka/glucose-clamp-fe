@@ -39,16 +39,6 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: "Global Configuration",
-    href: "/global-configuration",
-    icon: (active) => (
-      <Settings
-        size={20}
-        className={active ? "text-[#0076D2]" : "text-[#707784]"}
-      />
-    ),
-  },
-  {
     label: "Config Phase",
     icon: (active) => (
       <Wrench
@@ -88,6 +78,16 @@ const navItems: NavItem[] = [
       />
     ),
   },
+  {
+    label: "Global Configuration",
+    href: "/global-configuration",
+    icon: (active) => (
+      <Settings
+        size={20}
+        className={active ? "text-[#0076D2]" : "text-[#707784]"}
+      />
+    ),
+  }
 ];
 
 export default function Sidebar() {
