@@ -69,7 +69,7 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit }: 
           </DialogTitle>
           <DialogDescription className="text-sm text-slate-500 font-medium">
             {activity 
-              ? `${activity.phaseCode} | ${activity.activityType} ${formatTime(activity.time)}`
+              ? `S${activity.sessionId}-${activity.scheduleCode} | ${activity.activityType} ${formatTime(activity.time)}`
               : "S-101 | BLOOD_DRAW 08:30"}
           </DialogDescription>
         </DialogHeader>
