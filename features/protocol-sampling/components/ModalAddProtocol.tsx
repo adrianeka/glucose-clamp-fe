@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AddProtocolRequest } from "../types/Protocol";
 
 interface ModalAddProtocolProps {
   open: boolean;
@@ -35,6 +34,9 @@ export default function ModalAddProtocol({
     glucose_target_unit: "",
     glucose_target_min_extreme: "",
     glucose_target_max_extreme: "",
+    glucose_drop_trigger_percentage: "",      // State baru
+    initial_glucose_infusion_rate: "",        // State baru
+    initial_glucose_infusion_rate_unit: "",   // State baru
   });
 
   const isFormReady =
@@ -48,7 +50,10 @@ export default function ModalAddProtocol({
     form.glucose_target_max &&
     form.glucose_target_unit.trim() &&
     form.glucose_target_min_extreme &&
-    form.glucose_target_max_extreme;
+    form.glucose_target_max_extreme &&
+    form.glucose_drop_trigger_percentage &&    
+    form.initial_glucose_infusion_rate &&      
+    form.initial_glucose_infusion_rate_unit.trim(); 
 
   const handleSubmit = () => {
     onSubmit({
@@ -59,9 +64,12 @@ export default function ModalAddProtocol({
       glucose_target_min: Number(form.glucose_target_min),
       glucose_target_max: Number(form.glucose_target_max),
       glucose_target_unit: form.glucose_target_unit,
-      glucose_target_min_extreme: form.glucose_target_min_extreme,
-      glucose_target_max_extreme: form.glucose_target_max_extreme,
+      glucose_target_min_extreme: Number(form.glucose_target_min_extreme),
+      glucose_target_max_extreme: Number(form.glucose_target_max_extreme),
       duration_hours: Number(form.duration_hours),
+      glucose_drop_trigger_percentage: Number(form.glucose_drop_trigger_percentage),
+      initial_glucose_infusion_rate: Number(form.initial_glucose_infusion_rate),    
+      initial_glucose_infusion_rate_unit: form.initial_glucose_infusion_rate_unit,  
       version: Number(form.version),
       sampling_schedules: [],
     });
@@ -265,7 +273,7 @@ export default function ModalAddProtocol({
 
             <div>
               <label className="text-sm font-medium">
-                Target Glucose Max Extreme<span className="text-red-500">*</span>
+                Target Glucose Max Extreme <span className="text-red-500">*</span>
               </label>
 
               <Input
@@ -280,6 +288,65 @@ export default function ModalAddProtocol({
               />
             </div>
           </div>
+
+          <div className="border-t" />
+
+          {/* Row 4 (Infusion Parameters - Tambahan Baru) */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium">
+                Glucose Drop Trigger (%) <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                type="number"
+                placeholder="e.g. 10"
+                value={form.glucose_drop_trigger_percentage}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    glucose_drop_trigger_percentage: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">
+                Initial Infusion Rate <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                type="number"
+                placeholder="e.g. 2"
+                value={form.initial_glucose_infusion_rate}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    initial_glucose_infusion_rate: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">
+                Infusion Rate Unit <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                placeholder="e.g. mg/kgBB/min"
+                value={form.initial_glucose_infusion_rate_unit}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    initial_glucose_infusion_rate_unit: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+
         </div>
 
         <div className="flex justify-end gap-3 border-t pt-4">

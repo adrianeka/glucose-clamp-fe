@@ -10,8 +10,11 @@ export interface Protocol {
   glucose_target_min_extreme: number;
   glucose_target_max_extreme: number;
   duration_hours: number;
+  glucose_drop_trigger_percentage: number;    
+  initial_glucose_infusion_rate: number;      
+  initial_glucose_infusion_rate_unit: string; 
   version: number;
-  sampling_schedules:String;
+  sampling_schedules: string;
 }
 
 export interface AddProtocolRequest {
@@ -25,6 +28,9 @@ export interface AddProtocolRequest {
   glucose_target_min_extreme: number;
   glucose_target_max_extreme: number;
   duration_hours: number;
+  glucose_drop_trigger_percentage: number;      // Field baru
+  initial_glucose_infusion_rate: number;        // Field baru
+  initial_glucose_infusion_rate_unit: string;   // Field baru
   version: number;
   sampling_schedules: [];
 }
