@@ -3,20 +3,44 @@
 import { useState } from "react";
 import { BloodSampleDialog } from "@/features/session-running/components/modalStepActivity/ModalBloodDraw";
 import { ConfirmBloodDrawDialog } from "@/features/session-running/components/modalStepActivity/ConfirmBloodDrawDialog";
+import { ModalInsulinInjection } from "@/features/session-running/components/modalStepActivity/ModalInsulinInjection"; // Import modal suntik baru
+import { ConfirmInsulinDialog } from "@/features/session-running/components/modalStepActivity/ConfirmInsulinDialog"; // Import modal konfirmasi suntik baru
+
+// Import Tambahan untuk Flow 3: Preparation Data
+import { PreparationDialog } from "@/features/session-running/components/modalStepActivity/ModalPreparationData";
+import { ConfirmPreparationDialog } from "@/features/session-running/components/modalStepActivity/ConfirmPreparationDialog";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ActivityDetail, activityService } from "@/features/session-running/services/ActivityService";
 
 export default function TestPage() {
+  // ==========================================
+  // STATE MANAGEMENT MODAL
+  // ==========================================
+
+  // State untuk modal Blood Draw (Glucose & Insulin Check)
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
+  // State untuk modal Insulin Injection (Suntik)
+  const [isOpenInjection, setIsOpenInjection] = useState(false);
+  const [isConfirmInjectionOpen, setIsConfirmInjectionOpen] = useState(false);
+
+  // State baru untuk modal Preparation Data (Pemeriksaan Fisik Awal)
+  const [isOpenPrep, setIsOpenPrep] = useState(false);
+  const [isConfirmPrepOpen, setIsConfirmPrepOpen] = useState(false);
+
+  // ==========================================
+  // STATE DATA & STATUS
+  // ==========================================
   const [activityIdInput, setActivityIdInput] = useState("");
   const [activeActivity, setActiveActivity] = useState<ActivityDetail | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // State sementara untuk menampung inputan form sebelum dikonfirmasi secara final
+  // State penampung data sementara (digunakan bergantian untuk transisi modal)
   const [tempFormData, setTempFormData] = useState<any>(null);
+  const [tempPrepData, setTempPrepData] = useState<any>(null); // Khusus data fisik preparation
 
   const handleFetchAndOpen = async () => {
     const id = parseInt(activityIdInput);
@@ -28,15 +52,21 @@ export default function TestPage() {
     setLoading(true);
     try {
       const data = await activityService.getById(id);
-      
-      if (data.activityType !== "BLOOD_DRAW" && data.activityType !== "INSULIN_CHECK") {
-        alert(`Aktivitas ke-${id} adalah "${data.activityType}". Hanya jenis BLOOD_DRAW atau INSULIN_CHECK yang bisa menginput sampel.`);
-        setLoading(false);
-        return;
-      }
-
       setActiveActivity(data);
-      setIsOpen(true);
+
+      // --- PERCABANGAN LOGIKA TAMPILAN AWAL MODAL ---
+      if (data.activityType === "BLOOD_DRAW" || data.activityType === "INSULIN_CHECK") {
+        setIsOpen(true); // Buka modal input lab utama
+      } 
+      else if (data.activityType === "INSULIN_INJECTION") {
+        setIsOpenInjection(true); // Langsung buka modal konfirmasi suntik insulin
+      } 
+      else if (data.activityType === "PREPARATION_CHECK") {
+        setIsOpenPrep(true); // Buka modal input data tanda vital & antropometri
+      }
+      else {
+        alert(`Aktivitas ke-${id} adalah "${data.activityType}".`);
+      }
     } catch (error) {
       console.error(error);
       alert("Aktivitas tidak ditemukan atau terjadi kesalahan koneksi.");
@@ -45,17 +75,47 @@ export default function TestPage() {
     }
   };
 
-  // Tahap 1: Ketika tombol "Submit" di ModalBloodDraw ditekan
-  const handleFormSubmit = (formData: any) => {
-    setTempFormData(formData); // Simpan ke state sementara
-    setIsOpen(false);          // Tutup modal input utama Anda
-    setIsConfirmOpen(true);    // Buka modal konfirmasi kedua
+  // ==========================================
+  // EVENT HANDLER TRANSISI MODAL
+  // ==========================================
+
+  // Tahap 1 untuk BLOOD_DRAW & INSULIN_CHECK
+  const handleBloodDrawSubmit = (formData: any) => {
+    setTempFormData(formData);
+    setIsOpen(false);
+    setIsConfirmOpen(true);
   };
 
-  // Tahap Opsional: Tombol "Cancel" di modal konfirmasi ditekan (kembali ke modal input dengan data utuh)
-  const handleBackToInput = () => {
-    setIsConfirmOpen(false);   // Tutup modal konfirmasi
-    setIsOpen(true);           // Nyalakan kembali modal input
+  // Tahap 1 untuk INSULIN_INJECTION (Tindakan)
+  const handleInjectionSubmit = (formData: any) => {
+    setTempFormData(formData); // Simpan data dosis
+    setIsOpenInjection(false); // Tutup modal input dosis
+    setIsConfirmInjectionOpen(true); // Buka modal konfirmasi tindakan
+  };
+
+  // Tahap 1 untuk PREPARATION_CHECK (Data Fisik)
+  const handlePrepSubmit = (formData: any) => {
+    setTempPrepData(formData); // Simpan data tanda vital & anamnesis ke state sementara
+    setIsOpenPrep(false);      // Tutup modal input
+    setIsConfirmPrepOpen(true); // Buka modal konfirmasi akhir
+  };
+
+  // Tombol Cancel/Back dari modal konfirmasi lab
+  const handleBackToBloodDraw = () => {
+    setIsConfirmOpen(false);
+    setIsOpen(true);
+  };
+
+  // Tombol Cancel/Back dari modal konfirmasi suntik
+  const handleBackToInjection = () => {
+    setIsConfirmInjectionOpen(false);
+    setIsOpenInjection(true);
+  };
+
+  // Tombol Cancel/Back dari modal konfirmasi pemeriksaan fisik
+  const handleBackToPrep = () => {
+    setIsConfirmPrepOpen(false);
+    setIsOpenPrep(true);
   };
 
   return (
@@ -67,7 +127,7 @@ export default function TestPage() {
         <div className="flex gap-2">
           <Input 
             type="number" 
-            placeholder="Contoh: 3 atau 4" 
+            placeholder="Contoh: 1, 3, atau 8" 
             value={activityIdInput}
             onChange={(e) => setActivityIdInput(e.target.value)}
             className="bg-white"
@@ -80,24 +140,66 @@ export default function TestPage() {
             {loading ? "Memuat..." : "Buka Modal"}
           </Button>
         </div>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          * ID 1 (PREPARATION_CHECK) memunculkan form pemeriksaan awal, ID 3 (BLOOD_DRAW)/ID 4 (INSULIN_CHECK) memunculkan form input lab, sedangkan ID 8 (INSULIN_INJECTION) memunculkan form suntik insulin.
+        </p>
       </div>
 
-      {/* Modal 1: Input Data (Sekarang mendukung properti defaultValues) */}
+      {/* ================================================= */}
+      {/* FLOW 1: BLOOD DRAW / INSULIN CHECK (LAB DATA)    */}
+      {/* ================================================= */}
       <BloodSampleDialog 
         isOpen={isOpen}
         onOpenChange={setIsOpen}
         activity={activeActivity}
-        onSubmit={handleFormSubmit}
-        defaultValues={tempFormData} // Mengirim kembali data ketikan terakhir agar tetap utuh saat kembali
+        onSubmit={handleBloodDrawSubmit}
+        defaultValues={tempFormData}
       />
 
-      {/* Modal 2: Konfirmasi Data Hasil Input (Ditambahkan properti onCancel) */}
       <ConfirmBloodDrawDialog 
         isOpen={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
         activity={activeActivity}
         data={tempFormData}
-        onCancel={handleBackToInput} // Arahkan kembali ke modal input saat di-cancel
+        onCancel={handleBackToBloodDraw}
+      />
+
+      {/* ================================================= */}
+      {/* FLOW 2: INSULIN INJECTION (TINDAKAN SUNTIK)      */}
+      {/* ================================================= */}
+      <ModalInsulinInjection 
+        isOpen={isOpenInjection}
+        onOpenChange={setIsOpenInjection}
+        activity={activeActivity}
+        onSubmit={handleInjectionSubmit}
+        defaultValues={tempFormData}
+      />
+
+      <ConfirmInsulinDialog 
+        isOpen={isConfirmInjectionOpen}
+        onOpenChange={setIsConfirmInjectionOpen}
+        activity={activeActivity}
+        data={tempFormData}
+        onCancel={handleBackToInjection}
+      />
+
+      {/* ================================================= */}
+      {/* FLOW 3: PREPARATION CHECK (TANDA VITAL & ANAMNESIS) */}
+      {/* ================================================= */}
+      <PreparationDialog 
+        isOpen={isOpenPrep}
+        onOpenChange={setIsOpenPrep}
+        activity={activeActivity}
+        onSubmit={handlePrepSubmit}
+        defaultValues={tempPrepData}
+      />
+
+      <ConfirmPreparationDialog 
+        isOpen={isConfirmPrepOpen}
+        onOpenChange={setIsConfirmPrepOpen}
+        activity={activeActivity}
+        data={tempPrepData}
+        onCancel={handleBackToPrep}
       />
     </div>
   );

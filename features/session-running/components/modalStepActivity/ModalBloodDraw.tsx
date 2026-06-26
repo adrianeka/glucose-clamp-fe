@@ -97,6 +97,7 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit, de
               placeholder="e.g. PKC-1"
               value={form.sampleCode} 
               onChange={(e) => handleChange("sampleCode", e.target.value)} 
+              disabled
             />
           </div>
           
