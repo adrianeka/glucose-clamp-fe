@@ -7,6 +7,7 @@ export interface CreateActivityRequest {
   startTime: string;
   activityType: string;
   activityDesc: string;
+  activityStatus: string
 }
 
 export const createActivity = async (
@@ -30,5 +31,19 @@ export const updateActivity = async (
   payload: CreateActivityRequest
 ) => {
   const response = await api.put(`/activities/${activityId}`, payload);
+  return response.data;
+};
+
+export const updateActivityStatus = async (
+  activityId: number,
+  activityStatus: string
+) => {
+  const response = await api.patch(
+    `/activities/${activityId}/activity-status`,
+    {
+      activityStatus,
+    }
+  );
+
   return response.data;
 };

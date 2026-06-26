@@ -19,43 +19,54 @@ interface TimerDialogProps {
 }
 
 export function TimerDialog({ isOpen, onOpenChange, duration, activityName, onConfirm }: TimerDialogProps) {
-  const [timeLeft, setTimeLeft] = useState(duration);
-
-  useEffect(() => {
-    if (isOpen) setTimeLeft(duration);
-  }, [isOpen, duration]);
-
-  useEffect(() => {
-    if (!isOpen || timeLeft <= 0) return;
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [isOpen, timeLeft]);
-
+  // Jika kita ingin popup selalu sinkron dengan banner, 
+  // gunakan 'duration' langsung dari props daripada membuat state internal baru.
+  
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const s = Math.max(0, seconds); // Cegah angka negatif
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] p-10">
+      <DialogContent className="w-[400px]  max-w-[400px] sm:max-w-[400px] p-10">
         <div className="flex flex-col items-center text-center">
-          <span className="text-7xl font-bold text-slate-700 mb-6 tracking-tighter">
-            {formatTime(timeLeft)}
+          <span className={`text-[54px] font-bold mb-6 tracking-tighter ${duration <= 10 ? 'text-red-500' : 'text-slate-700'}`}>
+            {formatTime(duration)}
           </span>
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold uppercase text-center">{activityName}</DialogTitle>
+            <DialogTitle className="text-xl font-bold uppercase text-center">
+              UPCOMING: {activityName}
+            </DialogTitle>
             <DialogDescription className="text-slate-500 pt-2 text-center">
-              Time remaining until the next activity. You can confirm now or wait until the timer reaches zero.
+              The current activity is ending soon. The next activity will start in {duration} seconds.
             </DialogDescription>
           </DialogHeader>
-          <Button 
-            onClick={onConfirm} 
-            className="w-full mt-8 bg-[#0070C0] hover:bg-blue-700 h-12 text-lg font-bold"
-          >
-            OK ({timeLeft}s)
-          </Button>
+          <button
+            onClick={onConfirm}
+            style={{
+                width: '100%',
+                marginTop: '32px',
+                backgroundColor: '#0070C0',
+                color: 'white',
+                height: '30px',
+                fontSize: '14px',
+                fontWeight: '700',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#005a9c')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#0070C0')}
+            >
+                OK ({duration}s)
+            </button>
         </div>
       </DialogContent>
     </Dialog>

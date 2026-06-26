@@ -6,7 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export function PreparationDialog({ isOpen, onOpenChange, onSubmit }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onSubmit: () => void }) {
+export default function PreparationDialog({ 
+  isOpen, 
+  onOpenChange, 
+  onSubmit, 
+  activityData  // Tambahkan prop ini
+}: { 
+  isOpen: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  onSubmit: () => void;
+  activityData?: any 
+}) {
   const fields = [
     { id: "systolic", label: "Systolic (mmHg)", placeholder: "120" },
     { id: "diastolic", label: "Diastolic (mmHg)", placeholder: "80" },
@@ -22,11 +32,32 @@ export function PreparationDialog({ isOpen, onOpenChange, onSubmit }: { isOpen: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Input Preparation Data</DialogTitle>
-          <p className="text-sm text-muted-foreground">S-101 | PREPARATION_CHECK 07:00</p>
-        </DialogHeader>
+        <DialogContent
+            style={{
+            maxWidth: "48rem", // sama dengan max-w-3xl
+            maxHeight: "90vh",
+            overflowY: "auto",
+            }}
+        >
+            <DialogHeader>
+            <DialogTitle
+                style={{
+                fontSize: "1.5rem", // 24px
+                fontWeight: 700,
+                }}
+            >
+                Input Preparation Data
+            </DialogTitle>
+
+            <p
+                style={{
+                fontSize: "0.875rem", // 14px
+                color: "#6b7280",
+                }}
+            >
+                S-101 | PREPARATION_CHECK 07:00
+            </p>
+            </DialogHeader>
         
         <div className="grid grid-cols-2 gap-4 py-4">
           {fields.map((field) => (

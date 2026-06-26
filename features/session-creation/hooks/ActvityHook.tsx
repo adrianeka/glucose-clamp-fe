@@ -3,7 +3,8 @@ import {
   createActivity,
   CreateActivityRequest,
   deleteActivity,
-  updateActivity
+  updateActivity,
+  updateActivityStatus
 } from "../services/ActivityService";
 
 export const useCreateActivity = (
@@ -57,6 +58,26 @@ export const useUpdateActivity = (sessionId: number) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["activities", sessionId] });
       queryClient.invalidateQueries({ queryKey: ["session-detail", sessionId] });
+    },
+  });
+};
+
+export const useUpdateActivityStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      activityId,
+      activityStatus,
+    }: {
+      activityId: number;
+      activityStatus: string;
+    }) => updateActivityStatus(activityId, activityStatus),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["session-detail"],
+      });
     },
   });
 };

@@ -25,11 +25,12 @@ export default function SessionCreationPage() {
   const { mutate: createSession, isPending: isCreating } = useCreateSession();
 
   const handleViewActivities = (session: Session) => {
-    router.push(`/session-creation/${session.sessionId}/session-activities`);
+    router.push(
+      `/session-creation/${session.sessionId}`
+    );
   };
 
   const handleAddSessionSubmit = (formData: any) => {
-    // Memanggil mutation dari hook
     createSession(formData, {
       onSuccess: () => {
         setOpenAddModal(false);
