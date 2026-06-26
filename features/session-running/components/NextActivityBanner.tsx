@@ -78,7 +78,7 @@ export default function NextActivityBanner({
     });
     handleConfirmNext(); 
 
-  }, [initialized, remainingTime, nextActivity?.time]);
+  }, [initialized, remainingTime, nextActivity?.time, sessionData]);
 
   const handleConfirmNext = () => {
     setIsDialogOpen(false);
@@ -93,6 +93,57 @@ export default function NextActivityBanner({
     });
   };
 
+  const latestInfusion = [...(sessionData?.infusion ?? [])]
+    .sort(
+      (a, b) =>
+        new Date(b.time).getTime() -
+        new Date(a.time).getTime()
+    )[0];
+
+  const glucoseFromLab =
+    sessionData?.activities
+      ?.flatMap((activity: any) =>
+        (activity.labResults ?? []).map((lab: any) => ({
+          value: lab.value,
+          time: activity.time,
+          parameter: lab.parameter_name
+        }))
+      )
+      .filter(
+        (lab: any) =>
+          lab.parameter?.toLowerCase() === "glucose"
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.time).getTime() -
+          new Date(a.time).getTime()
+      )[0];
+
+  const glucoseFromInfusion =
+    [...(sessionData?.infusion ?? [])]
+      .filter(i => i.glucoseValue != null)
+      .sort(
+        (a, b) =>
+          new Date(b.time).getTime() -
+          new Date(a.time).getTime()
+      )[0];
+
+  const latestGlucose = [glucoseFromLab, glucoseFromInfusion]
+    .filter(Boolean)
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.time).getTime() -
+        new Date(a.time).getTime()
+    )[0];
+
+  const latestRate =
+  [...(sessionData?.infusion ?? [])]
+    .filter(i => i.flowRateMlHr != null)
+    .sort(
+      (a, b) =>
+        new Date(b.time).getTime() -
+        new Date(a.time).getTime()
+    )[0];
   return (
     <>
       <div
@@ -161,14 +212,32 @@ export default function NextActivityBanner({
             <div style={{ fontSize: "12px", color: "#707784", fontWeight: 500, textTransform: "uppercase", marginBottom: "4px" }}>
               Glucose
             </div>
-            <div style={{ fontSize: "24px", fontWeight: 700, color: "#212121" }}>95.0</div>
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#212121"
+              }}
+            >
+              {latestGlucose?.value ??
+              latestGlucose?.glucoseValue ??
+              "--"}
+            </div>
           </div>
 
           <div style={{ textAlign: "left", borderLeft: "1px solid #E2E4E6", paddingLeft: "24px", paddingRight: "50px" }}>
             <div style={{ fontSize: "12px", color: "#707784", fontWeight: 500, textTransform: "uppercase", marginBottom: "4px" }}>
               Infusion Rate
             </div>
-            <div style={{ fontSize: "24px", fontWeight: 700, color: "#212121" }}>0</div>
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#212121"
+              }}
+            >
+              {latestRate?.flowRateMlHr ?? "--"}
+            </div>
           </div>
         </div>
       </div>

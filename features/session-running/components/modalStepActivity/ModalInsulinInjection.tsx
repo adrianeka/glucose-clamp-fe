@@ -5,13 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function InsulinDialog({ isOpen, onOpenChange, onSubmit, activityData  }: { isOpen: boolean; onOpenChange: (open: boolean) => void; onSubmit: () => void; activityData?: any;  }) {
+export default function InsulinDialog({ isOpen, onOpenChange, onSubmit, activityData}: { isOpen: boolean; onOpenChange: (open: boolean) => void; onSubmit: (formData : any) => void; activityData:any }) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent
+        style={{
+          maxWidth: "36rem",
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Input Activity Data</DialogTitle>
-          <p className="text-sm text-muted-foreground">S-101 | INSULIN_INJECTION 08:30</p>
+          <p className="text-sm text-muted-foreground">{activityData?.scheduleCode} | {activityData?.activityType}</p>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -54,8 +58,30 @@ export default function InsulinDialog({ isOpen, onOpenChange, onSubmit, activity
         </div>
 
         <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="text-[#0070C0] bg-blue-50 border-none px-8">Cancel</Button>
-          <Button onClick={onSubmit} className="bg-[#0070C0] hover:bg-blue-700 px-8">Submit</Button>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            style={{
+              color: "#0070C0",
+              backgroundColor: "#EFF6FF", // blue-50
+              border: "none",
+              paddingLeft: "2rem",
+              paddingRight: "2rem",
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={onSubmit}
+            style={{
+              backgroundColor: "#0070C0",
+              paddingLeft: "2rem",
+              paddingRight: "2rem",
+            }}
+          >
+            Submit
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

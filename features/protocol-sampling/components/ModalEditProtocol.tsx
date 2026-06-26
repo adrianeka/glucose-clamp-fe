@@ -36,6 +36,9 @@ export default function ModalEditProtocol({
     glucose_target_unit: "",
     glucose_target_min_extreme: "",
     glucose_target_max_extreme: "",
+    glucose_drop_trigger_percentage: "",      // State baru
+    initial_glucose_infusion_rate: "",        // State baru
+    initial_glucose_infusion_rate_unit: "",   // State baru
   });
 
   useEffect(() => {
@@ -57,6 +60,14 @@ export default function ModalEditProtocol({
       glucose_target_max_extreme: String(
         data.glucose_target_max_extreme ?? ""
       ),
+      glucose_drop_trigger_percentage: String(
+        data.glucose_drop_trigger_percentage ?? ""
+      ),
+      initial_glucose_infusion_rate: String(
+        data.initial_glucose_infusion_rate ?? ""
+      ),
+      initial_glucose_infusion_rate_unit:
+        data.initial_glucose_infusion_rate_unit ?? "",
     });
   }, [data]);
 
@@ -71,30 +82,27 @@ export default function ModalEditProtocol({
     form.glucose_target_max &&
     form.glucose_target_unit.trim() &&
     form.glucose_target_min_extreme &&
-    form.glucose_target_max_extreme;
+    form.glucose_target_max_extreme &&
+    form.glucose_drop_trigger_percentage &&   
+    form.initial_glucose_infusion_rate &&     
+    form.initial_glucose_infusion_rate_unit.trim();
 
   const handleSubmit = () => {
-    onSubmit(data.protocol_id,{
+    onSubmit(data.protocol_id, {
       protocol_code: form.protocol_code,
       protocol_name: form.protocol_name,
       version: Number(form.version),
       duration_hours: Number(form.duration_hours),
       insulin_dose_rule: form.insulin_dose_rule,
       insulin_dose_unit: form.insulin_dose_unit,
-      glucose_target_min: Number(
-        form.glucose_target_min
-      ),
-      glucose_target_max: Number(
-        form.glucose_target_max
-      ),
-      glucose_target_unit:
-        form.glucose_target_unit,
-      glucose_target_min_extreme: Number(
-        form.glucose_target_min_extreme
-      ),
-      glucose_target_max_extreme: Number(
-        form.glucose_target_max_extreme
-      ),
+      glucose_target_min: Number(form.glucose_target_min),
+      glucose_target_max: Number(form.glucose_target_max),
+      glucose_target_unit: form.glucose_target_unit,
+      glucose_target_min_extreme: Number(form.glucose_target_min_extreme),
+      glucose_target_max_extreme: Number(form.glucose_target_max_extreme),
+      glucose_drop_trigger_percentage: Number(form.glucose_drop_trigger_percentage),
+      initial_glucose_infusion_rate: Number(form.initial_glucose_infusion_rate),
+      initial_glucose_infusion_rate_unit: form.initial_glucose_infusion_rate_unit,
     });
   };
 
@@ -197,8 +205,7 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    insulin_dose_rule:
-                      e.target.value,
+                    insulin_dose_rule: e.target.value,
                   })
                 }
               />
@@ -215,8 +222,7 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    insulin_dose_unit:
-                      e.target.value,
+                    insulin_dose_unit: e.target.value,
                   })
                 }
               />
@@ -237,8 +243,7 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    glucose_target_min:
-                      e.target.value,
+                    glucose_target_min: e.target.value,
                   })
                 }
               />
@@ -256,8 +261,7 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    glucose_target_max:
-                      e.target.value,
+                    glucose_target_max: e.target.value,
                   })
                 }
               />
@@ -274,8 +278,7 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    glucose_target_unit:
-                      e.target.value,
+                    glucose_target_unit: e.target.value,
                   })
                 }
               />
@@ -296,8 +299,7 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    glucose_target_min_extreme:
-                      e.target.value,
+                    glucose_target_min_extreme: e.target.value,
                   })
                 }
               />
@@ -315,13 +317,74 @@ export default function ModalEditProtocol({
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    glucose_target_max_extreme:
-                      e.target.value,
+                    glucose_target_max_extreme: e.target.value,
                   })
                 }
               />
             </div>
           </div>
+
+          <div className="border-t" />
+
+          {/* Row 4 (Infusion Parameters - Tambahan Baru) */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium">
+                Glucose Drop Trigger (%)
+                <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                type="number"
+                placeholder="e.g. 10"
+                value={form.glucose_drop_trigger_percentage}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    glucose_drop_trigger_percentage: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">
+                Initial Infusion Rate
+                <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                type="number"
+                placeholder="e.g. 2"
+                value={form.initial_glucose_infusion_rate}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    initial_glucose_infusion_rate: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">
+                Infusion Rate Unit
+                <span className="text-red-500">*</span>
+              </label>
+
+              <Input
+                placeholder="e.g. mg/kg/min"
+                value={form.initial_glucose_infusion_rate_unit}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    initial_glucose_infusion_rate_unit: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+
         </div>
 
         <div className="flex justify-end gap-3 border-t pt-4">

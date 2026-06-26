@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Area,
   XAxis,
@@ -9,6 +10,8 @@ import {
   AreaChart,
   ResponsiveContainer,
 } from "recharts";
+
+import dayjs from "dayjs";
 
 const dummyPKData = [
   { time: "07:00", value: 85 },
@@ -29,14 +32,108 @@ function CustomTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg bg-[#4B5563] px-3 py-2 text-xs text-white shadow-lg">
+    <div
+        style={{
+          backgroundColor: "#707784",
+          borderRadius: "8px",
+          padding: "8px 12px",
+          color: "#FFFFFF",
+          fontSize: "12px",
+          opacity: 1,
+          boxShadow:
+            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+        }}
+      >
       <p className="font-semibold">{label}</p>
       <p>Value: {payload[0]?.value}</p>
     </div>
   );
 }
 
-export default function SubCharts() {
+interface Props {
+  protocolId: number;
+  sessionData: any;
+}
+
+export default function SubCharts({
+  protocolId,
+  sessionData
+}: Props) {
+  const EMPTY_CHART = [
+    { time: "00:00", value: 0 },
+    { time: "24:00", value: 0 },
+  ];
+
+  const gdDataPK = useMemo(() => {
+      if (!sessionData?.activities) return EMPTY_CHART;
+  
+      return sessionData.activities
+          .flatMap((activity: any) =>
+              (activity.labResults || [])
+                  .filter(
+                      (lab: any) =>
+                          lab.parameter_name === "PK"
+                  )
+                  .map((lab: any) => ({
+                      time: dayjs(activity.time).format("HH:mm"),
+                      value: Number(lab.value),
+                      activityId: activity.activityId,
+                      scheduleCode: activity.scheduleCode
+                  }))
+          )
+          .sort(
+            (
+              a: {
+                time: string;
+                value: number;
+                activityId: number;
+                scheduleCode: string;
+              },
+              b: {
+                time: string;
+                value: number;
+                activityId: number;
+                scheduleCode: string;
+              }
+            ) => a.time.localeCompare(b.time)
+          );
+    }, [sessionData]);
+
+
+    const gdDataPeptide = useMemo(() => {
+      if (!sessionData?.activities) return EMPTY_CHART;
+  
+      return sessionData.activities
+          .flatMap((activity: any) =>
+              (activity.labResults || [])
+                  .filter(
+                      (lab: any) =>
+                          lab.parameter_name === "C-Peptide"
+                  )
+                  .map((lab: any) => ({
+                      time: dayjs(activity.time).format("HH:mm"),
+                      value: Number(lab.value),
+                      activityId: activity.activityId,
+                      scheduleCode: activity.scheduleCode
+                  }))
+          )
+          .sort(
+            (
+              a: {
+                time: string;
+                value: number;
+                activityId: number;
+                scheduleCode: string;
+              },
+              b: {
+                time: string;
+                value: number;
+                activityId: number;
+                scheduleCode: string;
+              }
+            ) => a.time.localeCompare(b.time)
+          );
+    }, [sessionData]);
   return (
     <div className="grid grid-cols-2 xl:grid-cols-2 gap-2 min-w-0">
       {/* PK Chart */}
@@ -51,7 +148,7 @@ export default function SubCharts() {
           debounce={100}
         >
           <AreaChart
-            data={dummyPKData}
+            data={gdDataPK}
             margin={{
               top: 10,
               right: 10,
@@ -107,7 +204,7 @@ export default function SubCharts() {
           debounce={100}
         >
           <AreaChart
-            data={dummyPKData}
+            data={gdDataPeptide}
             margin={{
               top: 10,
               right: 10,

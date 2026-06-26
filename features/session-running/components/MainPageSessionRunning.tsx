@@ -1,89 +1,117 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+
+// Components
 import RunningHeader from "@/features/session-running/components/RunningHeader";
 import NextActivityBanner from "@/features/session-running/components/NextActivityBanner";
 import MainGDChart from "@/features/session-running/components/MainGDChart";
 import SubCharts from "@/features/session-running/components/SubCharts";
 import InfusionMonitoringSidebar from "@/features/session-running/components/InfusionMonitoringSidebar";
-import { useGlobalConfig } from "@/features/global-configuration-uzy/hooks/globalConfigurationHook";
-import { useState, useEffect, useMemo } from "react";
 import ModalViewAllActivity from "@/features/session-running/components/ModalViewAllActivity";
 import InsulinDialog from "@/features/session-running/components/modalStepActivity/ModalInsulinInjection";
-import PreparationDialog from "@/features/session-running/components/modalStepActivity/ModalPreparationData";
-import { GlucoseDialog } from "@/features/session-running/components/modalStepActivity/ModalBloofDraw";
+import { PreparationDialog } from "./modalStepActivity/ModalPreparationData";
+import { BloodSampleDialog } from "./modalStepActivity/ModalBloodDraw"; // Pastikan nama import benar
 import ModalOtherActivity from "./modalStepActivity/ModalOtherActivity";
 import ModalSessionCompleted from "./modalStepActivity/ModalCompleted";
-import { useNextProgressActivity } from "@/features/session-creation/hooks/SessionCreationHook";
-import { useRouter } from "next/navigation";
+import { ConfirmBloodDrawDialog } from "@/features/session-running/components/modalStepActivity/ConfirmBloodDrawDialog";
+import { ConfirmInsulinDialog } from "@/features/session-running/components/modalStepActivity/ConfirmInsulinDialog"; // Import modal konfirmasi suntik baru
+import { ConfirmPreparationDialog } from "@/features/session-running/components/modalStepActivity/ConfirmPreparationDialog";
 
-interface SessionRunningPageProps{
+// Hooks
+import { useGlobalConfig } from "@/features/global-configuration-uzy/hooks/globalConfigurationHook";
+import { useNextProgressActivity } from "@/features/session-creation/hooks/SessionCreationHook";
+import { useSubmitPreparationData } from "@/features/session-running/hooks/usePreparationMutation"; // Import hook baru
+
+interface SessionRunningPageProps {
     sessionId: number;
     sessionData: any;
 }
 
-export default function SessionRunningPage({sessionId, sessionData}:SessionRunningPageProps) {
+export default function SessionRunningPage({ sessionId, sessionData }: SessionRunningPageProps) {
+    const [prepStep, setPrepStep] = useState<"Close" | "FORM" | "CONFIRM" | "DONE">("FORM");
+    const [bloodStep, setBloodStep] = useState<"Close" | "FORM" | "CONFIRM" | "DONE">("FORM");
+
+    const [tempPrepData, setTempPrepData] = useState(null);
+    const [tempBloodData, setTempBloodData] = useState(null);
+    const [tempInjectionData, setTempInjectionData] = useState<any>(null);
+
+    const [confirmBloodOpen, setConfirmBloodOpen] = useState(false);
+    const [confirmPrepOpen, setConfirmPrepOpen] = useState(false);
+    const [confirmInjectionOpen, setConfirmInjectionOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCompleteOpen, setIsModalCompleteOpen] = useState(false);
-    const { mutate: nextProgress } = useNextProgressActivity();
     const router = useRouter();
-    
-    // State untuk melacak aktivitas yang sudah disubmit agar tidak double popup
+    const userId = Number(localStorage.getItem("user_id"));
     const [processedIds, setProcessedIds] = useState<number[]>([]);
     const { data: configData, isLoading: isConfigLoading } = useGlobalConfig(1);
+    // Inisialisasi Mutation Hook
+    const { mutate: submitPreparation, isPending: isSubmittingPrep } = useSubmitPreparationData(sessionId);
 
-    // LOGIKA ANTREAN: Filter aktivitas IN_PROGRESS yang membutuhkan input data
+    // LOGIKA ANTREAN
     const dialogQueue = useMemo(() => {
         if (!sessionData?.activities) return [];
         return sessionData.activities.filter((act: any) => 
             act.activityStatus === "IN_PROGRESS" && 
-            ["PREPARATION_CHECK", "INSULIN_CHECK", "BLOOD_DRAW", "OTHER", "INSULIN_INJECTION", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(act.activityType) &&
+            ["PREPARATION_CHECK","STABILIZATION", "INSULIN_CHECK", "BLOOD_DRAW", "OTHER", "INSULIN_INJECTION", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(act.activityType) &&
             !processedIds.includes(act.activityId)
         );
     }, [sessionData?.activities, processedIds]);
 
-    // Ambil aktivitas pertama dari antrean
     const currentActiveDialog = dialogQueue[0];
 
     const hasMoreDialogs = useMemo(() => {
         if (!currentActiveDialog) return false;
+        return dialogQueue.length > 1;
+    }, [dialogQueue]);
 
-        return sessionData.activities.some(
-            (act: any) =>
-            act.activityStatus === "IN_PROGRESS" &&
-            !processedIds.includes(act.activityId) &&
-            act.activityId !== currentActiveDialog.activityId &&
-            [
-                "PREPARATION_CHECK",
-                "INSULIN_CHECK",
-                "BLOOD_DRAW",
-                "OTHER",
-                "INSULIN_INJECTION",
-                "FINAL_OBSERVATION",
-                "DEXTROSE_STOP_CHECK",
-            ].includes(act.activityType)
-        );
-    }, [sessionData.activities, processedIds, currentActiveDialog]);
-
-    const handleFormSubmit = () => {
-        if (!currentActiveDialog) return;
-
-        // tandai selesai lokal
-        setProcessedIds((prev) => [...prev, currentActiveDialog.activityId]);
-
-        // masih ada dialog berikutnya
-        if (hasMoreDialogs) {
-            return;
-        }
-
-        // ini memang dialog terakhir
-        // setIsModalCompleteOpen(true);
+    // Handler Umum setelah API Sukses
+    const handleSuccessStep = (activityId: number) => {
+        setProcessedIds((prev) => [...prev, activityId]);
     };
+    const handlePreparationDraft = (data: any) => {
+        setTempPrepData(data);
+        setPrepStep("CONFIRM");
+    };
+
+    const handlePrepCancel = () => {
+        setPrepStep("Close");
+    };
+    const handleBackToFormPrep = () => {
+        setPrepStep("FORM"); 
+    };
+    const handlePrepSuccess = () => {
+        setPrepStep("DONE");
+        handleSuccessStep(currentActiveDialog.activityId);
+    };
+    const handleBloodDraft = (data: any) => {
+        setTempBloodData(data);
+        setBloodStep("CONFIRM");
+    };
+
+    const handleBloodCancel = () => {
+        setBloodStep("Close");
+    };
+
+    const handleBackToFormBlood = () => {
+        setBloodStep("FORM"); 
+    };
+
+    const handleBloodSuccess = () => {
+        setBloodStep("DONE");
+        handleSuccessStep(currentActiveDialog.activityId);
+    };
+    
+
+    useEffect(() => {
+        setPrepStep("FORM");
+        setBloodStep("FORM");
+    }, [currentActiveDialog?.activityId]);
 
     return (
         <div className="min-h-screen bg-[#F8F9FB] text-[#333]">
             <div className="max-w-[1600px] mx-auto">
-                
                 <RunningHeader 
                     sessionData={sessionData}
                     onViewAll={() => setIsModalOpen(true)}
@@ -96,57 +124,83 @@ export default function SessionRunningPage({sessionId, sessionData}:SessionRunni
 
                     <div className="mt-6 flex gap-2">
                         <div className="flex-1 min-w-0">
-                            <MainGDChart />
+                            <MainGDChart protocolId={sessionData.protocolId} sessionData={sessionData}/>
                             <div className="mt-2">
-                                <SubCharts />
+                                <SubCharts protocolId={sessionData.protocolId} sessionData={sessionData}/>
                             </div>
                         </div>
 
-                        <div style={{
-                            width: "450px",
-                            flexShrink: 0,
-                            borderRadius: "8px",
-                            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                        }}>
-                            <InfusionMonitoringSidebar />
+                        <div style={{ width: "450px", flexShrink: 0, borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                            <InfusionMonitoringSidebar sessionId={sessionData?.sessionId}/>
                         </div>
                     </div>
                 </div>
             </div>
+
             <ModalViewAllActivity 
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 sessionData={sessionData}
             />
 
-            {/* Dialog akan muncul secara otomatis dan berurutan sesuai antrean di bawah ini */}
+            {/* --- DIALOG RENDERER --- */}
             
-            {/* Dialog Input Data Phase: PREPARATION_CHECK */}
-            <PreparationDialog 
-                isOpen={currentActiveDialog?.activityType === "PREPARATION_CHECK"}
-                onOpenChange={(open) => !open && handleFormSubmit()}
-                onSubmit={handleFormSubmit}
-                activityData={currentActiveDialog} 
+            <PreparationDialog
+                isOpen={
+                    currentActiveDialog?.activityType === "PREPARATION_CHECK" &&
+                    prepStep === "FORM"
+                }
+                activity={currentActiveDialog}
+                defaultValues={tempPrepData}
+                onSubmit={handlePreparationDraft}
+                onCancel={handlePrepCancel}
             />
 
-            {/* Dialog Input Data Phase: INSULIN_CHECK */}
-            <InsulinDialog 
-                isOpen={currentActiveDialog?.activityType === "INSULIN_CHECK"}
-                onOpenChange={(open) => !open && handleFormSubmit()}
-                onSubmit={handleFormSubmit}
-                activityData={currentActiveDialog}
+            <ConfirmPreparationDialog
+                sessionId={sessionData?.sessionId}
+                isOpen={
+                    currentActiveDialog?.activityType === "PREPARATION_CHECK" &&
+                    prepStep === "CONFIRM"
+                }
+                activity={currentActiveDialog}
+                data={tempPrepData}
+                onCancel={handleBackToFormPrep}
+                onSuccess={handlePrepSuccess}
             />
 
-            <GlucoseDialog 
-                isOpen={currentActiveDialog?.activityType === "BLOOD_DRAW"}
-                onOpenChange={(open) => !open && handleFormSubmit()}
-                onSubmit={handleFormSubmit}
-                activityData={currentActiveDialog}
+            <BloodSampleDialog
+                isOpen={
+                    (
+                        currentActiveDialog?.activityType === "BLOOD_DRAW" ||
+                        currentActiveDialog?.activityType === "INSULIN_CHECK"
+                    ) &&
+                    bloodStep === "FORM"
+                }
+                activity={currentActiveDialog}
+                defaultValues={tempBloodData}
+                onSubmit={handleBloodDraft}
+                onCancel={handleBloodCancel}
             />
 
+            <ConfirmBloodDrawDialog
+                isOpen={
+                    (
+                        currentActiveDialog?.activityType === "BLOOD_DRAW" ||
+                        currentActiveDialog?.activityType === "INSULIN_CHECK"
+                    ) &&
+                    bloodStep === "CONFIRM"
+                }
+                activity={currentActiveDialog}
+                data={tempBloodData}
+                onCancel={handleBackToFormBlood}
+                onSuccess={handleBloodSuccess}
+            />
+
+            {/* 4. Other Activities */}
             <ModalOtherActivity
-                isOpen={currentActiveDialog?.activityType === "OTHER" ||  currentActiveDialog?.activityType ==="FINAL_OBSERVATION" || currentActiveDialog?.activityType ==="DEXTROSE_STOP_CHECK"}
-                onOpenChange={(open) => !open && handleFormSubmit()}
+                isOpen={["STABILIZATION","INSULIN_INJECTION","OTHER", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(currentActiveDialog?.activityType)}
+                onOpenChange={(open) => !open && handleSuccessStep(currentActiveDialog.activityId)}
+                sessionId={sessionId}
                 activityData={currentActiveDialog}
             />
 

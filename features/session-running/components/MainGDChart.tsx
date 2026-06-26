@@ -1,7 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
 import {
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -9,173 +9,340 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Line,
+  Area,
   ReferenceLine,
 } from "recharts";
 
-// Data Dummy
-const dummyGDData = [
-  { time: "07:00", glucose: 86, rate: 1.0 },
-  { time: "07:30", glucose: 81, rate: 0.8 },
-  { time: "08:00", glucose: 105, rate: 3.8 },
-  { time: "08:30", glucose: 92, rate: 2.2 },
-  { time: "09:00", glucose: 88, rate: 1.8 },
-  { time: "09:30", glucose: 79, rate: 1.5 },
-  { time: "10:00", glucose: 84, rate: 2.1 },
-];
+import { useProtocolDetail } from "@/features/protocol-sampling/hooks/ProtocolSamplingHook";
+import dayjs from "dayjs";
 
-// Perbaikan Typing pada Tooltip
+interface Props {
+  protocolId: number;
+  sessionData: any;
+}
+
 interface CustomTooltipProps {
   active?: boolean;
   payload?: any[];
   label?: string;
 }
 
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-  if (!active || !payload || payload.length === 0) return null;
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: CustomTooltipProps) => {
+  if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg bg-[#4B5563] px-3 py-2 text-xs text-white shadow-lg border-none">
-      <p className="font-semibold mb-1 border-b border-gray-500 pb-1">{label}</p>
-      {payload.map((entry, index) => (
-        <p key={index} style={{ color: entry.color }}>
-          {entry.name}: <span className="font-bold text-white">{entry.value}</span> 
-          {entry.name === "Glucose" ? " mg/dL" : ""}
-        </p>
-      ))}
+    <div
+      style={{
+        backgroundColor: "#707784",
+        borderRadius: "8px",
+        padding: "8px 12px",
+        color: "#FFFFFF",
+        fontSize: "12px",
+        opacity: 1,
+        boxShadow:
+          "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+      }}
+    >
+      <p className="mb-1 border-b border-gray-500 pb-1 font-semibold">
+        {label}
+      </p>
+
+      <p>
+        Glucose :
+        <span className="ml-1 font-bold">
+          {payload[0].value}
+        </span>{" "}
+        mg/dL
+      </p>
     </div>
   );
 };
 
-export default function MainGDChart() {
+export default function MainGDChart({
+  protocolId,
+  sessionData
+}: Props) {
+  const { data } = useProtocolDetail(protocolId);
+
+  const protocol = data?.data;
+
+  const targetMin = protocol?.glucose_target_min ?? 80;
+  const targetMax = protocol?.glucose_target_max ?? 100;
+
+  const extremeMin =
+    protocol?.glucose_target_min_extreme ?? 70;
+
+  const extremeMax =
+    protocol?.glucose_target_max_extreme ?? 120;
+
+  const gdData = useMemo(() => {
+    if (!sessionData?.activities?.length) {
+      return [
+        { time: "00:00", glucose: 0 },
+        { time: "24:00", glucose: 0 },
+      ];
+    }
+
+    const glucoseData = sessionData.activities
+        .flatMap((activity: any) =>
+            (activity.labResults || [])
+                .filter(
+                    (lab: any) =>
+                        lab.parameter_name === "Glucose"
+                )
+                .map((lab: any) => ({
+                    time: dayjs(activity.time).format("HH:mm"),
+                    glucose: Number(lab.value),
+                    activityId: activity.activityId,
+                    scheduleCode: activity.scheduleCode
+                }))
+        )
+        .sort(
+          (
+            a: {
+              time: string;
+              glucose: number;
+              activityId: number;
+              scheduleCode: string;
+            },
+            b: {
+              time: string;
+              glucose: number;
+              activityId: number;
+              scheduleCode: string;
+            }
+          ) => a.time.localeCompare(b.time)
+        );
+        if (!glucoseData.length) {
+          return [
+            { time: "00:00", glucose: 0 },
+            { time: "24:00", glucose: 0 },
+          ];
+        }
+      return glucoseData;
+  }, [sessionData]);
+
   return (
-    <div className="bg-white rounded-xl border border-[#E2E4E6] p-5 shadow-sm w-full min-w-0 overflow-hidden">
-      <h3 className="mb-5 text-sm font-bold text-[#595F6A] uppercase tracking-wide">
-        GD Chart (Glucose & Rate)
+    <div className="w-full rounded-xl border border-[#E2E4E6] bg-white p-5 shadow-sm">
+
+      <h3 className="mb-5 text-sm font-bold uppercase tracking-wide text-[#595F6A]">
+        GD Chart (Glucose)
       </h3>
 
-      <div className="w-full min-w-0">
-        <ResponsiveContainer
-            width="100%"
-            height={250}
-            debounce={100}
+      <ResponsiveContainer width="100%" height={260}>
+        <ComposedChart
+          data={gdData}
+          margin={{
+            top: 10,
+            right: 0,
+            left: 10,
+            bottom: 10,
+          }}
         >
-            <ComposedChart
-                data={dummyGDData}
-                margin={{
-                    top: 10,
-                    right: 0,
-                    left: 10,
-                    bottom: 10,
-                }}
+
+          <defs>
+            <linearGradient
+              id="glucoseGradient"
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
             >
-            <CartesianGrid stroke="#E8EDF2" strokeDasharray="4 4" vertical={false} />
+              <stop
+                offset="0%"
+                stopColor="#86EFAC"
+                stopOpacity={0.8}
+              />
 
-            <XAxis
-              dataKey="time"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "#707784", fontSize: 11 }}
-              dy={10}
-            />
+              <stop
+                offset="50%"
+                stopColor="#86EFAC"
+                stopOpacity={0.5}
+              />
 
-            {/* Sumbu Y Kiri untuk Glucose */}
-            <YAxis
-              yAxisId="left"
-              domain={[60, 120]}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "#707784", fontSize: 11 }}
-            />
+              <stop
+                offset="80%"
+                stopColor="#86EFAC"
+                stopOpacity={0.2}
+              />
 
-            {/* Sumbu Y Kanan untuk Rate */}
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              domain={[0, 5]}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: "#707784", fontSize: 11 }}
-            />
+              <stop
+                offset="100%"
+                stopColor="#FFFFFF"
+                stopOpacity={0}
+              />
+            </linearGradient>
+          </defs>
 
-            <Tooltip content={<CustomTooltip />} />
+          <CartesianGrid
+            stroke="#E8EDF2"
+            strokeDasharray="4 4"
+            vertical={false}
+          />
 
-            {/* Garis Target Min & Max */}
-            <ReferenceLine yAxisId="left" y={90} stroke="#FF7F7F" strokeDasharray="3 3" />
-            <ReferenceLine yAxisId="left" y={102} stroke="#FF7F7F" strokeDasharray="3 3" />
+          <XAxis
+            dataKey="time"
+            tickLine={false}
+            axisLine={false}
+            tick={{
+              fill: "#707784",
+              fontSize: 11,
+            }}
+          />
 
-            {/* Area untuk Infusion Rate */}
-            <Area
-              yAxisId="right"
-              type="monotone"
-              dataKey="rate"
-              name="Infusion Rate"
-              stroke="#7BC67E"
-              fill="#7BC67E"
-              fillOpacity={0.1}
-              strokeWidth={2}
-            />
+          <YAxis
+            domain={[60, 130]}
+            tickLine={false}
+            axisLine={false}
+            tick={{
+              fill: "#707784",
+              fontSize: 11,
+            }}
+          />
 
-            {/* Line untuk Glucose */}
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="glucose"
-              name="Glucose"
-              stroke="#8B8AEF"
-              strokeWidth={3}
-              dot={{ r: 4, fill: "#FFFFFF", stroke: "#8B8AEF", strokeWidth: 2 }}
-              activeDot={{ r: 6 }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+          <Tooltip content={<CustomTooltip />} />
+
+          {/* Target */}
+          <ReferenceLine
+            y={targetMin}
+            stroke="#F59E0B"
+            strokeDasharray="5 5"
+          />
+
+          <ReferenceLine
+            y={targetMax}
+            stroke="#F59E0B"
+            strokeDasharray="5 5"
+          />
+
+          {/* Extreme */}
+          <ReferenceLine
+            y={extremeMin}
+            stroke="#EF4444"
+            strokeDasharray="5 5"
+          />
+
+          <ReferenceLine
+            y={extremeMax}
+            stroke="#EF4444"
+            strokeDasharray="5 5"
+          />
+
+          <Area
+            type="monotone"
+            dataKey="glucose"
+            stroke="none"
+            fill="url(#glucoseGradient)"
+          />
+
+          <Line
+            type="monotone"
+            dataKey="glucose"
+            stroke="#8B8AEF"
+            strokeWidth={3}
+            dot={{
+              r: 4,
+              fill: "#FFFFFF",
+              stroke: "#8B8AEF",
+              strokeWidth: 2,
+            }}
+            activeDot={{
+              r: 6,
+            }}
+          />
+
+        </ComposedChart>
+      </ResponsiveContainer>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 24,
+          flexWrap: "wrap",
+          marginTop: 24,
+          alignItems: "center",
+        }}
+      >
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 20,
+              height: 4,
+              background: "#8B8AEF",
+              marginRight: 8,
+            }}
+          />
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "#707784",
+            }}
+          >
+            Glucose
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 20,
+              borderTop: "2px dashed #F59E0B",
+              marginRight: 8,
+            }}
+          />
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "#707784",
+            }}
+          >
+            Target Range
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 20,
+              borderTop: "2px dashed #EF4444",
+              marginRight: 8,
+            }}
+          />
+
+          <span
+            style={{
+              fontSize: 11,
+              color: "#707784",
+            }}
+          >
+            Extreme Range
+          </span>
+        </div>
+
       </div>
 
-      {/* Legend Manual */}
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginTop: '24px' }}>
-    
-        {/* Item 1: Glucose */}
-        <div style={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
-            <div 
-            style={{ 
-                width: '20px', 
-                height: '10px', 
-                backgroundColor: '#8B8AEF', 
-                borderRadius: '2px',
-                marginRight: '8px' // Jarak kotak ke teks
-            }} 
-            />
-            <span style={{ fontSize: '11px', color: '#707784', fontWeight: '500' }}>Glucose</span>
-        </div>
-
-        {/* Item 2: Target Min & Max (Dashed) */}
-        <div style={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
-            <div 
-            style={{ 
-                width: '20px', 
-                height: '10px', 
-                border: '1px dashed #FF7F7F',
-                borderRadius: '2px',
-                marginRight: '8px' // Jarak kotak ke teks
-            }} 
-            />
-            <span style={{ fontSize: '11px', color: '#707784', fontWeight: '500' }}>Target Min & Max</span>
-        </div>
-
-        {/* Item 3: Target Min & Max (Fill) */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div 
-            style={{ 
-                width: '20px', 
-                height: '10px', 
-                backgroundColor: 'rgba(255, 127, 127, 0.3)',
-                borderRadius: '2px',
-                marginRight: '8px' // Jarak kotak ke teks
-            }} 
-            />
-            <span style={{ fontSize: '11px', color: '#707784', fontWeight: '500' }}>Target Min & Max</span>
-        </div>
-
-    </div>
     </div>
   );
 }

@@ -1,62 +1,113 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import ConfirmationWarning from "./ConfirmationWarning";
-import { Button } from "@/components/ui/button";
+// features/session-running/components/modalStepActivity/ConfirmInsulinDialog.tsx
+"use client";
 
-export function ConfirmInsulinDialog({ isOpen, onOpenChange, data, onConfirm }: any) {
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import ConfirmationWarning from "./ConfirmationWarning";
+import { ActivityDetail } from "@/features/session-running/services/ActivityService";
+
+// Mengimpor hook yang murni melakukan hit API complete
+import { useCompleteActivity } from "@/features/session-running/hooks/useActivityMutation";
+
+interface ConfirmInsulinDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  activity: ActivityDetail | null;
+  data: any; // Menerima data { dose } dari ModalInsulinInjection
+  onCancel: () => void; // Aksi Go-Back ke modal input
+}
+
+export function ConfirmInsulinDialog({ isOpen, onOpenChange, activity, data, onCancel }: ConfirmInsulinDialogProps) {
+  const sessionId = activity?.sessionId || 1;
+  
+  // Daftarkan hook completeActivity
+  const completeMutation = useCompleteActivity(sessionId);
+
+  if (!data || !activity) return null;
+
+  const handleConfirm = () => {
+    // Pure melakukan hit API ke /activities/{id}/complete
+    completeMutation.mutate(activity.activityId, {
+      onSuccess: () => {
+        alert("Suntik insulin berhasil dikonfirmasi!");
+        onOpenChange(false);
+      },
+      onError: (err) => {
+        console.error(err);
+        alert("Gagal melakukan konfirmasi tindakan.");
+      }
+    });
+  };
+
+  const formatTime = (timeStr?: string) => {
+    if (!timeStr) return "";
+    try {
+      const timePart = timeStr.split("T")[1];
+      return timePart ? timePart.substring(0, 5) : ""; 
+    } catch {
+      return "";
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Confirm Activity Data</DialogTitle>
-          <p className="text-sm text-muted-foreground">S-101 | INSULIN_INJECTION 08:30</p>
+      <DialogContent
+        style={{
+          maxWidth: "500px",     
+          padding: "2rem",       
+          backgroundColor: "#FFFFFF", 
+          borderRadius: "0.75rem",    
+          border: "none",             
+          boxShadow:
+            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", // shadow-lg
+        }}
+      >
+        <DialogHeader className="space-y-1.5">
+          <DialogTitle className="text-2xl font-bold text-slate-800">
+            Confirm Insulin Injection
+          </DialogTitle>
+          <DialogDescription className="text-sm text-slate-500 font-medium">
+            {`${activity.phaseCode} | Minute ${activity.relativeMinute}m`}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="py-4 space-y-6">
           <ConfirmationWarning />
           
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4">
             <div className="space-y-1">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Sample Code</p>
-              <p className="text-sm font-semibold text-slate-700">PKC-1</p>
+              <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Aktivitas Tindakan</p>
+              <p className="text-sm font-semibold text-slate-800">Insulin Injection (Suntik Insulin)</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Tube Type</p>
-                <p className="text-sm font-semibold text-slate-700">EDTA</p>
+                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Dosis Disuntikkan</p>
+                <p className="text-sm font-bold text-emerald-600">{data.dose}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Volume</p>
-                <p className="text-sm font-semibold text-slate-700">5.0</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100">
-            <h4 className="text-xs font-bold mb-4 uppercase text-slate-800">Result PK & C-Peptide</h4>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-4">
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Result PK</p>
-                <p className="text-sm font-semibold text-slate-700">12.8</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Unit PK</p>
-                <p className="text-sm font-semibold text-slate-700">mg/L</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Result C-Peptide</p>
-                <p className="text-sm font-semibold text-slate-700">1.9</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Unit C-Peptide</p>
-                <p className="text-sm font-semibold text-slate-700">ng/mL</p>
+                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Waktu Tindakan</p>
+                <p className="text-sm font-semibold text-slate-800">{formatTime(activity.time)}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="bg-slate-50 p-4 -mx-6 -mb-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="text-[#0070C0] bg-blue-50 border-none px-8">Cancel</Button>
-          <Button onClick={onConfirm} className="bg-[#0070C0] hover:bg-blue-700 px-8">Confirm</Button>
+        <DialogFooter className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+          <Button 
+            variant="ghost" 
+            onClick={onCancel} 
+            disabled={completeMutation.isPending}
+            className="h-11 bg-[#E0F2FE] hover:bg-[#bae6fd] text-[#0070C0] font-semibold rounded-md px-8 transition-colors"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirm} 
+            disabled={completeMutation.isPending}
+            className="h-11 bg-[#16a34a] hover:bg-[#15803d] text-white font-semibold rounded-md px-8 transition-colors"
+          >
+            {completeMutation.isPending ? "Confirming..." : "Confirm"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

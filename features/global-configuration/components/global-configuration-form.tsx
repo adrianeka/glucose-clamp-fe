@@ -12,28 +12,26 @@ export function GlobalConfigurationForm() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const [originalConfig, setOriginalConfig] = useState<GlobalConfiguration | null>(null);
-  const [timerValue, setTimerValue] = useState("");
+  // Menyimpan semua konfigurasi dari API
+  const [configs, setConfigs] = useState<GlobalConfiguration[]>([]);
+  // Menyimpan nilai input dinamis berdasarkan ID konfigurasi { [id]: value }
+  const [editedValues, setEditedValues] = useState<Record<string, string>>({});
 
-  const fetchConfiguration = async () => {
+  const fetchConfigurations = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await globalConfigurationService.getConfigurations();
-      
-      // Pencarian berdasarkan key atau name hasil mapping standar dari service
-      const timerConfig = data.find((c) => {
-        const title = (c.name || "").toLowerCase();
-        const code = (c.key || "").toLowerCase();
-        return title.includes("timer") || code.includes("timer");
-      }) || data[0];
+      setConfigs(data);
 
-      if (timerConfig) {
-        setOriginalConfig(timerConfig);
-        setTimerValue(timerConfig.value || "");
-      } else {
-        setError("Configuration data not found on the server.");
-      }
+      // Inisialisasi nilai input dari data yang didapatkan
+      const initialValues: Record<string, string> = {};
+      data.forEach((config) => {
+        if (config.id) {
+          initialValues[config.id] = config.value || "";
+        }
+      });
+      setEditedValues(initialValues);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch configuration data.");
@@ -43,41 +41,57 @@ export function GlobalConfigurationForm() {
   };
 
   useEffect(() => {
-    fetchConfiguration();
+    fetchConfigurations();
   }, []);
 
+  const handleInputChange = (id: string, value: string) => {
+    setEditedValues((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+  };
+
   const handleSaveChanges = async () => {
-    if (!originalConfig) return;
-
-    const configId = originalConfig.id;
-    
-    // Pengecekan ketat untuk mencegah terkirimnya ID kosong atau "undefined"
-    if (!configId || configId === "undefined") {
-      setError("Gagal menyimpan: ID konfigurasi tidak valid atau bernilai undefined.");
-      return;
-    }
-
     setSaving(true);
     setError(null);
     setSuccessMessage(null);
 
-    // Kirim payload dengan key DTO gconf yang sesuai dengan Java backend
-    const payload = {
-      gconfCode: originalConfig.key || "detik_peringatan_sebelum_act",
-      gconfTitle: originalConfig.name || "Activity Confirmation Timer",
-      gconfValue: timerValue,
-      gconfDescription: originalConfig.description || "",
-    };
+    // Filter konfigurasi mana saja yang nilainya berubah
+    const changedConfigs = configs.filter((config) => {
+      if (!config.id) return false;
+      return editedValues[config.id] !== config.value;
+    });
+
+    if (changedConfigs.length === 0) {
+      setSaving(false);
+      return;
+    }
 
     try {
-      await globalConfigurationService.updateConfiguration(configId, payload);
+      // Mengirimkan pembaruan untuk semua konfigurasi yang berubah secara paralel
+      await Promise.all(
+        changedConfigs.map((config) => {
+          const payload = {
+            gconfCode: config.key || "",
+            gconfTitle: config.name || "",
+            gconfValue: editedValues[config.id!],
+            gconfDescription: config.description || "",
+          };
+          return globalConfigurationService.updateConfiguration(config.id!, payload);
+        })
+      );
 
-      setSuccessMessage("Configuration updated successfully.");
-      
-      setOriginalConfig({
-        ...originalConfig,
-        value: timerValue,
-      });
+      setSuccessMessage("Configurations updated successfully.");
+
+      // Perbarui data asli (configs) agar sinkron dengan nilai yang baru disimpan
+      setConfigs((prev) =>
+        prev.map((config) => {
+          if (config.id && editedValues[config.id] !== undefined) {
+            return { ...config, value: editedValues[config.id] };
+          }
+          return config;
+        })
+      );
     } catch (err) {
       console.error(err);
       setError("Failed to save changes. Please try again.");
@@ -86,12 +100,16 @@ export function GlobalConfigurationForm() {
     }
   };
 
-  const hasChanges = originalConfig !== null && timerValue !== originalConfig.value;
+  // Cek apakah ada salah satu konfigurasi yang nilainya berubah dari nilai asli
+  const hasChanges = configs.some((config) => {
+    if (!config.id) return false;
+    return editedValues[config.id] !== config.value;
+  });
 
   if (loading) {
     return (
       <div className="flex-1 self-stretch px-8 py-6 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex items-center justify-center min-h-[400px]">
-        <p className="text-[#707784] text-sm">Loading configuration...</p>
+        <p className="text-[#707784] text-sm">Loading configurations...</p>
       </div>
     );
   }
@@ -137,28 +155,37 @@ export function GlobalConfigurationForm() {
         </div>
       )}
 
-      {/* Setting Item Card */}
-      {originalConfig && (
-        <div className="border border-[#E2E8F0] rounded-2xl bg-[#F8FAFC] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex flex-col gap-1 max-w-[70%]">
-            <h3 className="text-[#2D2F35] text-base font-semibold">
-              {originalConfig.name}
-            </h3>
-            <p className="text-[#707784] text-sm font-normal leading-relaxed">
-              {originalConfig.description}
-            </p>
-          </div>
-          
-          <div className="flex-shrink-0">
-            <Input
-              type="number"
-              value={timerValue}
-              onChange={(e) => setTimerValue(e.target.value)}
-              className="w-24 text-center text-base bg-white border-[#E2E8F0] rounded-lg h-11 focus-visible:ring-[#0076D2]"
-            />
-          </div>
-        </div>
-      )}
+      {/* List of Setting Items */}
+      <div className="flex flex-col gap-4">
+        {configs.map((config) => {
+          if (!config.id) return null;
+
+          return (
+            <div 
+              key={config.id} 
+              className="border border-[#E2E8F0] rounded-2xl bg-[#F8FAFC] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+            >
+              <div className="flex flex-col gap-1 max-w-[70%]">
+                <h3 className="text-[#2D2F35] text-base font-semibold">
+                  {config.name}
+                </h3>
+                <p className="text-[#707784] text-sm font-normal leading-relaxed">
+                  {config.description}
+                </p>
+              </div>
+              
+              <div className="flex-shrink-0">
+                <Input
+                  type="number"
+                  value={editedValues[config.id] ?? ""}
+                  onChange={(e) => handleInputChange(config.id!, e.target.value)}
+                  className="w-24 text-center text-base bg-white border-[#E2E8F0] rounded-lg h-11 focus-visible:ring-[#0076D2]"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
