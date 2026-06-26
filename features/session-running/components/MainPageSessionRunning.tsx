@@ -10,7 +10,6 @@ import MainGDChart from "@/features/session-running/components/MainGDChart";
 import SubCharts from "@/features/session-running/components/SubCharts";
 import InfusionMonitoringSidebar from "@/features/session-running/components/InfusionMonitoringSidebar";
 import ModalViewAllActivity from "@/features/session-running/components/ModalViewAllActivity";
-import InsulinDialog from "@/features/session-running/components/modalStepActivity/ModalInsulinInjection";
 import { PreparationDialog } from "./modalStepActivity/ModalPreparationData";
 import { BloodSampleDialog } from "./modalStepActivity/ModalBloodDraw"; // Pastikan nama import benar
 import ModalOtherActivity from "./modalStepActivity/ModalOtherActivity";
