@@ -1,22 +1,78 @@
+// components/modalStepActivity/ConfirmBloodDrawDialog.tsx
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ConfirmationWarning from "./ConfirmationWarning";
 import { ActivityDetail } from "@/features/session-running/services/ActivityService";
+import { useCreateBloodSample } from "@/features/session-running/hooks/useActivityMutation";
+
 
 interface ConfirmBloodDrawDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   activity: ActivityDetail | null;
-  data: any; // Menerima data dari form ModalBloodDraw
-  onConfirm: () => void; // Aksi mutasi API final
+  data: any;
+  onCancel?: () => void; // Tambahan prop opsional untuk fungsi kembali ke modal sebelumnya
 }
 
-export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, onConfirm }: ConfirmBloodDrawDialogProps) {
-  if (!data) return null;
+export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, onCancel }: ConfirmBloodDrawDialogProps) {
+  const sessionId = activity?.sessionId || 1;
+  const createBloodSampleMutation = useCreateBloodSample(sessionId);
 
-  const isGlucose = activity?.activityType === "BLOOD_DRAW";
+  if (!data || !activity) return null;
+
+  const isGlucose = activity.activityType === "BLOOD_DRAW";
+
+  const handleConfirm = () => {
+    const payload = {
+      activityId: activity.activityId,
+      collectedBy: 1, 
+      sampleTime: new Date().toISOString(),
+      sampleType: isGlucose ? "Glucose" : "Insulin",
+      tubeType: data.tubeType,
+      volumeMl: Math.round(parseFloat(data.volume)) || 0,
+      labResults: isGlucose
+        ? [
+            {
+              parameterName: "PK",
+              value: parseFloat(data.resultPk) || 0,
+              unit: data.unitPk,
+            },
+          ]
+        : [
+            {
+              parameterName: "PK",
+              value: parseFloat(data.resultPk) || 0,
+              unit: data.unitPk,
+            },
+            {
+              parameterName: "C-Peptide",
+              value: parseFloat(data.resultCPeptide) || 0,
+              unit: data.unitCPeptide,
+            },
+          ],
+    };
+
+    createBloodSampleMutation.mutate(payload, {
+      onSuccess: () => {
+        alert("Data Blood Sample berhasil disimpan!");
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        console.error(error);
+        alert("Gagal menyimpan data Blood Sample.");
+      }
+    });
+  };
+
+  const handleCancelAction = () => {
+    if (onCancel) {
+      onCancel(); // Jika ada fungsi onCancel khusus (kembali ke modal sebelumnya), jalankan fungsi tersebut
+    } else {
+      onOpenChange(false); // Jika tidak ada, cukup tutup modal biasa
+    }
+  };
 
   const formatTime = (timeStr?: string) => {
     if (!timeStr) return "";
@@ -45,7 +101,6 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
         <div className="py-4 space-y-6">
           <ConfirmationWarning />
           
-          {/* Detail Atas */}
           <div className="space-y-4">
             <div className="space-y-1">
               <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Sample Code</p>
@@ -63,7 +118,6 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
             </div>
           </div>
 
-          {/* Detail Hasil Lab (Dinamis: Glucose atau Insulin PK) */}
           <div className="pt-5 border-t border-slate-100">
             <h4 className="text-sm font-bold mb-4 uppercase text-slate-800 tracking-wider">
               {isGlucose ? "Result Glucose" : "Result PK & C-Peptide"}
@@ -97,16 +151,18 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
         <DialogFooter className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
           <Button 
             variant="ghost" 
-            onClick={() => onOpenChange(false)} 
+            onClick={handleCancelAction} 
+            disabled={createBloodSampleMutation.isPending}
             className="h-11 bg-[#E0F2FE] hover:bg-[#bae6fd] text-[#0070C0] font-semibold rounded-md px-8 transition-colors"
           >
             Cancel
           </Button>
           <Button 
-            onClick={onConfirm} 
+            onClick={handleConfirm} 
+            disabled={createBloodSampleMutation.isPending}
             className="h-11 bg-[#0070C0] hover:bg-blue-700 text-white font-semibold rounded-md px-8 transition-colors"
           >
-            Confirm
+            {createBloodSampleMutation.isPending ? "Confirming..." : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -12,40 +12,53 @@ interface BloodSampleDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   activity: ActivityDetail | null;
-  onSubmit: (formData: any) => void; // Mengirim data ke parent untuk lanjut ke tahap konfirmasi
+  onSubmit: (formData: any) => void;
+  defaultValues?: any; // Menyimpan ketikan sebelumnya saat "Go Back"
 }
 
-export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit }: BloodSampleDialogProps) {
+export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit, defaultValues }: BloodSampleDialogProps) {
+  // Gunakan string kosong ("") sebagai default agar user tahu kolom tersebut wajib diisi baru
   const [form, setForm] = useState({
-    sampleCode: "PKC-1",
-    tubeType: "EDTA",
-    volume: "5.0",
-    resultPk: "12.8",
-    unitPk: "mg/L",
-    resultCPeptide: "1.9",
-    unitCPeptide: "ng/mL",
+    sampleCode: "",
+    tubeType: "",
+    volume: "",
+    resultPk: "",
+    unitPk: "mg/L", // Satuan PK default tetap diisi untuk mempermudah
+    resultCPeptide: "",
+    unitCPeptide: "ng/mL", // Satuan C-Peptide default tetap diisi
   });
 
   useEffect(() => {
     if (isOpen && activity) {
-      setForm({
-        sampleCode: activity.scheduleCode || "PKC-1",
-        tubeType: "EDTA",
-        volume: "5.0",
-        resultPk: "12.8",
-        unitPk: "mg/L",
-        resultCPeptide: "1.9",
-        unitCPeptide: "ng/mL",
-      });
+      if (defaultValues) {
+        // JIKA KEMBALI DARI CONFIRM: Tampilkan kembali ketikan terakhir user
+        setForm(defaultValues);
+      } else {
+        // JIKA BARU DIBUKA (ADD NEW): Bersihkan semua field agar kosong
+        setForm({
+          sampleCode: activity.scheduleCode || "", // Kode sampel bawaan dari BE (misal: GD-01) tetap diisi otomatis
+          tubeType: "",
+          volume: "",
+          resultPk: "",
+          unitPk: "mg/L",
+          resultCPeptide: "",
+          unitCPeptide: "ng/mL",
+        });
+      }
     }
-  }, [isOpen, activity]);
+  }, [isOpen, activity, defaultValues]);
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmitting = () => {
-    onSubmit(form); // Kirim data hasil ketikan ke parent
+    // Validasi sederhana sebelum lanjut ke konfirmasi
+    if (!form.sampleCode || !form.tubeType || !form.volume || !form.resultPk) {
+      alert("Mohon lengkapi semua kolom yang wajib diisi (*).");
+      return;
+    }
+    onSubmit(form);
   };
 
   const isGlucose = activity?.activityType === "BLOOD_DRAW";
@@ -81,6 +94,7 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit }: 
             </Label>
             <Input 
               className="h-11 bg-white border-slate-200 text-slate-800 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+              placeholder="e.g. PKC-1"
               value={form.sampleCode} 
               onChange={(e) => handleChange("sampleCode", e.target.value)} 
             />
@@ -93,16 +107,18 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit }: 
               </Label>
               <Input 
                 className="h-11 bg-white border-slate-200 text-slate-800 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                placeholder="e.g. Fluoride, EDTA"
                 value={form.tubeType} 
                 onChange={(e) => handleChange("tubeType", e.target.value)} 
               />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">
-                Volume <span className="text-red-500">*</span>
+                Volume (mL) <span className="text-red-500">*</span>
               </Label>
               <Input 
                 className="h-11 bg-white border-slate-200 text-slate-800 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                placeholder="e.g. 3.0"
                 value={form.volume} 
                 onChange={(e) => handleChange("volume", e.target.value)} 
               />
@@ -121,6 +137,7 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit }: 
                 </Label>
                 <Input 
                   className="h-11 bg-white border-slate-200 text-slate-800 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                  placeholder="e.g. 95.0"
                   value={form.resultPk} 
                   onChange={(e) => handleChange("resultPk", e.target.value)} 
                 />
@@ -144,6 +161,7 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit }: 
                     </Label>
                     <Input 
                       className="h-11 bg-white border-slate-200 text-slate-800 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                      placeholder="e.g. 1.9"
                       value={form.resultCPeptide} 
                       onChange={(e) => handleChange("resultCPeptide", e.target.value)} 
                     />

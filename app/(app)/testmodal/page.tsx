@@ -1,16 +1,15 @@
 "use client";
+
 import { useState } from "react";
 import { BloodSampleDialog } from "@/features/session-running/components/modalStepActivity/ModalBloodDraw";
-import { ConfirmBloodDrawDialog } from "@/features/session-running/components/modalStepActivity/ConfirmBloodDrawDialog"; // Import modal konfirmasi Anda
-import { bloodSampleService } from "@/features/session-running/services/BloodSampleService";
-
+import { ConfirmBloodDrawDialog } from "@/features/session-running/components/modalStepActivity/ConfirmBloodDrawDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ActivityDetail, activityService } from "@/features/session-running/services/ActivityService";
 
 export default function TestPage() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false); // State untuk mengontrol modal konfirmasi
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
   const [activityIdInput, setActivityIdInput] = useState("");
   const [activeActivity, setActiveActivity] = useState<ActivityDetail | null>(null);
@@ -19,7 +18,6 @@ export default function TestPage() {
   // State sementara untuk menampung inputan form sebelum dikonfirmasi secara final
   const [tempFormData, setTempFormData] = useState<any>(null);
 
-  // Fungsi get data activity berdasarkan ID inputan user (tetap utuh seperti kode Anda)
   const handleFetchAndOpen = async () => {
     const id = parseInt(activityIdInput);
     if (isNaN(id)) {
@@ -31,7 +29,6 @@ export default function TestPage() {
     try {
       const data = await activityService.getById(id);
       
-      // Validasi apakah aktivitas ini membutuhkan input sampel darah
       if (data.activityType !== "BLOOD_DRAW" && data.activityType !== "INSULIN_CHECK") {
         alert(`Aktivitas ke-${id} adalah "${data.activityType}". Hanya jenis BLOOD_DRAW atau INSULIN_CHECK yang bisa menginput sampel.`);
         setLoading(false);
@@ -50,56 +47,15 @@ export default function TestPage() {
 
   // Tahap 1: Ketika tombol "Submit" di ModalBloodDraw ditekan
   const handleFormSubmit = (formData: any) => {
-    setTempFormData(formData); // Simpan data ke state sementara
+    setTempFormData(formData); // Simpan ke state sementara
     setIsOpen(false);          // Tutup modal input utama Anda
     setIsConfirmOpen(true);    // Buka modal konfirmasi kedua
   };
 
-  // Tahap 2: Ketika tombol "Confirm" di ConfirmBloodDrawDialog ditekan (melakukan HIT ke API)
-  const handleFinalConfirm = async () => {
-    if (!activeActivity || !tempFormData) return;
-
-    const isGlucose = activeActivity.activityType === "BLOOD_DRAW";
-
-    // Strukturkan payload data yang akan dikirim ke POST /blood-samples berdasarkan tempFormData
-    const payload = {
-      activityId: activeActivity.activityId,
-      collectedBy: 1, // Contoh ID user pembuat
-      sampleTime: new Date().toISOString(),
-      sampleType: isGlucose ? "Glucose" : "Insulin",
-      tubeType: tempFormData.tubeType,
-      volumeMl: Math.round(parseFloat(tempFormData.volume)) || 0,
-      labResults: isGlucose
-        ? [
-            {
-              parameterName: "PK",
-              value: parseFloat(tempFormData.resultPk) || 0,
-              unit: tempFormData.unitPk,
-            },
-          ]
-        : [
-            {
-              parameterName: "PK",
-              value: parseFloat(tempFormData.resultPk) || 0,
-              unit: tempFormData.unitPk,
-            },
-            {
-              parameterName: "C-Peptide",
-              value: parseFloat(tempFormData.resultCPeptide) || 0,
-              unit: tempFormData.unitCPeptide,
-            },
-          ],
-    };
-
-    try {
-      await bloodSampleService.add(payload);
-      alert("Data Blood Sample berhasil disimpan!");
-      setIsConfirmOpen(false); // Tutup modal konfirmasi setelah sukses
-      setTempFormData(null);   // Bersihkan data sementara
-    } catch (error) {
-      console.error(error);
-      alert("Gagal menyimpan data Blood Sample.");
-    }
+  // Tahap Opsional: Tombol "Cancel" di modal konfirmasi ditekan (kembali ke modal input dengan data utuh)
+  const handleBackToInput = () => {
+    setIsConfirmOpen(false);   // Tutup modal konfirmasi
+    setIsOpen(true);           // Nyalakan kembali modal input
   };
 
   return (
@@ -124,26 +80,24 @@ export default function TestPage() {
             {loading ? "Memuat..." : "Buka Modal"}
           </Button>
         </div>
-        <p className="text-xs text-slate-400">
-          * ID 3 (BLOOD_DRAW) akan memunculkan form Glucose, sedangkan ID 4 (INSULIN_CHECK) akan memunculkan form Insulin.
-        </p>
       </div>
 
-      {/* Modal 1: Input Data (Dumb Modal) */}
+      {/* Modal 1: Input Data (Sekarang mendukung properti defaultValues) */}
       <BloodSampleDialog 
         isOpen={isOpen}
         onOpenChange={setIsOpen}
         activity={activeActivity}
         onSubmit={handleFormSubmit}
+        defaultValues={tempFormData} // Mengirim kembali data ketikan terakhir agar tetap utuh saat kembali
       />
 
-      {/* Modal 2: Konfirmasi Data Hasil Input */}
+      {/* Modal 2: Konfirmasi Data Hasil Input (Ditambahkan properti onCancel) */}
       <ConfirmBloodDrawDialog 
         isOpen={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
         activity={activeActivity}
         data={tempFormData}
-        onConfirm={handleFinalConfirm}
+        onCancel={handleBackToInput} // Arahkan kembali ke modal input saat di-cancel
       />
     </div>
   );
