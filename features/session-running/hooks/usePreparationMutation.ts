@@ -1,6 +1,6 @@
 // features/session-running/hooks/usePreparationMutation.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { VitalSignRequest, AnamnesisRequest, AnthropometryRequest } from "../types/Preparation";
+import { VitalSignRequest, AnamnesisRequest, AnthropometryRequest, PreparationCheckRequest } from "../types/Preparation";
 import { activityService } from "../services/ActivityService";
 import { preparationService } from "../services/PreparationService";
 
@@ -15,14 +15,14 @@ export const useSubmitPreparationData = (sessionId: number) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ activityId, vitalSign, anamnesis, anthropometry }: SubmitPreparationPayload) => {
+    mutationFn: async (payload: PreparationCheckRequest) => {
       await Promise.all([
-        preparationService.saveVitalSign(vitalSign),
-        preparationService.saveAnamnesis(anamnesis),
-        preparationService.saveAnthropometry(anthropometry)
+        preparationService.submitPreparation(
+             payload
+         ),
       ]);
 
-      await activityService.completeActivity(activityId);
+      await activityService.completeActivity(payload.activityId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session-detail", sessionId] });

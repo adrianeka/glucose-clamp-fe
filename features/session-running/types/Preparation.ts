@@ -27,3 +27,10 @@ export interface AnthropometryRequest {
   waistCircumferenceCm: number;
   assignedBy: number;
 }
+
+export interface PreparationCheckRequest {
+  activityId: number;
+  vitalSign: VitalSignRequest;
+  anamnesis: AnamnesisRequest;
+  anthropometry: AnthropometryRequest;
+}

@@ -85,7 +85,7 @@ export function PreparationDialog({ isOpen, activity, onSubmit, defaultValues, o
   };
 
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent
         style={{
           maxWidth: "42rem",
