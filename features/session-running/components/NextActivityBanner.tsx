@@ -93,7 +93,7 @@ export default function NextActivityBanner({
         i => i.glucoseValue != null
       ),
     };
-  }, [sessionData?.infusion]);
+  }, [sessionData]);
 
   const glucoseFromLab = useMemo(() => {
     return (
@@ -118,7 +118,7 @@ export default function NextActivityBanner({
             toTimestamp(a.time)
         )[0]
     );
-  }, [sessionData?.activities]);
+  }, [sessionData]);
 
   const latestRate = infusionSummary.latestRate;
   const latestGlucose = useMemo(() => {

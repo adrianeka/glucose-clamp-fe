@@ -41,16 +41,38 @@ export default function ModalViewAllActivity({
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return "bg-[#EAF8EC] text-[#43A047]";
+        return {
+          backgroundColor: "#EAF8EC",
+          color: "#43A047",
+        };
+
+      case "NEXT_ACTIVITY":
+        return {
+          backgroundColor: "#C4EAEE",
+          color: "#0076D2",
+        };
+
       case "IN_PROGRESS":
-        return "bg-[#FFF5E6] text-[#FF9800]";
+        return {
+          backgroundColor: "#FFF5E6",
+          color: "#FF9800",
+        };
+
+      case "INQUEUE":
       case "IN_QUEUE":
-        return "bg-[#F3F4F6] text-[#707784]";
+        return {
+          backgroundColor: "#F3F4F6",
+          color: "#707784",
+        };
+
       default:
-        return "bg-[#F3F4F6] text-[#707784]";
+        return {
+          backgroundColor: "#F3F4F6",
+          color: "#707784",
+        };
     }
   };
 
@@ -114,13 +136,19 @@ export default function ModalViewAllActivity({
                       </td>
                       <td className="px-4 py-4">
                         <span
-                            className={`inline-flex items-center rounded-full px-3 py-1 uppercase tracking-wide ${getStatusBadge(item.activityStatus)}`}
-                            style={{
-                                fontSize: "12px",
-                                fontWeight: 700,
-                            }}
-                            >
-                            {item.activityStatus}
+                          style={{
+                            ...getStatusStyle(item.activityStatus),
+                            display: "inline-flex",
+                            alignItems: "center",
+                            padding: "4px 12px",
+                            borderRadius: "9999px",
+                            fontSize: "12px",
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          {item.activityStatus}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">

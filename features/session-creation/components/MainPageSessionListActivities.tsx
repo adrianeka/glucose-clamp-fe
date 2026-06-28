@@ -119,12 +119,14 @@ export default function SessionActivitiesPage({sessionId, sessionData}:SessionAc
             <p className="text-sm text-[#707784]">Activities based on the selected protocol.</p>
           </div>
 
-          <button
-            onClick={() => setOpenAddActivity(true)}
-            className="rounded-lg bg-white border border-[#0076D2] px-4 py-2 text-[#0076D2] hover:bg-[#F1F9FA] font-medium transition-colors"
-          >
-            Add Custom Activity
-          </button>
+          {sessionData?.sessionStatus !== "COMPLETED" && (
+            <button
+              onClick={() => setOpenAddActivity(true)}
+              className="rounded-lg bg-white border border-[#0076D2] px-4 py-2 text-[#0076D2] hover:bg-[#F1F9FA] font-medium transition-colors"
+            >
+              Add Custom Activity
+            </button>
+          )}
         </div>
 
         {/* Tabel tanpa pagination, scroll internal */}
