@@ -217,12 +217,25 @@ export default function ModalSamplingSchedule({
         onOpenChange(false); // Tutup modal utama
       };
 
-    // Tambahkan logic ini di bawah deklarasi state
     useEffect(() => {
-      if (
-        selectedPhase?.code?.toLowerCase() === "base"
-      ) {
+      if (!selectedPhase?.code) return;
+
+      const codeLower = selectedPhase.code.toLowerCase();
+
+      if (codeLower === "prep1" || codeLower === "prep2") {
+        setLabelPrefix("PREP");
+      }
+      else if (codeLower === "base") {
         setLabelPrefix("T");
+      }
+      else if (codeLower === "final") {
+        setLabelPrefix("FIN");
+      }
+      else if (["ph1", "ph2", "ph3"].includes(codeLower)) {
+        setLabelPrefix("GD");
+      }
+      else {
+        setLabelPrefix(""); 
       }
     }, [selectedPhase]);
 
@@ -298,6 +311,7 @@ export default function ModalSamplingSchedule({
                     <input
                       type="number"
                       value={phaseDuration}
+                      placeholder="e.g. 10"
                       onChange={(e) =>
                         setPhaseDuration(e.target.value)
                       }
@@ -362,30 +376,50 @@ export default function ModalSamplingSchedule({
                     </label>
 
                     <Select
-                        value={labelPrefix}
-                        onValueChange={setLabelPrefix}
+                      value={labelPrefix}
+                      onValueChange={setLabelPrefix}
                     >
                       <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]">
-                        <SelectValue placeholder="Choose Prefix" />
+                        <SelectValue placeholder={phaseConfig ? "Choose Prefix" : "Select phase first"} />
                       </SelectTrigger>
 
                       <SelectContent>
-                        {/* Jika phaseConfig adalah 'base', hanya tampilkan 'T' */}
-                        {phaseConfig === "base" ? (
-                          <SelectItem value="T">
-                            T
-                          </SelectItem>
-                        ) : (
-                          <>
-                            <SelectItem value="GD">
-                              GD
-                            </SelectItem>
+                        {(() => {
+                          const codeLower = phaseConfig.toLowerCase();
 
-                            <SelectItem value="T">
-                              T
-                            </SelectItem>
-                          </>
-                        )}
+                          if (codeLower === "prep1" || codeLower === "prep2") {
+                            return (
+                              <SelectItem value="PREP">PREP</SelectItem>
+                            );
+                          }
+
+                          if (codeLower === "base") {
+                            return (
+                              <SelectItem value="T">T</SelectItem>
+                            );
+                          }
+
+                          if (["ph1", "ph2", "ph3"].includes(codeLower)) {
+                            return (
+                              <SelectItem value="GD">GD</SelectItem>
+                            );
+                          }
+
+                          if (codeLower === "final") {
+                            return (
+                              <SelectItem value="FIN">FIN</SelectItem>
+                            );
+                          }
+
+                          return (
+                            <>
+                              <SelectItem value="GD">GD</SelectItem>
+                              <SelectItem value="T">T</SelectItem>
+                              <SelectItem value="PREP">PREP</SelectItem>
+                              <SelectItem value="FIN">FIN</SelectItem>
+                            </>
+                          );
+                        })()}
                       </SelectContent>
                     </Select>
                   </div>

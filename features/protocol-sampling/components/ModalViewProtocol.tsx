@@ -188,13 +188,13 @@ export default function ModalViewProtocol({
             <div className="border rounded-lg overflow-hidden">
               <Row
                 label="Created By"
-                value={`${data.created_by ?? "-"} • ${createdAt}`}
+                value={`${data.created_by_name ?? "-"} • ${createdAt}`}
               />
 
               <Row
                 label="Updated By"
                 value={
-                  data.updated_by ?? "-"
+                  data.updated_by_name ?? "-"
                 }
               />
 

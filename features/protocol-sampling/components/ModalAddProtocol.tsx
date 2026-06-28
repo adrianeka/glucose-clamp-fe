@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 
 interface ModalAddProtocolProps {
   open: boolean;
@@ -75,9 +76,11 @@ export default function ModalAddProtocol({
     });
   };
 
+  const { showToast } = useToast();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-145 max-w-145 max-h-[90vh] sm:max-w-145 overflow-y-auto">
+      <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Add Protocol
@@ -156,14 +159,25 @@ export default function ModalAddProtocol({
 
               <Input
                 type="number"
+                min="1"
+                placeholder="e.g. 24"
                 value={form.duration_hours}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    duration_hours: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, duration_hours: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, duration_hours: "1" });
+                    showToast("Duration must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, duration_hours: val });
+                  }
+                }}
               />
+
             </div>
 
             <div>
@@ -172,6 +186,7 @@ export default function ModalAddProtocol({
               </label>
 
               <Input
+                placeholder="e.g. 0.5"
                 value={form.insulin_dose_rule}
                 onChange={(e) =>
                   setForm({
@@ -188,6 +203,7 @@ export default function ModalAddProtocol({
               </label>
 
               <Input
+                placeholder="e.g. U/KgBWSC"
                 value={form.insulin_dose_unit}
                 onChange={(e) =>
                   setForm({
@@ -208,13 +224,23 @@ export default function ModalAddProtocol({
 
               <Input
                 type="number"
+                min="1"
+                placeholder="e.g. 80"
                 value={form.glucose_target_min}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_min: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, glucose_target_min: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, glucose_target_min: "1" });
+                    showToast("Target Glucose Min must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, glucose_target_min: val });
+                  }
+                }}
               />
             </div>
 
@@ -224,15 +250,25 @@ export default function ModalAddProtocol({
               </label>
 
               <Input
-                type="number"
-                value={form.glucose_target_max}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_max: e.target.value,
-                  })
-                }
-              />
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 150"
+                  value={form.glucose_target_max}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_target_max: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_target_max: "1" });
+                      showToast("Target Glucose Max must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_target_max: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
@@ -241,6 +277,7 @@ export default function ModalAddProtocol({
               </label>
 
               <Input
+              placeholder="e.g. mg/dl"
                 value={form.glucose_target_unit}
                 onChange={(e) =>
                   setForm({
@@ -259,56 +296,84 @@ export default function ModalAddProtocol({
                 Target Glucose Min Extreme <span className="text-red-500">*</span>
               </label>
 
-              <Input
-                type="number"
-                value={form.glucose_target_min_extreme}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_min_extreme: e.target.value,
-                  })
-                }
-              />
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 70"
+                  value={form.glucose_target_min_extreme}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_target_min_extreme: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_target_min_extreme: "1" });
+                      showToast("Target Glucose Min Extreme must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_target_min_extreme: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
               <label className="text-sm font-medium">
                 Target Glucose Max Extreme <span className="text-red-500">*</span>
               </label>
-
-              <Input
-                type="number"
-                value={form.glucose_target_max_extreme}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_max_extreme: e.target.value,
-                  })
-                }
-              />
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 180"
+                  value={form.glucose_target_max_extreme}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_target_max_extreme: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_target_max_extreme: "1" });
+                      showToast("Target Glucose Max Extreme must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_target_max_extreme: val });
+                    }
+                  }}
+                />
             </div>
           </div>
 
           <div className="border-t" />
 
           {/* Row 4 (Infusion Parameters - Tambahan Baru) */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 items-end">
             <div>
               <label className="text-sm font-medium">
                 Glucose Drop Trigger (%) <span className="text-red-500">*</span>
               </label>
 
               <Input
-                type="number"
-                placeholder="e.g. 10"
-                value={form.glucose_drop_trigger_percentage}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_drop_trigger_percentage: e.target.value,
-                  })
-                }
-              />
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 10"
+                  value={form.glucose_drop_trigger_percentage}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_drop_trigger_percentage: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_drop_trigger_percentage: "1" });
+                      showToast("Glucose Drop Trigger must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_drop_trigger_percentage: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
@@ -317,16 +382,25 @@ export default function ModalAddProtocol({
               </label>
 
               <Input
-                type="number"
-                placeholder="e.g. 2"
-                value={form.initial_glucose_infusion_rate}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    initial_glucose_infusion_rate: e.target.value,
-                  })
-                }
-              />
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 2"
+                  value={form.initial_glucose_infusion_rate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, initial_glucose_infusion_rate: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, initial_glucose_infusion_rate: "1" });
+                      showToast("Initial Infusion Rate must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, initial_glucose_infusion_rate: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>

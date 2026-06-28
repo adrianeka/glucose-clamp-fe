@@ -20,6 +20,7 @@ import { Participant } from "../types";
 import { ParticipantDetailModal } from "./participant-detail-modal";
 // Mengimpor komponen TablePagination yang reusable
 import { TablePagination } from "@/components/ui/table-pagination";
+import { log } from "console";
 
 function MrBadge({ mr }: { mr: string }) {
   return (
@@ -125,6 +126,16 @@ export function ParticipantTable({
     return () => clearTimeout(timeout);
   }, [search]);
 
+  const refetchData = async () => {
+    const result = debouncedSearch
+      ? await searchParticipants(debouncedSearch, currentPage, pageSize)
+      : await getAllParticipants(currentPage, pageSize);
+
+    setParticipants(result.data.content);
+    setTotalElements(result.data.totalElements);
+    setTotalPages(Math.max(1, result.data.totalPages));
+  };
+
   useEffect(() => {
     const refresh = async () => {
       try {
@@ -136,16 +147,6 @@ export function ParticipantTable({
 
     refresh();
   }, [refreshKey]);
-
-  const refetchData = async () => {
-    const result = debouncedSearch
-      ? await searchParticipants(debouncedSearch, currentPage, pageSize)
-      : await getAllParticipants(currentPage, pageSize);
-
-    setParticipants(result.data.content);
-    setTotalElements(result.data.totalElements);
-    setTotalPages(Math.max(1, result.data.totalPages));
-  };
 
   // fetch data
   useEffect(() => {
@@ -197,6 +198,8 @@ export function ParticipantTable({
     setPageSize(size);
     setCurrentPage(1);
   };
+
+  console.log("Participants:", participants);
 
   return (
     <>
@@ -309,6 +312,7 @@ export function ParticipantTable({
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         onSuccess={refetchData}
+        key={editTarget?.participantId || "edit-modal"}
       />
     </>
   );

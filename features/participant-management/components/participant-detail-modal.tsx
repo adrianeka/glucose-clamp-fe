@@ -97,6 +97,8 @@ export function ParticipantDetailModal({
 }: ParticipantDetailModalProps) {
   if (!participant) return null;
 
+  console.log("Data Participant saat ini:", participant);
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="p-0 gap-0 rounded-xl overflow-hidden !w-[600px] !max-w-[600px] border-0 shadow-xl [&>button]:hidden">
@@ -137,7 +139,7 @@ export function ParticipantDetailModal({
               rows={[
                 { icon: <User size={16} />, label: "Gender", value: participant.gender },
                 { icon: <Calendar size={16} />, label: "Age", value: calculateAge(participant.dob) },
-                { icon: <CalendarDays size={16} />, label: "Date of Birth", value: formatDate(participant.dob) },
+                { icon: <CalendarDays size={16} />, label: "Date of Birth", value: participant.dob ? new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(participant.dob)) : "-"},
                 { icon: <Phone size={16} />, label: "Phone Number", value: `+62${participant.numberPhone}` },
               ]}
             />
@@ -150,13 +152,13 @@ export function ParticipantDetailModal({
                 {
                   icon: <User size={16} />,
                   label: "Created by",
-                  value: `${participant.createdBy ?? "Admin"} · ${formatAuditDate(participant.createdAt)}`,
+                  value: `${participant.createdByName ?? "Admin"} · ${formatAuditDate(participant.createdAt)}`,
                 },
                 {
                   icon: <User size={16} />,
                   label: "Updated by",
                   value: participant.updatedAt
-                    ? `${participant.updatedBy ?? "Admin"} · ${formatAuditDate(participant.updatedAt)}`
+                    ? `${participant.updatedByName ?? "Admin"} · ${formatAuditDate(participant.updatedAt)}`
                     : "-",
                 },
               ]}

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 
 interface ModalEditProtocolProps {
   open: boolean;
@@ -18,58 +19,59 @@ interface ModalEditProtocolProps {
   data: any;
 }
 
+const initialFormState = {
+  protocol_code: "",
+  protocol_name: "",
+  version: "",
+  duration_hours: "",
+  insulin_dose_rule: "",
+  insulin_dose_unit: "",
+  glucose_target_min: "",
+  glucose_target_max: "",
+  glucose_target_unit: "",
+  glucose_target_min_extreme: "",
+  glucose_target_max_extreme: "",
+  glucose_drop_trigger_percentage: "",
+  initial_glucose_infusion_rate: "",
+  initial_glucose_infusion_rate_unit: "",
+};
+
 export default function ModalEditProtocol({
   open,
   onOpenChange,
   onSubmit,
   data,
 }: ModalEditProtocolProps) {
-  const [form, setForm] = useState({
-    protocol_code: "",
-    protocol_name: "",
-    version: "",
-    duration_hours: "",
-    insulin_dose_rule: "",
-    insulin_dose_unit: "",
-    glucose_target_min: "",
-    glucose_target_max: "",
-    glucose_target_unit: "",
-    glucose_target_min_extreme: "",
-    glucose_target_max_extreme: "",
-    glucose_drop_trigger_percentage: "",      // State baru
-    initial_glucose_infusion_rate: "",        // State baru
-    initial_glucose_infusion_rate_unit: "",   // State baru
+  const [form, setForm] = useState(initialFormState);
+
+  // Fungsi pembantu untuk memetakan data dari props ke state form
+  const mapDataToForm = (sourceData: any) => ({
+    protocol_code: sourceData.protocol_code ?? "",
+    protocol_name: sourceData.protocol_name ?? "",
+    version: String(sourceData.version ?? ""),
+    duration_hours: String(sourceData.duration_hours ?? ""),
+    insulin_dose_rule: sourceData.insulin_dose_rule ?? "",
+    insulin_dose_unit: sourceData.insulin_dose_unit ?? "",
+    glucose_target_min: String(sourceData.glucose_target_min ?? ""),
+    glucose_target_max: String(sourceData.glucose_target_max ?? ""),
+    glucose_target_unit: sourceData.glucose_target_unit ?? "",
+    glucose_target_min_extreme: String(sourceData.glucose_target_min_extreme ?? ""),
+    glucose_target_max_extreme: String(sourceData.glucose_target_max_extreme ?? ""),
+    glucose_drop_trigger_percentage: String(sourceData.glucose_drop_trigger_percentage ?? ""),
+    initial_glucose_infusion_rate: String(sourceData.initial_glucose_infusion_rate ?? ""),
+    initial_glucose_infusion_rate_unit: sourceData.initial_glucose_infusion_rate_unit ?? "",
   });
 
   useEffect(() => {
-    if (!data) return;
+    if (!open) {
+      setForm(initialFormState);
+      return;
+    }
 
-    setForm({
-      protocol_code: data.protocol_code ?? "",
-      protocol_name: data.protocol_name ?? "",
-      version: String(data.version ?? ""),
-      duration_hours: String(data.duration_hours ?? ""),
-      insulin_dose_rule: data.insulin_dose_rule ?? "",
-      insulin_dose_unit: data.insulin_dose_unit ?? "",
-      glucose_target_min: String(data.glucose_target_min ?? ""),
-      glucose_target_max: String(data.glucose_target_max ?? ""),
-      glucose_target_unit: data.glucose_target_unit ?? "",
-      glucose_target_min_extreme: String(
-        data.glucose_target_min_extreme ?? ""
-      ),
-      glucose_target_max_extreme: String(
-        data.glucose_target_max_extreme ?? ""
-      ),
-      glucose_drop_trigger_percentage: String(
-        data.glucose_drop_trigger_percentage ?? ""
-      ),
-      initial_glucose_infusion_rate: String(
-        data.initial_glucose_infusion_rate ?? ""
-      ),
-      initial_glucose_infusion_rate_unit:
-        data.initial_glucose_infusion_rate_unit ?? "",
-    });
-  }, [data]);
+    if (data) {
+      setForm(mapDataToForm(data));
+    }
+  }, [open, data]);
 
   const isFormReady =
     form.protocol_code.trim() &&
@@ -106,6 +108,8 @@ export default function ModalEditProtocol({
     });
   };
 
+  const { showToast } = useToast();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-145 max-w-145 sm:max-w-145 max-h-[90vh] overflow-y-auto">
@@ -124,14 +128,18 @@ export default function ModalEditProtocol({
           {/* Protocol Code */}
           <div>
             <label className="text-sm font-medium">
-              Protocol Code
-              <span className="text-red-500">*</span>
+              Protocol Code <span className="text-red-500">*</span>
             </label>
 
             <Input
+              placeholder="EGC002"
               value={form.protocol_code}
-              disabled
-              className="bg-muted"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  protocol_code: e.target.value,
+                })
+              }
             />
           </div>
 
@@ -139,11 +147,11 @@ export default function ModalEditProtocol({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">
-                Protocol Name
-                <span className="text-red-500">*</span>
+                Protocol Name <span className="text-red-500">*</span>
               </label>
 
               <Input
+                placeholder="e.g. Euglycemic Clamp"
                 value={form.protocol_name}
                 onChange={(e) =>
                   setForm({
@@ -156,11 +164,11 @@ export default function ModalEditProtocol({
 
             <div>
               <label className="text-sm font-medium">
-                Version
-                <span className="text-red-500">*</span>
+                Version <span className="text-red-500">*</span>
               </label>
 
               <Input
+                placeholder="e.g. 1.0"
                 value={form.version}
                 onChange={(e) =>
                   setForm({
@@ -178,29 +186,39 @@ export default function ModalEditProtocol({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">
-                Duration (hours)
-                <span className="text-red-500">*</span>
+                Duration (hours) <span className="text-red-500">*</span>
               </label>
 
               <Input
                 type="number"
+                min="1"
+                placeholder="e.g. 24"
                 value={form.duration_hours}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    duration_hours: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, duration_hours: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, duration_hours: "1" });
+                    showToast("Duration must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, duration_hours: val });
+                  }
+                }}
               />
+
             </div>
 
             <div>
               <label className="text-sm font-medium">
-                Insulin Dose
-                <span className="text-red-500">*</span>
+                Insulin Dose <span className="text-red-500">*</span>
               </label>
 
               <Input
+                placeholder="e.g. 0.5"
                 value={form.insulin_dose_rule}
                 onChange={(e) =>
                   setForm({
@@ -213,11 +231,11 @@ export default function ModalEditProtocol({
 
             <div>
               <label className="text-sm font-medium">
-                Dose Unit
-                <span className="text-red-500">*</span>
+                Dose Unit <span className="text-red-500">*</span>
               </label>
 
               <Input
+                placeholder="e.g. U/KgBWSC"
                 value={form.insulin_dose_unit}
                 onChange={(e) =>
                   setForm({
@@ -233,47 +251,65 @@ export default function ModalEditProtocol({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">
-                Target Glucose Min
-                <span className="text-red-500">*</span>
+                Target Glucose Min <span className="text-red-500">*</span>
               </label>
 
               <Input
                 type="number"
+                min="1"
+                placeholder="e.g. 80"
                 value={form.glucose_target_min}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_min: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, glucose_target_min: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, glucose_target_min: "1" });
+                    showToast("Target Glucose Min must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, glucose_target_min: val });
+                  }
+                }}
               />
             </div>
 
             <div>
               <label className="text-sm font-medium">
-                Target Glucose Max
-                <span className="text-red-500">*</span>
+                Target Glucose Max <span className="text-red-500">*</span>
               </label>
 
               <Input
-                type="number"
-                value={form.glucose_target_max}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_max: e.target.value,
-                  })
-                }
-              />
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 150"
+                  value={form.glucose_target_max}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_target_max: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_target_max: "1" });
+                      showToast("Target Glucose Max must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_target_max: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
               <label className="text-sm font-medium">
-                Target Unit
-                <span className="text-red-500">*</span>
+                Target Unit <span className="text-red-500">*</span>
               </label>
 
               <Input
+              placeholder="e.g. mg/dl"
                 value={form.glucose_target_unit}
                 onChange={(e) =>
                   setForm({
@@ -289,91 +325,123 @@ export default function ModalEditProtocol({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">
-                Target Glucose Min Extreme
-                <span className="text-red-500">*</span>
+                Target Glucose Min Extreme <span className="text-red-500">*</span>
               </label>
 
-              <Input
-                type="number"
-                value={form.glucose_target_min_extreme}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_min_extreme: e.target.value,
-                  })
-                }
-              />
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 70"
+                  value={form.glucose_target_min_extreme}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_target_min_extreme: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_target_min_extreme: "1" });
+                      showToast("Target Glucose Min Extreme must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_target_min_extreme: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
               <label className="text-sm font-medium">
-                Target Glucose Max Extreme
-                <span className="text-red-500">*</span>
+                Target Glucose Max Extreme <span className="text-red-500">*</span>
               </label>
-
-              <Input
-                type="number"
-                value={form.glucose_target_max_extreme}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_max_extreme: e.target.value,
-                  })
-                }
-              />
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 180"
+                  value={form.glucose_target_max_extreme}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_target_max_extreme: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_target_max_extreme: "1" });
+                      showToast("Target Glucose Max Extreme must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_target_max_extreme: val });
+                    }
+                  }}
+                />
             </div>
           </div>
 
           <div className="border-t" />
 
           {/* Row 4 (Infusion Parameters - Tambahan Baru) */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 items-end">
             <div>
               <label className="text-sm font-medium">
-                Glucose Drop Trigger (%)
-                <span className="text-red-500">*</span>
+                Glucose Drop Trigger (%) <span className="text-red-500">*</span>
               </label>
 
               <Input
-                type="number"
-                placeholder="e.g. 10"
-                value={form.glucose_drop_trigger_percentage}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_drop_trigger_percentage: e.target.value,
-                  })
-                }
-              />
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 10"
+                  value={form.glucose_drop_trigger_percentage}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, glucose_drop_trigger_percentage: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, glucose_drop_trigger_percentage: "1" });
+                      showToast("Glucose Drop Trigger must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, glucose_drop_trigger_percentage: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
               <label className="text-sm font-medium">
-                Initial Infusion Rate
-                <span className="text-red-500">*</span>
+                Initial Infusion Rate <span className="text-red-500">*</span>
               </label>
 
               <Input
-                type="number"
-                placeholder="e.g. 2"
-                value={form.initial_glucose_infusion_rate}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    initial_glucose_infusion_rate: e.target.value,
-                  })
-                }
-              />
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 2"
+                  value={form.initial_glucose_infusion_rate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      setForm({ ...form, initial_glucose_infusion_rate: "" });
+                      return;
+                    }
+                    const numVal = parseInt(val, 10);
+                    if (numVal < 1) {
+                      setForm({ ...form, initial_glucose_infusion_rate: "1" });
+                      showToast("Initial Infusion Rate must be 1 or greater", "error");
+                    } else {
+                      setForm({ ...form, initial_glucose_infusion_rate: val });
+                    }
+                  }}
+                />
             </div>
 
             <div>
               <label className="text-sm font-medium">
-                Infusion Rate Unit
-                <span className="text-red-500">*</span>
+                Infusion Rate Unit <span className="text-red-500">*</span>
               </label>
 
               <Input
-                placeholder="e.g. mg/kg/min"
+                placeholder="e.g. mg/kgBB/min"
                 value={form.initial_glucose_infusion_rate_unit}
                 onChange={(e) =>
                   setForm({

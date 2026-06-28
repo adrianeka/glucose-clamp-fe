@@ -533,6 +533,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         onSuccess={refetchData}
+        key={editTarget?.id || "edit-modal"}
       />
     </>
   );
