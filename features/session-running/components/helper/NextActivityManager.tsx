@@ -7,7 +7,7 @@ from "../../hooks/useNextActivityCountdown";
 import {
   useNextProgressActivity
 } from "@/features/session-creation/hooks/SessionCreationHook";
-
+import { useQueryClient } from "@tanstack/react-query";
 interface Props{
    sessionId:number;
    nextActivity?:any;
@@ -18,6 +18,7 @@ export default function NextActivityManager({
    nextActivity,
    warningThreshold
 }:Props){
+    const queryClient = useQueryClient();
    const {
       timeLeft,
       secondsLeft,
@@ -87,7 +88,11 @@ export default function NextActivityManager({
          sessionId,
          {
             onSuccess(){
-               setHasShownDialog(false);
+                setHasShownDialog(false);
+
+                queryClient.invalidateQueries({
+                    queryKey: ["session-detail", sessionId]
+                });
             },
             onError(){
                expiredRef.current=false;

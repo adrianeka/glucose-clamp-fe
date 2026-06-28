@@ -26,7 +26,6 @@ interface SessionRunningPageProps {
 }
 
 export default function SessionRunningPage({ sessionId, sessionData }: SessionRunningPageProps) {
-    console.count("SessionRunningPage");
     const [prepStep, setPrepStep] = useState<"Close" | "FORM" | "CONFIRM" | "DONE">("FORM");
     const [bloodStep, setBloodStep] = useState<"Close" | "FORM" | "CONFIRM" | "DONE">("FORM");
 
@@ -80,6 +79,9 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         await queryClient.invalidateQueries({
             queryKey: ["session-detail", sessionId]
         });
+         await queryClient.refetchQueries({
+            queryKey:["session-tracking", sessionId]
+        });
     };
     const handleBloodDraft = (data: any) => {
         setTempBloodData(data);
@@ -100,6 +102,9 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
 
         await queryClient.invalidateQueries({
             queryKey: ["session-detail", sessionId]
+        });
+        await queryClient.refetchQueries({
+            queryKey:["session-tracking", sessionId]
         });
     };
     

@@ -18,6 +18,9 @@ export const useCompleteActivity = (sessionId: number) => {
       queryClient.invalidateQueries({
         queryKey: ["activities", sessionId],
       });
+      queryClient.refetchQueries({
+          queryKey:["session-tracking", sessionId]
+      });
     },
   });
 };
