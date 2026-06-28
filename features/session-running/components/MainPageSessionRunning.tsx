@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useMemo } from "react";
 
 // Components
@@ -11,17 +10,15 @@ import SubCharts from "@/features/session-running/components/SubCharts";
 import InfusionMonitoringSidebar from "@/features/session-running/components/InfusionMonitoringSidebar";
 import ModalViewAllActivity from "@/features/session-running/components/ModalViewAllActivity";
 import { PreparationDialog } from "./modalStepActivity/ModalPreparationData";
-import { BloodSampleDialog } from "./modalStepActivity/ModalBloodDraw"; // Pastikan nama import benar
+import { BloodSampleDialog } from "./modalStepActivity/ModalBloodDraw"; 
 import ModalOtherActivity from "./modalStepActivity/ModalOtherActivity";
 import ModalSessionCompleted from "./modalStepActivity/ModalCompleted";
 import { ConfirmBloodDrawDialog } from "@/features/session-running/components/modalStepActivity/ConfirmBloodDrawDialog";
-import { ConfirmInsulinDialog } from "@/features/session-running/components/modalStepActivity/ConfirmInsulinDialog"; // Import modal konfirmasi suntik baru
 import { ConfirmPreparationDialog } from "@/features/session-running/components/modalStepActivity/ConfirmPreparationDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Hooks
 import { useGlobalConfig } from "@/features/global-configuration-uzy/hooks/globalConfigurationHook";
-import { useNextProgressActivity } from "@/features/session-creation/hooks/SessionCreationHook";
-import { useSubmitPreparationData } from "@/features/session-running/hooks/usePreparationMutation"; // Import hook baru
 
 interface SessionRunningPageProps {
     sessionId: number;
@@ -29,24 +26,18 @@ interface SessionRunningPageProps {
 }
 
 export default function SessionRunningPage({ sessionId, sessionData }: SessionRunningPageProps) {
+    console.count("SessionRunningPage");
     const [prepStep, setPrepStep] = useState<"Close" | "FORM" | "CONFIRM" | "DONE">("FORM");
     const [bloodStep, setBloodStep] = useState<"Close" | "FORM" | "CONFIRM" | "DONE">("FORM");
 
     const [tempPrepData, setTempPrepData] = useState(null);
     const [tempBloodData, setTempBloodData] = useState(null);
-    const [tempInjectionData, setTempInjectionData] = useState<any>(null);
-
-    const [confirmBloodOpen, setConfirmBloodOpen] = useState(false);
-    const [confirmPrepOpen, setConfirmPrepOpen] = useState(false);
-    const [confirmInjectionOpen, setConfirmInjectionOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalCompleteOpen, setIsModalCompleteOpen] = useState(false);
-    const router = useRouter();
-    const userId = Number(localStorage.getItem("user_id"));
     const [processedIds, setProcessedIds] = useState<number[]>([]);
     const { data: configData, isLoading: isConfigLoading } = useGlobalConfig(1);
     // Inisialisasi Mutation Hook
-    const { mutate: submitPreparation, isPending: isSubmittingPrep } = useSubmitPreparationData(sessionId);
+    const queryClient = useQueryClient();
 
     // LOGIKA ANTREAN
     const dialogQueue = useMemo(() => {
@@ -69,6 +60,7 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     const handleSuccessStep = (activityId: number) => {
         setProcessedIds((prev) => [...prev, activityId]);
     };
+
     const handlePreparationDraft = (data: any) => {
         setTempPrepData(data);
         setPrepStep("CONFIRM");
@@ -80,9 +72,14 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     const handleBackToFormPrep = () => {
         setPrepStep("FORM"); 
     };
-    const handlePrepSuccess = () => {
+    const handlePrepSuccess = async () => {
         setPrepStep("DONE");
+
         handleSuccessStep(currentActiveDialog.activityId);
+
+        await queryClient.invalidateQueries({
+            queryKey: ["session-detail", sessionId]
+        });
     };
     const handleBloodDraft = (data: any) => {
         setTempBloodData(data);
@@ -97,9 +94,13 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         setBloodStep("FORM"); 
     };
 
-    const handleBloodSuccess = () => {
+    const handleBloodSuccess = async () => {
         setBloodStep("DONE");
         handleSuccessStep(currentActiveDialog.activityId);
+
+        await queryClient.invalidateQueries({
+            queryKey: ["session-detail", sessionId]
+        });
     };
     
 

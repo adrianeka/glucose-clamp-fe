@@ -337,6 +337,10 @@ export default function ModalSamplingSchedule({
                       </SelectTrigger>
 
                       <SelectContent>
+                        <SelectItem value="5">
+                          5
+                        </SelectItem>
+
                         <SelectItem value="10">
                           10
                         </SelectItem>

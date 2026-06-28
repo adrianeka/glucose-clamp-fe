@@ -11,6 +11,10 @@ interface ModalConfirmationEndSessionRunningProps {
   onCancel: () => void;
   onSubmit: (formData: any) => void;
   defaultValues?: any;
+  mode?: "manual" | "critical";
+  glucoseValue?: number;
+  glucoseMin?: number;
+  glucoseMax?: number;
 }
 
 export function ModalConfirmationEndSessionRunning({
@@ -18,7 +22,12 @@ export function ModalConfirmationEndSessionRunning({
   onCancel,
   onSubmit,
   defaultValues,
+  mode,
+  glucoseMax,
+  glucoseMin,
+  glucoseValue
 }: ModalConfirmationEndSessionRunningProps) {
+  console.log("dipanggil mode ::", mode);
   const [internalStep, setInternalStep] = useState<1 | 2>(1);
   const [category, setCategory] = useState("");
   const [notes, setNotes] = useState("");
@@ -39,11 +48,11 @@ export function ModalConfirmationEndSessionRunning({
       if (defaultValues) {
         setCategory(defaultValues.category);
         setNotes(defaultValues.notes);
-        setInternalStep(2); // Kembali langsung ke form jika dari konfirmasi
+        setInternalStep(2);
       } else {
         setCategory("");
         setNotes("");
-        setInternalStep(1); // Mulai dari konfirmasi awal jika baru dibuka
+        setInternalStep(1);
       }
     }
     setIsDropdownOpen(false);
@@ -71,7 +80,8 @@ export function ModalConfirmationEndSessionRunning({
     }
     onSubmit({ category, notes });
   };
-
+  // console.log("internal step ::", internalStep);
+  // console.log("mode ::", mode);
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent
@@ -86,54 +96,145 @@ export function ModalConfirmationEndSessionRunning({
       >
         {/* ================= STEP 1: INITIAL CONFIRMATION ================= */}
         {internalStep === 1 && (
-          <div className="flex flex-col items-center text-center">
-            <div className="flex items-center justify-center w-[70px] h-[70px] rounded-full border-[3px] border-[#FF5A36] mb-6">
-              <CirclePause size={36} strokeWidth={2.5} className="text-[#FF5A36]" />
-            </div>
+          <>
+            {mode === "manual" ? (
+              <div className="flex flex-col items-center text-center">
+                <div className="flex items-center justify-center w-[70px] h-[70px] rounded-full border-[3px] border-[#FF5A36] mb-6">
+                  <CirclePause
+                    size={36}
+                    strokeWidth={2.5}
+                    className="text-[#FF5A36]"
+                  />
+                </div>
 
-            <DialogHeader className="flex flex-col items-center">
-              <DialogTitle className="text-[22px] font-bold text-[#212121] mb-2">
-                End Clamp Session?
-              </DialogTitle>
-              <DialogDescription className="text-[16px] text-[#707784] leading-relaxed">
-                Are you sure you want to manually end the current clamp session?
-              </DialogDescription>
-            </DialogHeader>
+                <DialogHeader className="flex flex-col items-center">
+                  <DialogTitle className="text-[22px] font-bold text-[#212121] mb-2">
+                    End Clamp Session?
+                  </DialogTitle>
 
-            <DialogFooter className="flex flex-row gap-4 w-full mt-8">
-              <Button
-                variant="ghost"
-                onClick={onCancel}
-                className="flex-1"
-                style={{
-                  height: "30px",
-                  borderRadius: "4px",
-                  backgroundColor: "#D9F3F6",
-                  color: "#009BB1",
-                  fontWeight: 700,
-                  fontSize: "16px",
-                  border: "none",
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => setInternalStep(2)}
-                className="flex-1"
-                style={{
-                  height: "30px",
-                  borderRadius: "4px",
-                  backgroundColor: "#FF5A36",
-                  color: "#FFFFFF",
-                  fontWeight: 700,
-                  fontSize: "16px",
-                  border: "none",
-                }}
-              >
-                Yes
-              </Button>
-            </DialogFooter>
-          </div>
+                  <DialogDescription className="text-[16px] text-[#707784] leading-relaxed">
+                    Are you sure you want to manually end the current clamp session?
+                  </DialogDescription>
+                </DialogHeader>
+
+                <DialogFooter className="flex flex-row gap-4 w-full mt-8">
+                  <Button
+                    variant="ghost"
+                    onClick={onCancel}
+                    className="flex-1"
+                    style={{
+                      height: "30px",
+                      borderRadius: "4px",
+                      backgroundColor: "#D9F3F6",
+                      color: "#009BB1",
+                      fontWeight: 700,
+                      fontSize: "16px",
+                      border: "none",
+                    }}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    onClick={() => setInternalStep(2)}
+                    className="flex-1"
+                    style={{
+                      height: "30px",
+                      borderRadius: "4px",
+                      backgroundColor: "#FF5A36",
+                      color: "#FFFFFF",
+                      fontWeight: 700,
+                      fontSize: "16px",
+                      border: "none",
+                    }}
+                  >
+                    Yes
+                  </Button>
+                </DialogFooter>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center">
+                <div className="flex items-center justify-center w-[70px] h-[70px] rounded-full border-[3px] border-[#FF5A36] mb-6">
+                  <CirclePause
+                    size={36}
+                    strokeWidth={2.5}
+                    className="text-[#FF5A36]"
+                  />
+                </div>
+
+                <DialogHeader className="flex flex-col items-center">
+                  <DialogTitle className="text-[22px] font-bold text-[#212121] mb-2">
+                    Critical Glucose Alert
+                  </DialogTitle>
+
+                  <DialogDescription className="text-[16px] text-[#707784] leading-relaxed">
+                    Latest glucose result is outside the acceptable range.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="w-full mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+                  <div className="text-sm text-[#707784]">
+                    Current Glucose
+                  </div>
+
+                  <div className="text-[30px] font-bold text-[#FF5A36]">
+                    {glucoseValue}
+                  </div>
+
+                  <div className="mt-3 text-sm text-[#707784]">
+                    Reference Range
+                  </div>
+
+                  <div className="font-semibold text-[#212121]">
+                    {glucoseMin} – {glucoseMax}
+                  </div>
+                </div>
+
+                <DialogFooter className="flex flex-row gap-4 w-full mt-8">
+                  <Button
+                    variant="ghost"
+                    onClick={onCancel}
+                    className="flex-1"
+                    style={{
+                      height: "30px",
+                      borderRadius: "4px",
+                      backgroundColor: "#D9F3F6",
+                      color: "#009BB1",
+                      fontWeight: 700,
+                      fontSize: "16px",
+                      border: "none",
+                    }}
+                  >
+                    Dismiss
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      setCategory(
+                        "Glucose Exceeded Critical Limits"
+                      );
+                      setNotes(
+                        `Glucose value (${glucoseValue}) exceeded acceptable range (${glucoseMin}-${glucoseMax}).`
+                      );
+                      setInternalStep(2);
+                    }}
+                    className="flex-1"
+                    style={{
+                      height: "30px",
+                      borderRadius: "4px",
+                      backgroundColor: "#FF5A36",
+                      color: "#FFFFFF",
+                      fontWeight: 700,
+                      fontSize: "16px",
+                      border: "none",
+                    }}
+                  >
+                    Proceed
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
+          </>
         )}
 
         {/* ================= STEP 2: FORM REASON ================= */}
@@ -209,7 +310,9 @@ export function ModalConfirmationEndSessionRunning({
             <DialogFooter className="flex flex-row gap-4 w-full mt-6 border-t border-slate-100 pt-6">
               <Button
                 variant="ghost"
-                onClick={() => setInternalStep(1)}
+                onClick={() => {
+                    setInternalStep(1);
+                }}
                 className="flex-1"
                 style={{
                   height: "36px",

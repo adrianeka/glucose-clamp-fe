@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, Clock3, MoreVertical, CircleStop } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSessionCountdown } from "../hooks/sessionRunningHook";
+// import { useSessionCountdown } from "../hooks/sessionRunningHook";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
 // Impor kedua komponen modal yang sudah Anda buat terpisah
 import { ModalConfirmationEndSessionRunning } from "./ModalConfirmationEndSessionRunning";
 import { ConfirmEndSessionDialog } from "./ConfirmEndSessionDialog";
+import SessionCountdown from "./helper/SessionCoundown";
 
 export default function RunningHeader({ 
   sessionData, 
@@ -24,7 +25,7 @@ export default function RunningHeader({
 }) {
   const router = useRouter();
 
-  // State koordinasi transisi alur penghentian sesi (Sesuai pola Blood Draw)
+  // State koordinasi transisi alur penghentian sesi (Sesuai pola Blood Draw) 
   const [endSessionStep, setEndSessionStep] = useState<"Close" | "FORM" | "CONFIRM">("Close");
   const [tempEndSessionData, setTempEndSessionData] = useState<{ category: string; notes: string } | null>(null);
 
@@ -34,7 +35,7 @@ export default function RunningHeader({
   const totalMinutes = lastActivity ? lastActivity.minute : 0;
 
   // Hook menghitung sisa waktu berdasarkan jam sekarang
-  const countdown = useSessionCountdown(sessionData?.startTime, totalMinutes);
+  // const countdown = useSessionCountdown(sessionData?.startTime, totalMinutes);
 
   return (
     <div className="flex items-center justify-between mb-2">
@@ -76,10 +77,14 @@ export default function RunningHeader({
         </button>
 
         {/* Timer Box */}
-        <div className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg font-mono font-bold text-lg text-[#212121] min-w-[140px] justify-center">
+        {/* <div className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg font-mono font-bold text-lg text-[#212121] min-w-[140px] justify-center">
           <Clock3 size={20} className="text-gray-400" />
           {countdown}
-        </div>
+        </div> */
+        <SessionCountdown
+          startTime={sessionData?.startTime}
+          totalMinutes={totalMinutes}
+        />}
 
         {/* More Actions */}
         <DropdownMenu>
@@ -118,18 +123,21 @@ export default function RunningHeader({
         </DropdownMenu>
 
         {/* ================= MODAL ALUR TERMINASI SESI (STEP 1 & 2) ================= */}
-        <ModalConfirmationEndSessionRunning
-          isOpen={endSessionStep === "FORM"}
-          defaultValues={tempEndSessionData}
-          onCancel={() => {
-            setEndSessionStep("Close");
-            setTempEndSessionData(null);
-          }}
-          onSubmit={(data) => {
-            setTempEndSessionData(data);
-            setEndSessionStep("CONFIRM"); // Lanjut ke langkah konfirmasi ringkasan (Step 3)
-          }}
-        />
+        {endSessionStep === "FORM" && (
+          <ModalConfirmationEndSessionRunning
+            isOpen={true}
+            defaultValues={tempEndSessionData}
+            onCancel={() => {
+              setEndSessionStep("Close");
+              setTempEndSessionData(null);
+            }}
+            onSubmit={(data) => {
+              setTempEndSessionData(data);
+              setEndSessionStep("CONFIRM");
+            }}
+            mode="manual"
+          />
+        )}
 
         {/* ================= MODAL RINGKASAN VERIFIKASI (STEP 3) ================= */}
         <ConfirmEndSessionDialog
