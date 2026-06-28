@@ -51,7 +51,7 @@ export default function ModalViewAllActivity({
 
       case "NEXT_ACTIVITY":
         return {
-          backgroundColor: "#C4EAEE",
+          backgroundColor: "#EAF5FD",
           color: "#0076D2",
         };
 
