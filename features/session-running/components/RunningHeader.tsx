@@ -76,6 +76,16 @@ export default function RunningHeader({
           View All Activities
         </button>
 
+        {/* Timer Box */}
+        {/* <div className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg font-mono font-bold text-lg text-[#212121] min-w-[140px] justify-center">
+          <Clock3 size={20} className="text-gray-400" />
+          {countdown}
+        </div> */
+        <SessionCountdown
+          startTime={sessionData?.startTime}
+          totalMinutes={totalMinutes}
+        />}
+
         {/* More Actions */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
