@@ -161,7 +161,7 @@ export function EditPhaseModal({
                 <option value="" disabled hidden>
                   Type
                 </option>
-                {["Preparation", "Pre-insulin", "Post-insulin", "Finalization"].map((type) => (
+                {["Preparation", "Stabilization", "Pre-insulin", "Post-insulin", "Finalization"].map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
