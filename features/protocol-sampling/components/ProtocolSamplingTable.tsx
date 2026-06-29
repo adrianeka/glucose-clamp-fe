@@ -75,7 +75,7 @@ export default function ProtocolSamplingTable({
         <thead>
           <tr className="bg-[#F5F8FA] text-left">
             <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
-              Protocol ID
+              Protocol Code
             </th>
 
             <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
@@ -104,7 +104,8 @@ export default function ProtocolSamplingTable({
             >
               <td className="px-4 py-4">
                 <span className="inline-flex items-center rounded-full border border-[#8ED0F9] bg-[#F3FBFF] px-2 py-1 text-xs text-[#0076D2]">
-                  {item.protocol_id}
+                  {/* {item.protocol_id} */}
+                  {item.protocol_code} |{" "} {item.version}
                 </span>
               </td>
 
@@ -113,10 +114,10 @@ export default function ProtocolSamplingTable({
                   {item.protocol_name}
                 </div>
 
-                <div className="text-xs text-[#707784]">
+                {/* <div className="text-xs text-[#707784]">
                   {item.protocol_code} |{" "}
                   {item.version}
-                </div>
+                </div> */}
               </td>
 
               <td className="px-4 py-4 text-[#212121]">
