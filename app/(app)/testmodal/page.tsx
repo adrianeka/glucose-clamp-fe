@@ -172,7 +172,6 @@ export default function TestPage() {
         onOpenChange={setIsOpenInjection}
         activity={activeActivity}
         onSubmit={handleInjectionSubmit}
-        defaultValues={tempFormData}
       />
 
       <ConfirmInsulinDialog 
