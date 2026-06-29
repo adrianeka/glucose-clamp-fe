@@ -10,13 +10,13 @@ import { ActivityDetail } from "@/features/session-running/services/ActivityServ
 
 interface BloodSampleDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   activity: ActivityDetail | null;
   onSubmit: (formData: any) => void;
-  defaultValues?: any; // Menyimpan ketikan sebelumnya saat "Go Back"
+  defaultValues?: any;
+  onCancel?:()=>void;
 }
 
-export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit, defaultValues }: BloodSampleDialogProps) {
+export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, onCancel }: BloodSampleDialogProps) {
   // Gunakan string kosong ("") sebagai default agar user tahu kolom tersebut wajib diisi baru
   const [form, setForm] = useState({
     sampleCode: "",
@@ -74,8 +74,18 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit, de
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl p-8 bg-white rounded-xl border-none shadow-lg">
+    <Dialog open={isOpen} onOpenChange={onCancel}>
+      <DialogContent
+        style={{
+          maxWidth: "36rem",      // max-w-xl
+          padding: "2rem",        // p-8
+          backgroundColor: "#fff",
+          borderRadius: "12px",   // rounded-xl
+          border: "none",
+          boxShadow:
+            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", // shadow-lg
+        }}
+      >
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-2xl font-bold text-slate-800">
             Input Activity Data
@@ -184,16 +194,33 @@ export function BloodSampleDialog({ isOpen, onOpenChange, activity, onSubmit, de
         </div>
 
         <DialogFooter className="flex justify-end gap-3 pt-4">
-          <Button 
-            variant="ghost" 
-            onClick={() => onOpenChange(false)} 
-            className="h-11 bg-[#E0F2FE] hover:bg-[#bae6fd] text-[#0070C0] font-semibold rounded-md px-8 transition-colors"
+          <Button
+            variant="ghost"
+            onClick={onCancel} 
+            style={{
+              height: "44px",
+              backgroundColor: "#E0F2FE",
+              color: "#0070C0",
+              fontWeight: 600,
+              borderRadius: "6px",
+              padding: "0 32px",
+              transition: "background-color .2s ease",
+            }}
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmitting} 
-            className="h-11 bg-[#0070C0] hover:bg-blue-700 text-white font-semibold rounded-md px-8 transition-colors"
+
+          <Button
+            onClick={handleSubmitting}
+            style={{
+              height: "44px",
+              backgroundColor: "#0070C0",
+              color: "#FFFFFF",
+              fontWeight: 600,
+              borderRadius: "6px",
+              padding: "0 32px",
+              transition: "background-color .2s ease",
+            }}
           >
             Submit
           </Button>

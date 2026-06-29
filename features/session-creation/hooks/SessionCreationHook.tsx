@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getSessions, getSessionDetail, createSession, sessionStart } from "../services/SessionCreationService";
+import { getSessions, getSessionDetail, createSession, sessionStart, nextProgressActivity } from "../services/SessionCreationService";
 
 export const useSessions = (
   pageNumber: number,
@@ -52,6 +52,29 @@ export const useSessionStart = () => {
       // Refresh detail session yang baru dijalankan
       queryClient.invalidateQueries({
         queryKey: ["session-detail", sessionId],
+      });
+    },
+  });
+};
+
+export const useNextProgressActivity = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sessionId: number) =>
+      nextProgressActivity(sessionId),
+
+    onSuccess: (_, sessionId) => {
+      queryClient.invalidateQueries({
+        queryKey: ["session-tracking", sessionId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["session-detail", sessionId],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["sessions"],
       });
     },
   });

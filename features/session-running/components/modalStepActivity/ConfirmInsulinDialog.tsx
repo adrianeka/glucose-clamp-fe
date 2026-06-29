@@ -51,7 +51,17 @@ export function ConfirmInsulinDialog({ isOpen, onOpenChange, activity, data, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl p-8 bg-white rounded-xl border-none shadow-lg">
+      <DialogContent
+        style={{
+          maxWidth: "500px",     
+          padding: "2rem",       
+          backgroundColor: "#FFFFFF", 
+          borderRadius: "0.75rem",    
+          border: "none",             
+          boxShadow:
+            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", // shadow-lg
+        }}
+      >
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-2xl font-bold text-slate-800">
             Confirm Insulin Injection

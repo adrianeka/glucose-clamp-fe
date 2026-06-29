@@ -44,3 +44,11 @@ export const sessionStart = async (
   return response.data;
 };
 
+export const nextProgressActivity = async (sessionId: number) => {
+  const response = await axiosInstance.post(
+    `/session/${sessionId}/next-progress-activity`
+  );
+
+  return response.data;
+};
+

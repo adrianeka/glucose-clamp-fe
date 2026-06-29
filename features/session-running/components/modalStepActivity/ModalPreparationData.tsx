@@ -10,13 +10,13 @@ import { ActivityDetail } from "@/features/session-running/services/ActivityServ
 
 interface PreparationDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   activity: ActivityDetail | null;
   onSubmit: (formData: any) => void;
   defaultValues?: any;
+  onCancel?:()=>void;
 }
 
-export function PreparationDialog({ isOpen, onOpenChange, activity, onSubmit, defaultValues }: PreparationDialogProps) {
+export function PreparationDialog({ isOpen, activity, onSubmit, defaultValues, onCancel }: PreparationDialogProps) {
   const [form, setForm] = useState({
     systolic: "",
     diastolic: "",
@@ -85,8 +85,17 @@ export function PreparationDialog({ isOpen, onOpenChange, activity, onSubmit, de
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-8 bg-white rounded-xl">
+    <Dialog open={isOpen}>
+      <DialogContent
+        style={{
+          maxWidth: "42rem",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          padding: "2rem",
+          backgroundColor: "#fff",
+          borderRadius: "12px",
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-slate-800">Input Preparation Data</DialogTitle>
           <DialogDescription className="text-sm text-slate-500 font-medium">
@@ -117,8 +126,36 @@ export function PreparationDialog({ isOpen, onOpenChange, activity, onSubmit, de
         </div>
 
         <DialogFooter className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="h-11 bg-[#E0F2FE] hover:bg-[#bae6fd] text-[#0070C0] font-semibold rounded-md px-8 transition-colors">Cancel</Button>
-          <Button onClick={handleSubmitting} className="h-11 bg-[#0070C0] hover:bg-blue-700 text-white font-semibold rounded-md px-8 transition-colors">Submit</Button>
+          <Button
+            variant="ghost"
+            onClick={onCancel}
+            style={{
+              height: "44px",
+              backgroundColor: "#E0F2FE",
+              color: "#0070C0",
+              fontWeight: 600,
+              borderRadius: "6px",
+              padding: "0 32px",
+              transition: "background-color .2s ease",
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={handleSubmitting}
+            style={{
+              height: "44px",
+              backgroundColor: "#0070C0",
+              color: "#fff",
+              fontWeight: 600,
+              borderRadius: "6px",
+              padding: "0 32px",
+              transition: "background-color .2s ease",
+            }}
+          >
+            Submit
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

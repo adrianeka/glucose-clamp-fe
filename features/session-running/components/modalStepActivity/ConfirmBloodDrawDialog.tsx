@@ -6,17 +6,19 @@ import { Button } from "@/components/ui/button";
 import ConfirmationWarning from "./ConfirmationWarning";
 import { ActivityDetail } from "@/features/session-running/services/ActivityService";
 import { useCreateBloodSample } from "@/features/session-running/hooks/useActivityMutation";
+import { useToast } from "@/components/ui/toast";
 
 
 interface ConfirmBloodDrawDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
   activity: ActivityDetail | null;
   data: any;
-  onCancel?: () => void; // Tambahan prop opsional untuk fungsi kembali ke modal sebelumnya
+  onCancel?: () => void;
+  onSuccess?: () => void;
 }
 
-export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, onCancel }: ConfirmBloodDrawDialogProps) {
+export function ConfirmBloodDrawDialog({ isOpen, activity, data, onCancel, onSuccess }: ConfirmBloodDrawDialogProps) {
+  const {showToast} = useToast();
   const sessionId = activity?.sessionId || 1;
   const createBloodSampleMutation = useCreateBloodSample(sessionId);
 
@@ -35,7 +37,7 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
       labResults: isGlucose
         ? [
             {
-              parameterName: "PK",
+              parameterName: "Glucose",
               value: parseFloat(data.resultPk) || 0,
               unit: data.unitPk,
             },
@@ -56,22 +58,18 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
 
     createBloodSampleMutation.mutate(payload, {
       onSuccess: () => {
-        alert("Data Blood Sample berhasil disimpan!");
-        onOpenChange(false);
+        showToast("Data Blood Sample berhasil disimpan!");
+         if (onSuccess) onSuccess(); 
       },
       onError: (error) => {
         console.error(error);
-        alert("Gagal menyimpan data Blood Sample.");
+        showToast("Gagal menyimpan data Blood Sample.", "error");
       }
     });
   };
 
   const handleCancelAction = () => {
-    if (onCancel) {
-      onCancel(); // Jika ada fungsi onCancel khusus (kembali ke modal sebelumnya), jalankan fungsi tersebut
-    } else {
-      onOpenChange(false); // Jika tidak ada, cukup tutup modal biasa
-    }
+    onCancel
   };
 
   const formatTime = (timeStr?: string) => {
@@ -85,8 +83,18 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl p-8 bg-white rounded-xl border-none shadow-lg">
+    <Dialog open={isOpen} onOpenChange={onCancel}>
+      <DialogContent
+        style={{
+          maxWidth: "36rem",
+          padding: "2rem",
+          backgroundColor: "#fff",
+          borderRadius: "12px",
+          border: "none",
+          boxShadow:
+            "0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1)",
+        }}
+      >
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-2xl font-bold text-slate-800">
             Confirm Activity Data
@@ -149,20 +157,40 @@ export function ConfirmBloodDrawDialog({ isOpen, onOpenChange, activity, data, o
         </div>
 
         <DialogFooter className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
-          <Button 
-            variant="ghost" 
-            onClick={handleCancelAction} 
+          <Button
+            variant="ghost"
+            onClick={handleCancelAction}
             disabled={createBloodSampleMutation.isPending}
-            className="h-11 bg-[#E0F2FE] hover:bg-[#bae6fd] text-[#0070C0] font-semibold rounded-md px-8 transition-colors"
+            style={{
+              height: "44px",
+              backgroundColor: "#E0F2FE",
+              color: "#0070C0",
+              fontWeight: 600,
+              borderRadius: "6px",
+              paddingLeft: "32px",
+              paddingRight: "32px",
+              transition: "background-color .2s ease",
+            }}
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleConfirm} 
+          <Button
+            onClick={handleConfirm}
             disabled={createBloodSampleMutation.isPending}
-            className="h-11 bg-[#0070C0] hover:bg-blue-700 text-white font-semibold rounded-md px-8 transition-colors"
+            style={{
+              height: "44px",
+              backgroundColor: "#0070C0",
+              color: "#FFFFFF",
+              fontWeight: 600,
+              borderRadius: "6px",
+              paddingLeft: "32px",
+              paddingRight: "32px",
+              transition: "background-color .2s ease",
+            }}
           >
-            {createBloodSampleMutation.isPending ? "Confirming..." : "Confirm"}
+            {createBloodSampleMutation.isPending
+              ? "Confirming..."
+              : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>

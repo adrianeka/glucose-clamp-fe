@@ -12,22 +12,21 @@ import { useCreateActivity } from "@/features/session-creation/hooks/ActvityHook
 import ModalEditActivity from "@/features/session-creation/components/ModalEditActivity";
 import ModalDeleteConfirm from "@/features/session-creation/components/ModalDeleteConfirmActivity";
 import { useUpdateActivity, useDeleteActivity } from "@/features/session-creation/hooks/ActvityHook";
+import { formatMinutesToHHMMSS } from "@/lib/time";
 
 import { useToast } from "@/components/ui/toast";
+interface SessionActivitiesPageProps{
+    sessionId: number;
+    sessionData: any;
+}
 
-export default function SessionActivitiesPage() {
-  const params = useParams();
-  const sessionId = Number(
-    params.sessionId
-  );
+export default function SessionActivitiesPage({sessionId, sessionData}:SessionActivitiesPageProps) {
   const { showToast } = useToast();
 
   const [
     openAddActivity,
     setOpenAddActivity,
   ] = useState(false);
-
-  const { data, isLoading } = useSessionDetail(sessionId);
 
   const createActivityMutation = useCreateActivity(sessionId);
 
@@ -37,6 +36,11 @@ export default function SessionActivitiesPage() {
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [targetDeleteId, setTargetDeleteId] = useState<number | null>(null);
+
+  const lastActivity = sessionData?.activities?.[sessionData.activities.length - 1];
+  const totalDurationMinutes = lastActivity?.minute || 0;
+
+  const displayTime = formatMinutesToHHMMSS(totalDurationMinutes);
 
   // Handle Action dari Table
   const onEditTrigger = (activity: any) => {
@@ -86,6 +90,7 @@ export default function SessionActivitiesPage() {
           formData.activityType,
         activityDesc:
           formData.activityDesc,
+        activityStatus: "INQUEUE"
       });
 
       setOpenAddActivity(false);
@@ -99,10 +104,12 @@ export default function SessionActivitiesPage() {
   return (
     <div className="flex flex-col gap-6 max-h-screen overflow-hidden">
       <ActivitiesHeader
-        sessionId={sessionId}
-        participant="Adrian Saputra"
-        protocol="EGC001 v1.0 - Euglycemic Clamp"
-        visitDate="2026-06-10, 07:00"
+        sessionId={sessionData?.sessionId}
+        participant={sessionData?.participantName}
+        protocol={sessionData?.protocolName}
+        visitDate={sessionData?.visitDate}
+        statusSession = {sessionData?.sessionStatus}
+        displayTime={displayTime}
       />
 
       <div className="rounded-2xl bg-white p-6 shadow-sm border border-[#E2E4E6] flex flex-col overflow-hidden">
@@ -122,8 +129,7 @@ export default function SessionActivitiesPage() {
 
         {/* Tabel tanpa pagination, scroll internal */}
         <ActivitiesTable
-          data={data?.activities ?? []}
-          loading={isLoading}
+          data={sessionData?.activities ?? []}
           onEdit={onEditTrigger}
           onDelete={onDeleteTrigger}
         />

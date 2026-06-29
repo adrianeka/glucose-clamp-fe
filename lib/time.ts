@@ -38,3 +38,14 @@ export const relativeTime = (date: string | Date) => {
 
   return formatDate(date);
 };
+
+// utils/timeFormatter.ts
+export const formatMinutesToHHMMSS = (totalMinutes: number) => {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const seconds = 0; // Karena data awal biasanya hanya sampai level menit
+
+  return [hours, minutes, seconds]
+    .map((v) => v.toString().padStart(2, "0"))
+    .join(":");
+};
