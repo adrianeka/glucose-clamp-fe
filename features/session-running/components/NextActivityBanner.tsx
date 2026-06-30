@@ -8,15 +8,18 @@ import { TimerDialog } from "./modalStepActivity/ModalTimerGlobalConfig"; // Pas
 
 interface NextActivityBannerProps {
   sessionData: any;
+  configData: any;
 }
 
 export default function NextActivityBanner({
   sessionData,
+  configData,
 }: NextActivityBannerProps) {
   const params = useParams();
   const sessionId = Number(params.sessionId);
   const nextActivity = sessionData?.nextActivities?.[0];
   const [now, setNow] = useState<Date | null>(null);
+  const warningThreshold = configData?.timerThresholdSeconds ?? 60; 
 
   useEffect(() => {
     setNow(new Date());
@@ -43,16 +46,16 @@ export default function NextActivityBanner({
 
   // Logika untuk menampilkan Dialog saat mendekati waktu (Contoh: < 60 detik)
   useEffect(() => {
-    if (initialized && secondsLeft <= 60 && secondsLeft > 0 && !hasShownDialog) {
+    if (initialized && secondsLeft <= warningThreshold && secondsLeft > 0 && !hasShownDialog) {
       setIsDialogOpen(true);
       setHasShownDialog(true);
     }
     
     // Reset status dialog jika activity berubah (waktu di-reset)
-    if (secondsLeft > 60) {
+    if (secondsLeft > warningThreshold) {
       setHasShownDialog(false);
     }
-  }, [secondsLeft, initialized, hasShownDialog]);
+  }, [secondsLeft, initialized, hasShownDialog, warningThreshold]);
 
   // Logika Auto-Progress saat waktu habis
   useEffect(() => {

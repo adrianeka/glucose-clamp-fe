@@ -106,6 +106,9 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     useEffect(() => {
         setPrepStep("FORM");
         setBloodStep("FORM");
+        // reset setiap activity berubah
+        setTempPrepData(null);
+        setTempBloodData(null);
     }, [currentActiveDialog?.activityId]);
 
     return (
@@ -118,7 +121,7 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
 
                 <div className="p-3 bg-white rounded-xl border border-[#E2E4E6]">
                     <div className=" bg-white mb-4 align-middle">
-                        <NextActivityBanner sessionData={sessionData} />
+                        <NextActivityBanner sessionData={sessionData} configData={configData} />
                     </div>
 
                     <div className="mt-6 flex gap-2">

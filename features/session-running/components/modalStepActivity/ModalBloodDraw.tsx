@@ -54,8 +54,13 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
 
   const handleSubmitting = () => {
     // Validasi sederhana sebelum lanjut ke konfirmasi
-    if (!form.sampleCode || !form.tubeType || !form.volume || !form.resultPk) {
+    if (!form.sampleCode || !form.tubeType || !form.volume || !form.resultPk || !form.unitPk) {
       alert("Mohon lengkapi semua kolom yang wajib diisi (*).");
+      return;
+    }
+    
+    if (!isGlucose && (!form.resultCPeptide || !form.unitCPeptide)) {
+    alert("Mohon lengkapi kolom PK & C-Peptide.");
       return;
     }
     onSubmit(form);
