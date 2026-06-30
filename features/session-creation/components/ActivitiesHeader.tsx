@@ -84,16 +84,6 @@ export default function ActivitiesHeader({
         <div className="flex items-center gap-2 rounded-lg border px-4 py-2 bg-white">
           <Clock3 size={16} className="text-gray-400" />
           <span className="font-mono font-bold">
-            <span className="font-mono font-bold">
-              {now
-                ? now.toLocaleString("sv-SE").replace(" ", "T")
-                : "--:--:--"}
-            </span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg border px-4 py-2 bg-white">
-          <Clock3 size={16} className="text-gray-400" />
-          <span className="font-mono font-bold">
             {displayTime} 
           </span>
         </div>
