@@ -1,17 +1,17 @@
 "use client";
 
-import { Clock, X } from "lucide-react";
+import { Clock } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogDescription 
-} from "@/components/ui/dialog"; // Pastikan path ini benar sesuai struktur shadcn anda
+} from "@/components/ui/dialog"; 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Impor useEffect
 import dayjs from "dayjs";
 import { useInfusion } from "../hooks/useInfusionMonitoring";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,43 +19,76 @@ import { Textarea } from "@/components/ui/textarea";
 interface ModalAddInfusionProps {
   isOpen: boolean;
   onClose: () => void;
-  sessionId: number
+  sessionId: number;
 }
 
 export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAddInfusionProps) {
   const userId = localStorage.getItem('user_id');
-  const { useAddInfusion } = useInfusion(sessionId);
+  
+  const { useAddInfusion, useGetRecommendationGir } = useInfusion(sessionId);
   const addInfusion = useAddInfusion();
+  const { 
+    data: recommendationRes, 
+    isLoading: isLoadingRec, 
+    refetch: refetchRecommendation 
+  } = useGetRecommendationGir();
+
   const [form, setForm] = useState({
     time: dayjs().format("YYYY-MM-DDTHH:mm"),
     glucoseValue: "",
     confirmationRateMinKg: "",
-    rateMinKg: "",
     flowRateMlHr: "",
     adjustmentNote: "",
   });
+
+  // Ambil data terbaru dari response backend hasil revisi
+  const latestGir = recommendationRes?.data?.latestGir;
+  const recommendedGir = recommendationRes?.data?.recommendedGir;
+  const latestGlucose = recommendationRes?.data?.latestGlucoseValue;
+
+  useEffect(() => {
+    if (isOpen) {
+      refetchRecommendation();
+      setForm({
+        time: dayjs().format("YYYY-MM-DDTHH:mm"),
+        glucoseValue: "",
+        confirmationRateMinKg: "",
+        flowRateMlHr: "",
+        adjustmentNote: "",
+      });
+    }
+  }, [isOpen, refetchRecommendation]);
+
+  // Efek untuk otomatisasi pengisian Glucose Value di form
+  useEffect(() => {
+    if (isOpen && latestGlucose !== undefined && latestGlucose !== null) {
+      setForm((prev) => ({
+        ...prev,
+        glucoseValue: latestGlucose.toString(),
+      }));
+    }
+  }, [latestGlucose, isOpen]);
+
+  // Logic GIR: jika latestGir adalah 0, maka nilainya 2. Jika tidak, pakai recommendedGir
+  const calculatedRecommendationGir = latestGir === 0 ? 2 : (recommendedGir ?? 0);
 
   const handleSubmit = () => {
     addInfusion.mutate({
       sessionId,
       time: form.time,
       glucoseValue: Number(form.glucoseValue),
-      confirmationRateMinKg:
-        Number(form.confirmationRateMinKg),
-      rateMinKg:
-        Number(form.rateMinKg),
-      flowRateMlHr:
-        Number(form.flowRateMlHr),
-      adjustmentNote:
-        form.adjustmentNote,
-      monitoredBy: userId
-    },{
-        onSuccess:()=>{
+      confirmationRateMinKg: Number(form.confirmationRateMinKg),
+      rateMinKg: Number(calculatedRecommendationGir),
+      flowRateMlHr: Number(form.flowRateMlHr),
+      adjustmentNote: form.adjustmentNote,
+      monitoredBy: userId ? Number(userId) : null
+    }, {
+        onSuccess: () => {
             onClose();
         }
     });
-
   };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -74,7 +107,6 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
           gap: 0,
         }}
       >
-        
         {/* Header Section */}
         <div className="pt-5 pb-4 px-10 border-b border-[#F1F3F5] relative">
           <DialogHeader className="text-left space-y-1">
@@ -89,7 +121,7 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
 
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-          {/* Session ID - Disabled style */}
+          {/* Session ID */}
           <div className="space-y-2">
             <Label className="text-[13px] font-semibold text-[#4B5563]">
               Session ID <span className="text-red-500">*</span>
@@ -137,13 +169,14 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
               <Input
                 className="h-10"
                 value={form.glucoseValue}
+                placeholder={isLoadingRec ? "Loading..." : "Enter Glucose"}
                 onChange={(e)=>
                   setForm(prev=>({
                       ...prev,
-                      glucoseValue:e.target.value
+                      glucoseValue: e.target.value
                   }))
                 }
-            />
+              />
             </div>
             <div className="space-y-2">
               <Label className="text-[13px] font-semibold text-[#4B5563]">
@@ -155,23 +188,27 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
                 onChange={(e)=>
                   setForm(prev=>({
                       ...prev,
-                      flowRateMlHr:e.target.value
+                      flowRateMlHr: e.target.value
                   }))
                 }
-            />
+              />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
+            {/* Input Recommendation GIR (Disabled) */}
             <div className="space-y-2">
               <Label className="text-[13px] font-semibold text-[#4B5563]">
                 Recommendation GIR <span className="text-red-500">*</span>
               </Label>
               <Input 
                 disabled 
-                value="4.0" 
+                value={isLoadingRec ? "Loading..." : calculatedRecommendationGir} 
                 className="bg-[#E9ECEF] border-[#DEE2E6] h-10 rounded-xl opacity-100 disabled:opacity-100"
               />
             </div>
+
+            {/* Input Confirmation GIR */}
             <div className="space-y-2">
               <Label className="text-[13px] font-semibold text-[#4B5563]">
                 Confirmation GIR <span className="text-red-500">*</span>
@@ -182,13 +219,13 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
                 onChange={(e)=>
                     setForm(prev=>({
                         ...prev,
-                        confirmationRateMinKg:e.target.value
+                        confirmationRateMinKg: e.target.value
                     }))
                 }
               />
             </div>
-
           </div>
+
           <div className="space-y-2">
             <Label className="text-[13px] font-semibold text-[#4B5563]">
               Adjustment Note
@@ -250,7 +287,7 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
 
           <Button
             onClick={handleSubmit}
-            disabled={addInfusion.isPending}
+            disabled={addInfusion.isPending || isLoadingRec}
             className="
               h-9
               px-5

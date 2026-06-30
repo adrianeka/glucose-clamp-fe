@@ -19,7 +19,7 @@ export default function NextActivityBanner({
   const sessionId = Number(params.sessionId);
   const nextActivity = sessionData?.nextActivities?.[0];
   const [now, setNow] = useState<Date | null>(null);
-  const warningThreshold = configData?.timerThresholdSeconds ?? 60; 
+  const warningThreshold = Number(configData?.data?.gconfValue) ?? 60; 
 
   useEffect(() => {
     setNow(new Date());
@@ -187,12 +187,6 @@ export default function NextActivityBanner({
               }}
             >
               Time Remaining: {remainingTime || "00:00"}
-            </span>
-
-            <span className="ml-2 font-mono font-bold">
-              Waktu sekarang : {now
-                ? now.toLocaleString("sv-SE").replace(" ", "T")
-                : "--:--:--"}
             </span>
           </div>
 
