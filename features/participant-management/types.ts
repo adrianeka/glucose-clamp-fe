@@ -11,6 +11,8 @@ export interface Participant {
   createdBy: number;
   updatedAt: string | null;
   updatedBy: number;
+  createdByName: string | null;
+  updatedByName: string | null;
 }
 
 export interface ApiResponse<T> {

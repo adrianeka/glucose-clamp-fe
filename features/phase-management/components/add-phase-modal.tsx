@@ -113,8 +113,14 @@ export function AddPhaseModal({
       onSuccess?.();
       onClose();
       showToast("Add phase config successfully");
-    } catch (err) {
-      showToast("Failed to add phase configuration", "error");
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.details || err?.response?.data?.message;
+
+      if (errorMessage) {
+        showToast(errorMessage, "error");
+      } else {
+        showToast("Failed to add phase configuration", "error");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -199,11 +205,25 @@ export function AddPhaseModal({
               type="number"
               min="0"
               value={form.priority}
-              onChange={(e) => handleChange({ priority: e.target.value })}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "") {
+                  handleChange({ priority: "" });
+                  return;
+                }
+                const numVal = parseInt(val, 10);
+                if (numVal < 1 ) {
+                  handleChange({ priority: "1" });
+                  showToast("Priority must be 1 or greater", "error");
+                } else {
+                  handleChange({ priority: val });
+                }
+              }}
               className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2]"
               placeholder="0"
             />
           </div>
+
         </div>
 
         {/* Footer Actions */}

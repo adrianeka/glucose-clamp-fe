@@ -49,27 +49,35 @@ export function EditParticipantModal({
   onSuccess,
 }: EditParticipantModalProps) {
   const { showToast } = useToast();
-  const [form, setForm] = useState<FormData>({
-    medicalRecordNo: "",
-    fullName: "",
-    gender: "",
-    dob: "",
-    phone: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // sync form state whenever a new participant is selected
-  useEffect(() => {
+  const getInitialForm = (): FormData => {
     if (participant) {
-      setForm({
+      return {
         medicalRecordNo: participant.medicalRecordNo,
         fullName: participant.name,
         gender: participant.gender as "Male" | "Female",
         dob: String(participant.dob).slice(0, 10),
         phone: participant.numberPhone,
-      });
+      };
     }
-  }, [participant]);
+    return {
+      medicalRecordNo: "",
+      fullName: "",
+      gender: "Male",
+      dob: "",
+      phone: "",
+    };
+  };
+
+  const [form, setForm] = useState<FormData>(getInitialForm);
+
+  useEffect(() => {
+    if (open) {
+      setForm(getInitialForm());
+    }
+  }, [open, participant]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!participant) return null;
 
@@ -201,14 +209,27 @@ export function EditParticipantModal({
               <div className="relative">
                 <CalendarDays
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D2F35] pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D2F35] pointer-events-none z-20"
                 />
+                <div 
+                  className={cn(
+                    "absolute inset-0 flex items-center pl-11 bg-[#FAFAFA] border border-[#E2E4E6] rounded-md text-base font-normal pointer-events-none z-10 h-[42px]",
+                    form.dob ? "text-[#2D2F35]" : "text-[#A9ADB5]"
+                  )}
+                >
+                  {form.dob 
+                    ? form.dob.split("-").reverse().join("/") 
+                    : "dd/mm/yyyy"
+                  }
+                </div>
                 <Input
                   type="date"
                   value={form.dob}
                   onChange={(e) => handleChange({ dob: e.target.value })}
-                  className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2]"
+                  className="opacity-0 absolute inset-0 w-full h-[42px] z-15 cursor-pointer [color-scheme:light] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0"
                 />
+                
+                <div className="h-[42px] w-full" />
               </div>
             </div>
             <div className="flex-1 flex flex-col gap-[11px]">
