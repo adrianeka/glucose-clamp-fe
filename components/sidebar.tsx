@@ -13,6 +13,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSidebar } from "./sidebar-provider";
 
 interface NavChild {
   label: string;
@@ -92,26 +93,37 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  // Ambil state dari Context
+  const { isCollapsed, toggleSidebar } = useSidebar(); 
 
   return (
-    <aside className="w-[304px] flex-shrink-0 h-full bg-white shadow-[-1px_0px_0px_rgba(0,0,0,0.05)_inset] flex flex-col gap-8 p-5">
+    <aside
+      className={cn(
+        "flex-shrink-0 h-full bg-white shadow-[-1px_0px_0px_rgba(0,0,0,0.05)_inset] flex flex-col gap-8 p-5 transition-all duration-300",
+        isCollapsed ? "w-[80px]" : "w-[304px]"
+      )}
+    >
       <div className="flex items-center gap-1.5">
-        <div className="p-2.5 rounded-lg">
+        <button
+          onClick={toggleSidebar} // Gunakan fungsi toggle dari context
+          className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors"
+          type="button"
+        >
           <AlignJustify size={20} className="text-[#A9ADB5]" />
-        </div>
+        </button>
 
-        <span className="text-[#595F6A] text-base font-medium leading-[18px]">
-          Menu
-        </span>
+        {!isCollapsed && (
+          <span className="text-[#595F6A] text-base font-medium leading-[18px]">
+            Menu
+          </span>
+        )}
       </div>
 
-      <nav className="flex flex-col gap-2 flex-1">
+      <nav className="flex flex-col gap-2 flex-1 overflow-x-hidden">
         {navItems.map((item) => {
           const isActive = item.href
             ? pathname.startsWith(item.href)
-            : item.children?.some((child) =>
-                pathname.startsWith(child.href)
-              );
+            : item.children?.some((child) => pathname.startsWith(child.href));
 
           const MenuContent = (
             <>
@@ -124,19 +136,19 @@ export default function Sidebar() {
                   {item.icon(Boolean(isActive))}
                 </div>
 
-                <span
-                  className={cn(
-                    "text-base font-normal leading-[18px]",
-                    isActive
-                      ? "text-[#0076D2] font-medium"
-                      : "text-[#707784]"
-                  )}
-                >
-                  {item.label}
-                </span>
+                {!isCollapsed && (
+                  <span
+                    className={cn(
+                      "text-base font-normal leading-[18px] whitespace-nowrap",
+                      isActive ? "text-[#0076D2] font-medium" : "text-[#707784]"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                )}
               </div>
 
-              {item.hasChevron && (
+              {!isCollapsed && item.hasChevron && (
                 <div className="p-2.5 rounded-lg">
                   <ChevronDown size={20} className="text-[#A9ADB5]" />
                 </div>
@@ -167,7 +179,7 @@ export default function Sidebar() {
                 </div>
               )}
 
-              {item.children && (
+              {!isCollapsed && item.children && (
                 <div className="ml-[52px] flex flex-col gap-6 pt-2 pb-2">
                   {item.children.map((child) => {
                     const childActive = pathname.startsWith(child.href);

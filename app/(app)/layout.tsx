@@ -3,6 +3,7 @@ import Sidebar from "@/components/sidebar";
 import Footer from "@/components/footer";
 
 import { ToastProvider } from "@/components/ui/toast";
+import { SidebarProvider } from "@/components/sidebar-provider";
 
 export default function AppLayout({
   children,
@@ -10,23 +11,25 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <SidebarProvider>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
 
-      <div className="flex flex-1">
-        <Sidebar />
+        <div className="flex flex-1">
+          <Sidebar />
 
-        <main
-          className="flex-1 p-6"
-          style={{ backgroundColor: "#FAFAFA" }}
-        >
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </main>
+          <main
+            className="flex-1 p-6"
+            style={{ backgroundColor: "#FAFAFA" }}
+          >
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </main>
+        </div>
+
+        <Footer />
       </div>
-
-      <Footer />
-    </div>
+    </SidebarProvider>
   );
 }
