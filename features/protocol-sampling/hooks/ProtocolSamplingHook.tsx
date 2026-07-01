@@ -40,13 +40,16 @@ export const useProtocols = ({
 };
 
 export const useProtocolsDropdown = () => {
+  console.log("hook executed");
+
   return useQuery({
-    queryKey: ["protocols-dropdown"],
-    queryFn: getProtocolsDropdown,
-    // Opsional: tambahkan staleTime jika data dropdown jarang berubah
-    staleTime: 5 * 60 * 1000, 
-  });
-};
+    queryKey:["protocols-dropdown"],
+    queryFn: () => {
+      console.log("API CALLED");
+      return getProtocolsDropdown();
+    }
+  })
+}
 export const useProtocolDetail = (
   protocolId: number
 ) => {

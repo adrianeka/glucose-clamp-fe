@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useNextActivityCountdown } from "../hooks/useNextActivityCountdown";
 import { useNextProgressActivity } from "@/features/session-creation/hooks/SessionCreationHook";
 import { useParams } from "next/navigation";
 import { TimerDialog } from "./modalStepActivity/ModalTimerGlobalConfig"; // Pastikan path import benar
+import { ModalConfirmationEndSessionRunning } from "./ModalConfirmationEndSessionRunning";
+import { ConfirmEndSessionDialog } from "./ConfirmEndSessionDialog";
+import NextActivityCountdown from "./helper/NextActivityCoundown";
+import NextActivityManager from "./helper/NextActivityManager";
 
 interface NextActivityBannerProps {
   sessionData: any;
@@ -17,75 +21,18 @@ export default function NextActivityBanner({
 }: NextActivityBannerProps) {
   const params = useParams();
   const sessionId = Number(params.sessionId);
-  const nextActivity = sessionData?.nextActivities?.[0];
-  const [now, setNow] = useState<Date | null>(null);
+  const nextActivities = sessionData?.nextActivities ?? [];
+  const nextActivity = nextActivities?.[0];
+  const displayedActivities = nextActivities.slice(0, 3);
+  const hiddenCount = Math.max(
+    nextActivities.length - displayedActivities.length,
+    0
+  );
+  // const [now, setNow] = useState<Date | null>(null);
   const warningThreshold = Number(configData?.data?.gconfValue) ?? 60; 
+  const [endSessionStep, setEndSessionStep] = useState<"Close" | "FORM" | "CONFIRM">("Close");
 
-  useEffect(() => {
-    setNow(new Date());
-
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-  
-  // State untuk Dialog
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [hasShownDialog, setHasShownDialog] = useState(false);
-
-  const {
-    timeLeft: remainingTime,
-    secondsLeft,
-    initialized,
-  } = useNextActivityCountdown(nextActivity?.time);
-  
-  const { mutate: nextProgress } = useNextProgressActivity();
-  const expiredRef = useRef(false);
-
-  // Logika untuk menampilkan Dialog saat mendekati waktu (Contoh: < 60 detik)
-  useEffect(() => {
-    if (initialized && secondsLeft <= warningThreshold && secondsLeft > 0 && !hasShownDialog) {
-      setIsDialogOpen(true);
-      setHasShownDialog(true);
-    }
-    
-    // Reset status dialog jika activity berubah (waktu di-reset)
-    if (secondsLeft > warningThreshold) {
-      setHasShownDialog(false);
-    }
-  }, [secondsLeft, initialized, hasShownDialog, warningThreshold]);
-
-  // Logika Auto-Progress saat waktu habis
-  useEffect(() => {
-    if (!initialized || !nextActivity) return;
-
-    const isExpired = remainingTime === "00:00:00" || remainingTime === "00:00";
-
-    if (!isExpired) {
-      expiredRef.current = false;
-      return;
-    }
-
-    if (expiredRef.current) return;
-
-    // expiredRef.current = true;
-    nextProgress(sessionId, {
-      onSuccess: () => {
-        setHasShownDialog(false); 
-      },
-      onError: () => {
-        expiredRef.current = false;
-      },
-    });
-    handleConfirmNext(); 
-
-  }, [initialized, remainingTime, nextActivity?.time, sessionData]);
-
-  const handleConfirmNext = () => {
-    setIsDialogOpen(false);
-  };
+  const [tempEndSessionData, setTempEndSessionData] = useState<{ category: string; notes: string; } | null>(null);
 
   const formatTime = (time: string) => {
     if (!time) return "--:--";
@@ -96,57 +43,122 @@ export default function NextActivityBanner({
     });
   };
 
-  const latestInfusion = [...(sessionData?.infusion ?? [])]
-    .sort(
-      (a, b) =>
-        new Date(b.time).getTime() -
-        new Date(a.time).getTime()
-    )[0];
+  const toTimestamp = (time: any) => {
+    if (!time) return 0;
 
-  const glucoseFromLab =
-    sessionData?.activities
-      ?.flatMap((activity: any) =>
-        (activity.labResults ?? []).map((lab: any) => ({
-          value: lab.value,
-          time: activity.time,
-          parameter: lab.parameter_name
-        }))
-      )
-      .filter(
-        (lab: any) =>
-          lab.parameter?.toLowerCase() === "glucose"
-      )
+    // ISO String
+    if (typeof time === "string") {
+      return new Date(time).getTime();
+    }
+
+    // Java LocalDateTime serialized as array
+    if (Array.isArray(time)) {
+      const [
+        year,
+        month,
+        day,
+        hour = 0,
+        minute = 0,
+        second = 0,
+        nano = 0
+      ] = time;
+
+      return new Date(
+        year,
+        month - 1,
+        day,
+        hour,
+        minute,
+        second,
+        Math.floor(nano / 1_000_000)
+      ).getTime();
+    }
+
+    return new Date(time).getTime();
+  };
+
+  const infusionSummary = useMemo(() => {
+    const infusion = [...(sessionData?.infusion ?? [])].sort(
+      (a, b) => toTimestamp(b.time) - toTimestamp(a.time)
+    );
+
+    return {
+      latestInfusion: infusion[0],
+
+      latestRate: infusion.find(
+        i => i.flowRateMlHr != null
+      ),
+
+      latestGlucoseFromInfusion: infusion.find(
+        i => i.glucoseValue != null
+      ),
+    };
+  }, [sessionData?.infusion]);
+
+  const glucoseFromLab = useMemo(() => {
+    return (
+      sessionData?.activities
+        ?.flatMap((activity: any) =>
+          (activity.labResults ?? []).map((lab: any) => ({
+            value: lab.value,
+            time: lab.updated_at,
+            parameter: lab.parameter_name,
+            min: lab.reference_range_min,
+            max: lab.reference_range_max,
+            abnormalFlag: lab.abnormal_flag
+          }))
+        )
+        .filter(
+          (lab: any) =>
+            lab.parameter?.toLowerCase() === "glucose"
+        )
+        .sort(
+          (a: any, b: any) =>
+            toTimestamp(b.time) -
+            toTimestamp(a.time)
+        )[0]
+    );
+  }, [sessionData?.activities]);
+
+  const latestRate = infusionSummary.latestRate;
+  const latestGlucose = useMemo(() => {
+    return [
+      glucoseFromLab,
+      infusionSummary.latestGlucoseFromInfusion,
+    ]
+      .filter(Boolean)
       .sort(
         (a: any, b: any) =>
-          new Date(b.time).getTime() -
-          new Date(a.time).getTime()
+          toTimestamp(b.time) -
+          toTimestamp(a.time)
       )[0];
+  }, [
+    glucoseFromLab,
+    infusionSummary.latestGlucoseFromInfusion,
+  ]);
 
-  const glucoseFromInfusion =
-    [...(sessionData?.infusion ?? [])]
-      .filter(i => i.glucoseValue != null)
-      .sort(
-        (a, b) =>
-          new Date(b.time).getTime() -
-          new Date(a.time).getTime()
-      )[0];
+  const abnormalShownRef = useRef(false);
 
-  const latestGlucose = [glucoseFromLab, glucoseFromInfusion]
-    .filter(Boolean)
-    .sort(
-      (a: any, b: any) =>
-        new Date(b.time).getTime() -
-        new Date(a.time).getTime()
-    )[0];
+  useEffect(() => {
+    if (!glucoseFromLab) return;
 
-  const latestRate =
-  [...(sessionData?.infusion ?? [])]
-    .filter(i => i.flowRateMlHr != null)
-    .sort(
-      (a, b) =>
-        new Date(b.time).getTime() -
-        new Date(a.time).getTime()
-    )[0];
+    if (abnormalShownRef.current) return;
+
+    const value = glucoseFromLab.value;
+    const min = glucoseFromLab.min;
+    const max = glucoseFromLab.max;
+
+    const isCritical =
+      (min != null && value < min) ||
+      (max != null && value > max);
+
+    if (!isCritical) return;
+
+    abnormalShownRef.current = true;
+
+    setEndSessionStep("FORM");
+
+  }, [glucoseFromLab]);
   return (
     <>
       <div
@@ -168,7 +180,7 @@ export default function NextActivityBanner({
                 background: "#EAF5FD",
                 color: "#0076D2",
                 fontSize: "13px",
-                fontWeight: 500,
+                fontWeight: 800,
                 padding: "4px 14px",
                 borderRadius: "100px",
                 border: "1px solid #B3E5FC",
@@ -179,28 +191,57 @@ export default function NextActivityBanner({
               Next Activity
             </span>
 
-            <span
-              style={{
-                color: remainingTime === "00:00" ? "#D32F2F" : "#0076D2",
-                fontSize: "16px",
-                fontWeight: 600,
-              }}
-            >
-              Time Remaining: {remainingTime || "00:00"}
-            </span>
+            <NextActivityCountdown
+              activityTime={
+                  nextActivities?.[0]?.time
+              }
+            />
           </div>
 
           <div
             style={{
-              fontSize: "18px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "2px",
+              fontSize: "14px",
               fontWeight: 700,
               color: "#212121",
-              maxWidth: 600
+              maxWidth: 600,
             }}
           >
-            {nextActivity
-              ? `${formatTime(nextActivity.time)} - ${nextActivity.activityType} (${nextActivity.activityDesc})`
-              : "No upcoming activity"}
+            {displayedActivities.length > 0 ? (
+              <>
+                {displayedActivities.map((activity: any) => (
+                  <div
+                    key={activity.activityId}
+                    style={{
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {formatTime(activity.time)} - {activity.activityType}
+                    {activity.activityDesc
+                      ? ` (${activity.activityDesc})`
+                      : ""}
+                  </div>
+                ))}
+
+                {hiddenCount > 0 && (
+                  <div
+                    style={{
+                      color: "#707784",
+                      fontWeight: 500,
+                      fontSize: "13px",
+                    }}
+                  >
+                    ... dan {hiddenCount} aktivitas lainnya
+                  </div>
+                )}
+              </>
+            ) : (
+              "No upcoming activity"
+            )}
           </div>
         </div>
 
@@ -224,7 +265,7 @@ export default function NextActivityBanner({
 
           <div style={{ textAlign: "left", borderLeft: "1px solid #E2E4E6", paddingLeft: "24px", paddingRight: "50px" }}>
             <div style={{ fontSize: "12px", color: "#707784", fontWeight: 500, textTransform: "uppercase", marginBottom: "4px" }}>
-              Infusion Rate
+              Infusion Gir
             </div>
             <div
               style={{
@@ -233,19 +274,47 @@ export default function NextActivityBanner({
                 color: "#212121"
               }}
             >
-              {latestRate?.flowRateMlHr ?? "--"}
+              {latestRate?.actualGir ?? "--"}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Render Timer Dialog */}
-      <TimerDialog 
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        duration={secondsLeft} // Mengikuti sisa detik dari hook banner
-        activityName={nextActivity?.activityType || "Next Activity"}
-        onConfirm={handleConfirmNext}
+      <NextActivityManager
+          sessionId={sessionId}
+          nextActivity={nextActivity}
+          warningThreshold={
+              warningThreshold
+          }
+      />
+      {endSessionStep === "FORM" && (
+        <ModalConfirmationEndSessionRunning
+          isOpen={endSessionStep === "FORM"}
+          defaultValues={tempEndSessionData}
+          onCancel={() => {
+            setEndSessionStep("Close");
+            setTempEndSessionData(null);
+          }}
+          onSubmit={(data) => {
+            setTempEndSessionData(data);
+            setEndSessionStep("CONFIRM");
+          }}
+          mode="critical"
+          glucoseValue={glucoseFromLab?.value}
+          glucoseMin={glucoseFromLab?.min}
+          glucoseMax={glucoseFromLab?.max}
+        />
+      )}
+      <ConfirmEndSessionDialog
+        isOpen={endSessionStep === "CONFIRM"}
+        sessionData={sessionData}
+        data={tempEndSessionData}
+        onCancel={() =>
+          setEndSessionStep("FORM")
+        }
+        onSuccess={() => {
+          setEndSessionStep("Close");
+          setTempEndSessionData(null);
+        }}
       />
     </>
   );

@@ -50,7 +50,7 @@ export function ConfirmEndSessionDialog({
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent
         style={{
-          maxWidth: "440px",
+          maxWidth: "540px",
           padding: "2.5rem",
           backgroundColor: "#fff",
           borderRadius: "24px",
