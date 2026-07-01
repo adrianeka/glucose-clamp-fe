@@ -217,27 +217,27 @@ export default function ModalSamplingSchedule({
         onOpenChange(false); // Tutup modal utama
       };
 
-    useEffect(() => {
-      if (!selectedPhase?.code) return;
+      useEffect(() => {
+        if (!selectedPhase?.code) return;
 
-      const codeLower = selectedPhase.code.toLowerCase();
+        const codeLower = selectedPhase.code.toLowerCase();
 
-      if (codeLower === "prep1" || codeLower === "prep2") {
-        setLabelPrefix("PREP");
-      }
-      else if (codeLower === "base") {
-        setLabelPrefix("T");
-      }
-      else if (codeLower === "final") {
-        setLabelPrefix("FIN");
-      }
-      else if (["ph1", "ph2", "ph3"].includes(codeLower)) {
-        setLabelPrefix("GD");
-      }
-      else {
-        setLabelPrefix(""); 
-      }
-    }, [selectedPhase]);
+        if (codeLower === "prep1" || codeLower === "prep2") {
+          setLabelPrefix("PREP");
+        }
+        else if (codeLower === "base") {
+          setLabelPrefix("T");
+        }
+        else if (codeLower === "final") {
+          setLabelPrefix("GD"); 
+        }
+        else if (["ph1", "ph2", "ph3"].includes(codeLower)) {
+          setLabelPrefix("GD");
+        }
+        else {
+          setLabelPrefix(""); 
+        }
+      }, [selectedPhase]);
 
     useEffect(() => {
       if (schedulesData) {
@@ -385,30 +385,24 @@ export default function ModalSamplingSchedule({
 
                       <SelectContent>
                         {(() => {
-                          const codeLower = phaseConfig.toLowerCase();
+                          // Tambahkan safe navigation jika phaseConfig berpotensi null/undefined
+                          const codeLower = phaseConfig?.toLowerCase() || "";
 
                           if (codeLower === "prep1" || codeLower === "prep2") {
-                            return (
-                              <SelectItem value="PREP">PREP</SelectItem>
-                            );
+                            return <SelectItem value="PREP">PREP</SelectItem>;
                           }
 
                           if (codeLower === "base") {
-                            return (
-                              <SelectItem value="T">T</SelectItem>
-                            );
+                            return <SelectItem value="T">T</SelectItem>;
                           }
 
                           if (["ph1", "ph2", "ph3"].includes(codeLower)) {
-                            return (
-                              <SelectItem value="GD">GD</SelectItem>
-                            );
+                            return <SelectItem value="GD">GD</SelectItem>;
                           }
 
                           if (codeLower === "final") {
-                            return (
-                              <SelectItem value="FIN">FIN</SelectItem>
-                            );
+                            {/* Teks tampilan luar "FINAL", tapi value state tetap "GD" */}
+                            return <SelectItem value="GD">FINAL</SelectItem>; 
                           }
 
                           return (
@@ -416,7 +410,7 @@ export default function ModalSamplingSchedule({
                               <SelectItem value="GD">GD</SelectItem>
                               <SelectItem value="T">T</SelectItem>
                               <SelectItem value="PREP">PREP</SelectItem>
-                              <SelectItem value="FIN">FIN</SelectItem>
+                              <SelectItem value="GD">FINAL</SelectItem> 
                             </>
                           );
                         })()}
