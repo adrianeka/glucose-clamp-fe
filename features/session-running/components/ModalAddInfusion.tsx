@@ -15,6 +15,7 @@ import { useState, useEffect } from "react"; // Impor useEffect
 import dayjs from "dayjs";
 import { useInfusion } from "../hooks/useInfusionMonitoring";
 import { Textarea } from "@/components/ui/textarea";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ModalAddInfusionProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ interface ModalAddInfusionProps {
 }
 
 export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAddInfusionProps) {
+  const queryClient = useQueryClient();
   const userId = localStorage.getItem('user_id');
   
   const { useAddInfusion, useGetRecommendationGir } = useInfusion(sessionId);
@@ -84,6 +86,12 @@ export default function ModalAddInfusion({ isOpen, onClose, sessionId }: ModalAd
       monitoredBy: userId ? Number(userId) : null
     }, {
         onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["session-detail", sessionId]
+          });
+          queryClient.refetchQueries({
+              queryKey:["session-tracking", sessionId]
+          });
             onClose();
         }
     });

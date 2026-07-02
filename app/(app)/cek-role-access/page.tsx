@@ -27,7 +27,7 @@ const TARGET_ROLES = [
   { id: 3, label: "Spv" },
   { id: 5, label: "Analyzer Ops" },
   { id: 6, label: "Pump Ops" },
-  { id: 1, label: "SuperUser" },
+  // { id: 1, label: "SuperUser" },
 ];
 
 const ACTIONS = ["View", "Add", "Edit", "Delete"];
