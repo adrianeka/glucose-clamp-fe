@@ -109,6 +109,7 @@ export default function ModalSamplingSchedule({
             const isBloodDraw = phaseConfig.toLowerCase() === "base" || phaseConfig.toLowerCase().startsWith("ph");
 
             try {
+
             await addSamplingScheduleMutation.mutateAsync(
                 {
                 protocol_id:protocol.protocol_id,
@@ -229,7 +230,7 @@ export default function ModalSamplingSchedule({
           setLabelPrefix("T");
         }
         else if (codeLower === "final") {
-          setLabelPrefix("GD"); 
+          setLabelPrefix("FINAL"); 
         }
         else if (["ph1", "ph2", "ph3"].includes(codeLower)) {
           setLabelPrefix("GD");
@@ -379,7 +380,7 @@ export default function ModalSamplingSchedule({
                       Label Prefix *
                     </label>
 
-                    <Select
+                   <Select
                       value={labelPrefix}
                       onValueChange={setLabelPrefix}
                     >
@@ -389,7 +390,6 @@ export default function ModalSamplingSchedule({
 
                       <SelectContent>
                         {(() => {
-                          // Tambahkan safe navigation jika phaseConfig berpotensi null/undefined
                           const codeLower = phaseConfig?.toLowerCase() || "";
 
                           if (codeLower === "prep1" || codeLower === "prep2") {
@@ -405,8 +405,7 @@ export default function ModalSamplingSchedule({
                           }
 
                           if (codeLower === "final") {
-                            {/* Teks tampilan luar "FINAL", tapi value state tetap "GD" */}
-                            return <SelectItem value="GD">FINAL</SelectItem>; 
+                            return <SelectItem value="FINAL">FINAL</SelectItem>; 
                           }
 
                           return (
@@ -414,7 +413,7 @@ export default function ModalSamplingSchedule({
                               <SelectItem value="GD">GD</SelectItem>
                               <SelectItem value="T">T</SelectItem>
                               <SelectItem value="PREP">PREP</SelectItem>
-                              <SelectItem value="GD">FINAL</SelectItem> 
+                              <SelectItem value="FINAL">FINAL</SelectItem> 
                             </>
                           );
                         })()}
