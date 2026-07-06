@@ -1,12 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Users,
   Settings,
-  Layers,
-  FileText,
   CalendarDays,
   AlignJustify,
   ChevronDown,
@@ -18,6 +17,7 @@ import { useSidebar } from "./sidebar-provider";
 interface NavChild {
   label: string;
   href: string;
+  menuName: string | string[]; // Mendukung nama menu tunggal atau banyak sekaligus
 }
 
 interface NavItem {
@@ -26,12 +26,14 @@ interface NavItem {
   icon: (active: boolean) => React.ReactNode;
   hasChevron?: boolean;
   children?: NavChild[];
+  menuName?: string | string[]; // Mendukung nama menu tunggal atau banyak sekaligus
 }
 
 const navItems: NavItem[] = [
   {
     label: "Participant Management",
     href: "/participant-management",
+    menuName: "PARTICIPANT",
     icon: (active) => (
       <Users
         size={20}
@@ -52,16 +54,20 @@ const navItems: NavItem[] = [
       {
         label: "Phase Management",
         href: "/phase-management",
+        menuName: "PHASECONFIGURATION",
       },
       {
         label: "Protocol & Sampling",
         href: "/protocol-sampling",
+        menuName: ["PROTOCOL", "SAMPLINGSCHEDULE"],
       },
     ],
   },
   {
     label: "Session Creation",
     href: "/session-creation",
+    // Hak akses jamak (Akan muncul jika user punya salah satu izin di bawah ini)
+    menuName: ["SESSION","INFUSIONMONITORING","LABRESULT","BLOODSAMPLE", "PREPARATIONCHECK"], 
     icon: (active) => (
       <CalendarDays
         size={20}
@@ -70,8 +76,20 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    label: "Role Access Matrix",
+    href: "/role-access",
+    menuName: "ROLEACCESS",
+    icon: (active) => (
+      <Users
+        size={20}
+        className={active ? "text-[#0076D2]" : "text-[#707784]"}
+      />
+    ),
+  },
+  {
     label: "User Management",
     href: "/user-management",
+    menuName: "USER",
     icon: (active) => (
       <Users
         size={20}
@@ -82,6 +100,7 @@ const navItems: NavItem[] = [
   {
     label: "Global Configuration",
     href: "/global-configuration",
+    menuName: "GLOBALCONFIGURATION",
     icon: (active) => (
       <Settings
         size={20}
@@ -93,8 +112,56 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  // Ambil state dari Context
   const { isCollapsed, toggleSidebar } = useSidebar(); 
+  
+  // State untuk menampung izin dari localStorage
+  const [permissions, setPermissions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const rawPermissions = localStorage.getItem("permissions");
+    if (rawPermissions) {
+      try {
+        setPermissions(JSON.parse(rawPermissions));
+      } catch (e) {
+        console.error("Gagal membaca permissions di sidebar:", e);
+      }
+    }
+  }, [pathname]);
+
+  const checkCanView = (menuName?: string | string[]): boolean => {
+    if (!menuName) return false;
+
+    if (Array.isArray(menuName)) {
+      return menuName.some((name) => {
+        const perm = permissions.find(
+          (p) => p.menuName?.toLowerCase().trim() === name.toLowerCase().trim()
+        );
+        return perm ? perm.canView === true : false;
+      });
+    }
+
+    const perm = permissions.find(
+      (p) => p.menuName?.toLowerCase().trim() === menuName.toLowerCase().trim()
+    );
+    return perm ? perm.canView === true : false;
+  };
+
+  const filteredNavItems = navItems
+    .map((item) => {
+      if (item.children) {
+        const allowedChildren = item.children.filter((child) =>
+          checkCanView(child.menuName)
+        );
+        return { ...item, children: allowedChildren };
+      }
+      return item;
+    })
+    .filter((item) => {
+      if (item.children) {
+        return item.children.length > 0;
+      }
+      return checkCanView(item.menuName);
+    });
 
   return (
     <aside
@@ -103,9 +170,10 @@ export default function Sidebar() {
         isCollapsed ? "w-[80px]" : "w-[304px]"
       )}
     >
+      {/* Tombol Toggle Collapse Sidebar */}
       <div className="flex items-center gap-1.5">
         <button
-          onClick={toggleSidebar} // Gunakan fungsi toggle dari context
+          onClick={toggleSidebar}
           className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors"
           type="button"
         >
@@ -119,8 +187,9 @@ export default function Sidebar() {
         )}
       </div>
 
+      {/* Navigasi Menu */}
       <nav className="flex flex-col gap-2 flex-1 overflow-x-hidden">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = item.href
             ? pathname.startsWith(item.href)
             : item.children?.some((child) => pathname.startsWith(child.href));
@@ -179,6 +248,7 @@ export default function Sidebar() {
                 </div>
               )}
 
+              {/* Sub-menu rendering */}
               {!isCollapsed && item.children && (
                 <div className="ml-[52px] flex flex-col gap-6 pt-2 pb-2">
                   {item.children.map((child) => {

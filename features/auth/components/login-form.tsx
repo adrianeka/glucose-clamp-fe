@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, X, User, Lock, Loader2 } from "lucide-react";
 import { TopNavigation } from "@/components/ui/TopNavigation";
 import api from "@/lib/axios";
+import { login, getMyPermissions } from "../services"; 
 
 export default function LoginForm() {
   const router = useRouter();
@@ -42,24 +43,26 @@ export default function LoginForm() {
     const startTime = Date.now();
 
     try {
-      const response = await api.post("/user-management/users/sign-in", {
-        username,
-        password,
-      });
+      // 1. Panggil fungsi login dari service
+      const loginResponse = await login({ username, password });
 
-      const userRole = response.data.data.role;
-      const token = response.data.data.token;
-      const userId = response.data.data.id;
-      const userNameRes = response.data.data.username;
-      const name = response.data.data.name;
+      const userRole = loginResponse.data.role;
+      const token = loginResponse.data.token;
+      const userId = loginResponse.data.id;
+      const userNameRes = loginResponse.data.username;
+      const name = loginResponse.data.name;
 
+      // Simpan informasi login dasar
       localStorage.setItem("token", token);
-      localStorage.setItem("user_id", userId);
+      localStorage.setItem("user_id", String(userId));
       localStorage.setItem("role", userRole);
       localStorage.setItem("username", userNameRes);
       localStorage.setItem("name", name);
-
       localStorage.setItem("is_logged_in", "true");
+
+      const permissions = await getMyPermissions();
+      
+      localStorage.setItem("permissions", JSON.stringify(permissions));
 
       setSuccess("Login berhasil! Membuka sistem...");
 
@@ -73,8 +76,7 @@ export default function LoginForm() {
 
       setTimeout(() => {
         setIsLoading(false);
-        const serverMessage = err.response?.data?.message || err.response?.data?.error;
-        setError(serverMessage || "Gagal masuk. Periksa kembali username dan password Anda.");
+        setError(err.message || "Gagal masuk. Periksa kembali username dan password Anda.");
       }, remainingDelay);
     }
   };

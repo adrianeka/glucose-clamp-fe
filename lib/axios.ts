@@ -10,9 +10,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null;
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -23,10 +21,27 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const isAtLoginPage =
+      typeof window !== "undefined" &&
+      (window.location.pathname === "/login" || window.location.pathname === "/auth/login");
+
+    if (isAtLoginPage) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      localStorage.removeItem("permissions");
+      window.location.href = "/login?reason=expired";
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 403) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("api-forbidden")); 
+      }
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);

@@ -9,6 +9,7 @@ export interface LoginResponseData {
   type: string; // "Bearer"
   username: string;
   role: string;
+  name: string;
 }
 
 export interface ApiResponse<T> {
