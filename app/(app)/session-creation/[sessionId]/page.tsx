@@ -8,6 +8,7 @@ import MainPageSessionListActivities from "@/features/session-creation/component
 import MainPageSessionRunning from "@/features/session-running/components/MainPageSessionRunning";
 
 import SessionRunningSkeleton from "@/features/session-running/components/SessionRunningSkeleton";
+import MainPageSessionCompleted from "@/features/session-completed/components/MainPageSessionCompleted";
 
 export default function SessionPage() {
   const params = useParams();
@@ -43,6 +44,13 @@ export default function SessionPage() {
       );
 
     case "COMPLETED":
+      return (
+        <MainPageSessionCompleted
+          sessionId={sessionId}
+          sessionData={sessionData}
+        />
+      );
+
     case "INQUEUE":
     case "DRAFT":
     default:
@@ -54,3 +62,4 @@ export default function SessionPage() {
       );
   }
 }
+

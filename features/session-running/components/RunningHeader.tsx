@@ -16,12 +16,12 @@ import { ModalConfirmationEndSessionRunning } from "./ModalConfirmationEndSessio
 import { ConfirmEndSessionDialog } from "./ConfirmEndSessionDialog";
 import SessionCountdown from "./helper/SessionCoundown";
 
-export default function RunningHeader({ 
-  sessionData, 
-  onViewAll 
-}: { 
-  sessionData: any; 
-  onViewAll: () => void; 
+export default function RunningHeader({
+  sessionData,
+  onViewAll
+}: {
+  sessionData: any;
+  onViewAll: () => void;
 }) {
   const router = useRouter();
 
@@ -41,8 +41,8 @@ export default function RunningHeader({
     <div className="flex items-center justify-between mb-2">
       <div className="flex items-center gap-4">
         {/* Tombol Back */}
-        <button 
-          onClick={() => router.back()} 
+        <button
+          onClick={() => router.back()}
           className="text-[#707784] hover:bg-gray-100 p-2 rounded-full transition-colors"
         >
           <ArrowLeft size={20} />
@@ -69,7 +69,7 @@ export default function RunningHeader({
 
       <div className="flex items-center gap-3">
         {/* Button View All */}
-        <button 
+        <button
           onClick={onViewAll}
           className="px-4 py-2 bg-white border border-[#0076D2] text-[#0076D2] rounded-lg font-medium hover:bg-blue-50 transition-colors"
         >
@@ -81,10 +81,10 @@ export default function RunningHeader({
           <Clock3 size={20} className="text-gray-400" />
           {countdown}
         </div> */
-        <SessionCountdown
-          startTime={sessionData?.startTime}
-          totalMinutes={totalMinutes}
-        />}
+          <SessionCountdown
+            startTime={sessionData?.startTime}
+            totalMinutes={totalMinutes}
+          />}
 
         {/* More Actions */}
         <DropdownMenu>

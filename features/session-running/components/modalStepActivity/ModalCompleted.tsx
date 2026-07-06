@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { CircleCheckBig } from "lucide-react";
-import { useNextProgressActivity } from "@/features/session-creation/hooks/SessionCreationHook";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 import {
   Dialog,
   DialogContent,
   DialogTitle
 } from "@/components/ui/dialog";
+import { sessionEndService } from "../../services/SessionEndService";
 
 interface ModalSessionCompletedProps {
   isOpen: boolean;
@@ -19,16 +20,31 @@ export default function ModalSessionCompleted({
   isOpen,
   sessionId,
 }: ModalSessionCompletedProps) {
-    const { mutate: nextProgress } = useNextProgressActivity();
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { mutate: completeSession, isPending } = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        endTime: new Date().toISOString(),
+        endReasonCategory: "Completed per Protocol",
+        endReasonDetail: "All activities have been successfully recorded and verified.",
+      };
+      return await sessionEndService.complete(sessionId, payload);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["session-detail", sessionId],
+      });
+    },
+    onError: (error) => {
+      console.error("Gagal menyelesaikan sesi secara permanen:", error);
+      alert("Terjadi kesalahan saat menyimpan status akhir sesi.");
+    },
+  });
 
   const handleOk = () => {
-    nextProgress(sessionId, {
-      onSuccess: () => {
-      },
-      onError: () => {
-      },
-    });
+    completeSession();
   };
 
   return (
@@ -91,26 +107,27 @@ export default function ModalSessionCompleted({
 
           <button
             onClick={handleOk}
+            disabled={isPending}
             style={{
               width: "100%",
               height: 44,
               marginTop: 40,
               border: "none",
               borderRadius: 6,
-              background: "#28B82E",
+              background: isPending ? "#A3E6A5" : "#28B82E",
               color: "#FFF",
               fontWeight: 700,
               fontSize: 18,
-              cursor: "pointer",
+              cursor: isPending ? "not-allowed" : "pointer",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#239F28";
+              if (!isPending) e.currentTarget.style.background = "#239F28";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#28B82E";
+              if (!isPending) e.currentTarget.style.background = "#28B82E";
             }}
           >
-            OK
+            {isPending ? "Processing..." : "OK"}
           </button>
         </div>
       </DialogContent>

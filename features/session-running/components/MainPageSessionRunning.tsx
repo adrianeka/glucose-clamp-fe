@@ -10,7 +10,7 @@ import SubCharts from "@/features/session-running/components/SubCharts";
 import InfusionMonitoringSidebar from "@/features/session-running/components/InfusionMonitoringSidebar";
 import ModalViewAllActivity from "@/features/session-running/components/ModalViewAllActivity";
 import { PreparationDialog } from "./modalStepActivity/ModalPreparationData";
-import { BloodSampleDialog } from "./modalStepActivity/ModalBloodDraw"; 
+import { BloodSampleDialog } from "./modalStepActivity/ModalBloodDraw";
 import ModalOtherActivity from "./modalStepActivity/ModalOtherActivity";
 import ModalSessionCompleted from "./modalStepActivity/ModalCompleted";
 import { ConfirmBloodDrawDialog } from "@/features/session-running/components/modalStepActivity/ConfirmBloodDrawDialog";
@@ -41,9 +41,9 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     // LOGIKA ANTREAN
     const dialogQueue = useMemo(() => {
         if (!sessionData?.activities) return [];
-        return sessionData.activities.filter((act: any) => 
-            act.activityStatus === "IN_PROGRESS" && 
-            ["PREPARATION_CHECK","STABILIZATION", "INSULIN_CHECK", "BLOOD_DRAW", "OTHER", "INSULIN_INJECTION", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(act.activityType) &&
+        return sessionData.activities.filter((act: any) =>
+            act.activityStatus === "IN_PROGRESS" &&
+            ["PREPARATION_CHECK", "STABILIZATION", "INSULIN_CHECK", "BLOOD_DRAW", "OTHER", "INSULIN_INJECTION", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(act.activityType) &&
             !processedIds.includes(act.activityId)
         );
     }, [sessionData?.activities, processedIds]);
@@ -69,7 +69,7 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         setPrepStep("Close");
     };
     const handleBackToFormPrep = () => {
-        setPrepStep("FORM"); 
+        setPrepStep("FORM");
     };
     const handlePrepSuccess = async () => {
         setPrepStep("DONE");
@@ -79,8 +79,8 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         await queryClient.invalidateQueries({
             queryKey: ["session-detail", sessionId]
         });
-         await queryClient.refetchQueries({
-            queryKey:["session-tracking", sessionId]
+        await queryClient.refetchQueries({
+            queryKey: ["session-tracking", sessionId]
         });
     };
     const handleBloodDraft = (data: any) => {
@@ -93,7 +93,7 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     };
 
     const handleBackToFormBlood = () => {
-        setBloodStep("FORM"); 
+        setBloodStep("FORM");
     };
 
     const handleBloodSuccess = async () => {
@@ -104,10 +104,10 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
             queryKey: ["session-detail", sessionId]
         });
         await queryClient.refetchQueries({
-            queryKey:["session-tracking", sessionId]
+            queryKey: ["session-tracking", sessionId]
         });
     };
-    
+
 
     useEffect(() => {
         setPrepStep("FORM");
@@ -117,10 +117,26 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         setTempBloodData(null);
     }, [currentActiveDialog?.activityId]);
 
+
+    // completed session
+    useEffect(() => {
+        if (sessionData) {
+            const isAllCompleted = sessionData.completedActivities === sessionData.totalActivities;
+            const isProgressMax = sessionData.progressPercentage === 100;
+
+            if ((isAllCompleted || isProgressMax) && sessionData.sessionStatus === "RUNNING") {
+                setIsModalCompleteOpen(true);
+            } else {
+                setIsModalCompleteOpen(false);
+            }
+        }
+    }, [sessionData?.completedActivities, sessionData?.totalActivities, sessionData?.progressPercentage, sessionData?.sessionStatus]);
+
+
     return (
         <div className="min-h-screen bg-[#F8F9FB] text-[#333]">
             <div className="max-w-[1600px] mx-auto">
-                <RunningHeader 
+                <RunningHeader
                     sessionData={sessionData}
                     onViewAll={() => setIsModalOpen(true)}
                 />
@@ -132,27 +148,27 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
 
                     <div className="mt-6 flex gap-2">
                         <div className="flex-1 min-w-0">
-                            <MainGDChart protocolId={sessionData.protocolId} sessionData={sessionData}/>
+                            <MainGDChart protocolId={sessionData.protocolId} sessionData={sessionData} />
                             <div className="mt-2">
-                                <SubCharts protocolId={sessionData.protocolId} sessionData={sessionData}/>
+                                <SubCharts protocolId={sessionData.protocolId} sessionData={sessionData} />
                             </div>
                         </div>
 
                         <div style={{ width: "450px", flexShrink: 0, borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                            <InfusionMonitoringSidebar sessionId={sessionData?.sessionId}/>
+                            <InfusionMonitoringSidebar sessionId={sessionData?.sessionId} />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <ModalViewAllActivity 
+            <ModalViewAllActivity
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 sessionData={sessionData}
             />
 
             {/* --- DIALOG RENDERER --- */}
-            
+
             <PreparationDialog
                 isOpen={
                     currentActiveDialog?.activityType === "PREPARATION_CHECK" &&
@@ -206,7 +222,7 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
 
             {/* 4. Other Activities */}
             <ModalOtherActivity
-                isOpen={["STABILIZATION","INSULIN_INJECTION","OTHER", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(currentActiveDialog?.activityType)}
+                isOpen={["STABILIZATION", "INSULIN_INJECTION", "OTHER", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(currentActiveDialog?.activityType)}
                 onOpenChange={(open) => !open && handleSuccessStep(currentActiveDialog.activityId)}
                 sessionId={sessionId}
                 activityData={currentActiveDialog}

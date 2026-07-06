@@ -9,6 +9,7 @@ import { ModalConfirmationEndSessionRunning } from "./ModalConfirmationEndSessio
 import { ConfirmEndSessionDialog } from "./ConfirmEndSessionDialog";
 import NextActivityCountdown from "./helper/NextActivityCoundown";
 import NextActivityManager from "./helper/NextActivityManager";
+import { log } from "console";
 
 interface NextActivityBannerProps {
   sessionData: any;
@@ -29,7 +30,7 @@ export default function NextActivityBanner({
     0
   );
   // const [now, setNow] = useState<Date | null>(null);
-  const warningThreshold = Number(configData?.data?.gconfValue) ?? 60; 
+  const warningThreshold = Number(configData?.data?.gconfValue) ?? 60;
   const [endSessionStep, setEndSessionStep] = useState<"Close" | "FORM" | "CONFIRM">("Close");
 
   const [tempEndSessionData, setTempEndSessionData] = useState<{ category: string; notes: string; } | null>(null);
@@ -193,7 +194,7 @@ export default function NextActivityBanner({
 
             <NextActivityCountdown
               activityTime={
-                  nextActivities?.[0]?.time
+                nextActivities?.[0]?.time
               }
             />
           </div>
@@ -258,8 +259,8 @@ export default function NextActivityBanner({
               }}
             >
               {latestGlucose?.value ??
-              latestGlucose?.glucoseValue ??
-              "--"}
+                latestGlucose?.glucoseValue ??
+                "--"}
             </div>
           </div>
 
@@ -280,11 +281,11 @@ export default function NextActivityBanner({
         </div>
       </div>
       <NextActivityManager
-          sessionId={sessionId}
-          nextActivity={nextActivity}
-          warningThreshold={
-              warningThreshold
-          }
+        sessionId={sessionId}
+        nextActivity={nextActivity}
+        warningThreshold={
+          warningThreshold
+        }
       />
       {endSessionStep === "FORM" && (
         <ModalConfirmationEndSessionRunning
