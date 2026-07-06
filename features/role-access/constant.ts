@@ -21,6 +21,24 @@ export const MENU_DISPLAY_NAMES: Record<string, string> = {
   ROLEACCESS: "Role Access",
 };
 
+export const ROLE_DISPLAY_NAMES: Record<string, string> = {
+  "Admin": "Admin",
+  "Supervisor": "Spv",
+  "Operator Analyzer": "Analyzer Ops",
+  "Operator Pump": "Pump Ops",
+};
+
+export const ROLE_SORT_ORDER: Record<string, number> = {
+  "admin": 1,
+  "supervisor": 2,
+  "operator analyzer": 3,
+  "operator pump": 4,
+};
+
 export const formatMenuName = (rawName: string): string => {
   return MENU_DISPLAY_NAMES[rawName] || rawName;
+};
+
+export const formatRoleName = (rawName: string): string => {
+  return ROLE_DISPLAY_NAMES[rawName] || rawName;
 };

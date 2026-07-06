@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/toast";
 import { useRoleAccessList, useSaveRoleAccess } from "../hooks";
 import { MatrixRow, ActionType } from "../types";
 import { cn } from "@/lib/utils";
-import { formatMenuName } from "../constant";
+import { formatMenuName, formatRoleName, ROLE_SORT_ORDER } from "../constant";
 
 export function RoleAccessTable() {
   const { showToast } = useToast();
@@ -43,14 +43,25 @@ export function RoleAccessTable() {
   const rolesList = useMemo(() => {
     const uniqueRolesMap = new Map<string, number>();
     rawAccessList.forEach((item) => {
-      if (item.roleName) {
+      if (
+        item.roleName && 
+        item.roleName.toLowerCase().replace(/\s/g, "") !== "superadmin"
+      ) {
         uniqueRolesMap.set(item.roleName, item.roleId);
       }
     });
-    return Array.from(uniqueRolesMap.entries()).map(([name, id]) => ({
-      id,
-      name,
-    }));
+
+    return Array.from(uniqueRolesMap.entries())
+      .map(([name, id]) => ({
+        id,
+        name,
+        displayName: formatRoleName(name),
+      }))
+      .sort((a, b) => {
+        const orderA = ROLE_SORT_ORDER[a.name.toLowerCase()] ?? 99;
+        const orderB = ROLE_SORT_ORDER[b.name.toLowerCase()] ?? 99;
+        return orderA - orderB;
+      });
   }, [rawAccessList]);
 
   const matrixData = useMemo((): MatrixRow[] => {
