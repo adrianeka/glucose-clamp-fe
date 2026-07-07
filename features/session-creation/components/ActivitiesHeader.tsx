@@ -14,6 +14,7 @@ interface ActivitiesHeaderProps {
   visitDate: string;
   statusSession: string;
   displayTime?: any;
+  canRun: boolean;
 }
 
 export default function ActivitiesHeader({
@@ -22,7 +23,8 @@ export default function ActivitiesHeader({
   protocol,
   visitDate,
   statusSession,
-  displayTime
+  displayTime,
+  canRun
 }: ActivitiesHeaderProps) {
   const router = useRouter();
   const {showToast} = useToast();
@@ -91,7 +93,7 @@ export default function ActivitiesHeader({
         <button
           className="flex items-center gap-2 rounded-lg bg-[#2DB742] px-4 py-2 text-white hover:bg-[#259635] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           onClick={handleRunActivities}
-          disabled={isPending || statusSession =="COMPLETED"} // Disable tombol saat loading
+          disabled={isPending || statusSession =="COMPLETED" || !canRun} // Disable tombol saat loading
         >
           {isPending ? (
             <Loader2 size={16} className="animate-spin" />

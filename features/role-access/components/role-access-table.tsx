@@ -50,7 +50,11 @@ export function RoleAccessTable() {
       .sort((a, b) => {
         const orderA = ROLE_SORT_ORDER[a.name.toLowerCase()] ?? 99;
         const orderB = ROLE_SORT_ORDER[b.name.toLowerCase()] ?? 99;
-        return orderA - orderB;
+        
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        return a.name.localeCompare(b.name);
       });
   }, [rawAccessList]);
 
@@ -62,6 +66,10 @@ export function RoleAccessTable() {
       }
     });
 
+    const sortedMenus = Array.from(menusMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
     const rows: MatrixRow[] = [];
     const actions: { key: ActionType; label: "View" | "Add" | "Edit" | "Delete" }[] = [
       { key: "canView", label: "View" },
@@ -70,7 +78,7 @@ export function RoleAccessTable() {
       { key: "canDelete", label: "Delete" },
     ];
 
-    Array.from(menusMap.values()).forEach((menu) => {
+    sortedMenus.forEach((menu) => {
       actions.forEach((act) => {
         const rowRoles: { [roleName: string]: { roleId: number; roleAccessId?: number; allowed: boolean } } = {};
 

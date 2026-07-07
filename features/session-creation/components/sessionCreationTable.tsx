@@ -55,31 +55,32 @@ export default function SessionCreationTable({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#E2E4E6]">
-      <table className="w-full">
+    <div className="w-full overflow-x-auto rounded-xl border border-[#E2E4E6] bg-white">
+      
+      <table className="w-full min-w-[800px] border-collapse">
         <thead>
           <tr className="bg-[#F5F8FA]">
-            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2]">
+            <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-semibold text-[#0076D2] w-[100px]">
               Session ID
             </th>
 
-            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2]">
+            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2] min-w-[150px]">
               Participant
             </th>
 
-            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2]">
+            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2] min-w-[200px]">
               Protocol
             </th>
 
-            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2]">
+            <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-semibold text-[#0076D2] w-[120px]">
               Visit Date
             </th>
 
-            <th className="px-4 py-4 text-left text-sm font-semibold text-[#0076D2]">
+            <th className="whitespace-nowrap px-4 py-4 text-left text-sm font-semibold text-[#0076D2] w-[120px]">
               Status
             </th>
 
-            <th className="px-4 py-4 text-center text-sm font-semibold text-[#0076D2]">
+            <th className="whitespace-nowrap px-4 py-4 text-center text-sm font-semibold text-[#0076D2] w-[140px]">
               Actions
             </th>
           </tr>
@@ -89,31 +90,31 @@ export default function SessionCreationTable({
           {data.map((item) => (
             <tr
               key={item.sessionId}
-              className="border-t border-[#E2E4E6] bg-[#FAFAFA]"
+              className="border-t border-[#E2E4E6] bg-[#FAFAFA] hover:bg-[#F5F8FA] transition-colors"
             >
-              <td className="px-4 py-5 text-sm text-[#595F6A]">
+              <td className="whitespace-nowrap px-4 py-5 text-sm text-[#595F6A]">
                 {item.sessionId}
               </td>
 
-              <td className="px-4 py-5 text-sm text-[#595F6A]">
+              <td className="px-4 py-5 text-sm text-[#595F6A] font-medium">
                 {item.participantName}
               </td>
 
               <td className="px-4 py-5">
-                <div className="text-sm text-[#595F6A]">
+                <div className="text-sm text-[#595F6A] font-medium">
                   {item.protocolName}
                 </div>
 
-                <div className="text-xs text-[#A9ADB5]">
+                <div className="text-xs text-[#A9ADB5] mt-0.5">
                   {item.protocolId} | V
                 </div>
               </td>
 
-              <td className="px-4 py-5 text-sm text-[#595F6A]">
+              <td className="whitespace-nowrap px-4 py-5 text-sm text-[#595F6A]">
                 {item.visitDate}
               </td>
 
-              <td className="px-4 py-5">
+              <td className="whitespace-nowrap px-4 py-5">
                 <span
                   className={`inline-flex rounded-full px-2 py-1 text-xs ${getStatusStyle(
                     item.sessionStatus
@@ -123,10 +124,10 @@ export default function SessionCreationTable({
                 </span>
               </td>
 
-              <td className="px-4 py-5 text-center flex items-center justify-center gap-2">
+              <td className="whitespace-nowrap px-4 py-5 text-center flex items-center justify-center gap-2">
                 <button
                   onClick={() => onViewActivities(item)}
-                  className="rounded-md border border-[#0076D2] px-3 py-1 text-xs text-[#0076D2] hover:bg-[#F3FBFF]"
+                  className="rounded-md border border-[#0076D2] px-3 py-1.5 text-xs font-medium text-[#0076D2] hover:bg-[#F3FBFF] transition-colors"
                 >
                   View Activities
                 </button>

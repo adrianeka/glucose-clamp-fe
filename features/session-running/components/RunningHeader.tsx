@@ -18,10 +18,12 @@ import SessionCountdown from "./helper/SessionCoundown";
 
 export default function RunningHeader({
   sessionData,
-  onViewAll
+  onViewAll,
+  canEnd
 }: {
   sessionData: any;
   onViewAll: () => void;
+  canEnd: boolean;
 }) {
   const router = useRouter();
 
@@ -87,40 +89,42 @@ export default function RunningHeader({
           />}
 
         {/* More Actions */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-2 rounded-lg">
-              <MoreVertical size={20} />
-            </button>
-          </DropdownMenuTrigger>
+        {canEnd && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-lg">
+                <MoreVertical size={20} />
+              </button>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            align="end"
-            sideOffset={8}
-            className="w-52 rounded-xl border border-gray-200 p-2 shadow-lg"
-          >
-            <DropdownMenuItem
-              onClick={() => setEndSessionStep("FORM")} // Pemicu langkah pertama (FORM)
-              className="focus:bg-transparent data-[highlighted]:bg-transparent focus:text-red-600 data-[highlighted]:text-red-600"
-              style={{
-                color: "#dc2626",
-                borderRadius: "8px",
-                paddingTop: "12px",
-                paddingBottom: "12px",
-                cursor: "pointer",
-              }}
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              className="w-52 rounded-xl border border-gray-200 p-2 shadow-lg"
             >
-              <CircleStop
-                size={16}
+              <DropdownMenuItem
+                onClick={() => setEndSessionStep("FORM")} // Pemicu langkah pertama (FORM)
+                className="focus:bg-transparent data-[highlighted]:bg-transparent focus:text-red-600 data-[highlighted]:text-red-600"
                 style={{
                   color: "#dc2626",
-                  marginRight: "8px",
+                  borderRadius: "8px",
+                  paddingTop: "12px",
+                  paddingBottom: "12px",
+                  cursor: "pointer",
                 }}
-              />
-              End Clamp Session
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              >
+                <CircleStop
+                  size={16}
+                  style={{
+                    color: "#dc2626",
+                    marginRight: "8px",
+                  }}
+                />
+                End Clamp Session
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         {/* ================= MODAL ALUR TERMINASI SESI (STEP 1 & 2) ================= */}
         {endSessionStep === "FORM" && (

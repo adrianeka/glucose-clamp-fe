@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 // Hooks
 import { useGlobalConfig } from "@/features/global-configuration-uzy/hooks/globalConfigurationHook";
+import { usePermission } from "@/hooks/usePermission";
 
 interface SessionRunningPageProps {
     sessionId: number;
@@ -35,7 +36,6 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     const [isModalCompleteOpen, setIsModalCompleteOpen] = useState(false);
     const [processedIds, setProcessedIds] = useState<number[]>([]);
     const { data: configData, isLoading: isConfigLoading } = useGlobalConfig(1);
-    // Inisialisasi Mutation Hook
     const queryClient = useQueryClient();
 
     // LOGIKA ANTREAN
@@ -49,11 +49,6 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     }, [sessionData?.activities, processedIds]);
 
     const currentActiveDialog = dialogQueue[0];
-
-    const hasMoreDialogs = useMemo(() => {
-        if (!currentActiveDialog) return false;
-        return dialogQueue.length > 1;
-    }, [dialogQueue]);
 
     // Handler Umum setelah API Sukses
     const handleSuccessStep = (activityId: number) => {
@@ -73,7 +68,6 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     };
     const handlePrepSuccess = async () => {
         setPrepStep("DONE");
-
         handleSuccessStep(currentActiveDialog.activityId);
 
         await queryClient.invalidateQueries({
@@ -108,15 +102,12 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         });
     };
 
-
     useEffect(() => {
         setPrepStep("FORM");
         setBloodStep("FORM");
-        // reset setiap activity berubah
         setTempPrepData(null);
         setTempBloodData(null);
     }, [currentActiveDialog?.activityId]);
-
 
     // completed session
     useEffect(() => {
@@ -131,7 +122,13 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
             }
         }
     }, [sessionData?.completedActivities, sessionData?.totalActivities, sessionData?.progressPercentage, sessionData?.sessionStatus]);
+    
+    const { canView: canViewSession, canAdd: canAddSession, canEdit: canEditSession, canDelete: canDeleteSession } = usePermission("SESSION");
+    const { canView: canViewBD, canAdd: canAddBD, canEdit: canEditBD, canDelete: canDeleteBD } = usePermission("BLOODDRAW");
+    const { canView: canViewIM, canAdd: canAddIM, canEdit: canEditIM, canDelete: canDeleteIM } = usePermission("INFUSIONMONITORING");
 
+    const showCharts = canViewBD;
+    const showInfusion = canViewIM;
 
     return (
         <div className="min-h-screen bg-[#F8F9FB] text-[#333]">
@@ -139,24 +136,40 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
                 <RunningHeader
                     sessionData={sessionData}
                     onViewAll={() => setIsModalOpen(true)}
+                    canEnd={canEditSession}
                 />
 
                 <div className="p-3 bg-white rounded-xl border border-[#E2E4E6]">
-                    <div className=" bg-white mb-4 align-middle">
+                    <div className="bg-white mb-4 align-middle">
                         <NextActivityBanner sessionData={sessionData} configData={configData} />
                     </div>
 
-                    <div className="mt-6 flex gap-2">
-                        <div className="flex-1 min-w-0">
-                            <MainGDChart protocolId={sessionData.protocolId} sessionData={sessionData} />
-                            <div className="mt-2">
-                                <SubCharts protocolId={sessionData.protocolId} sessionData={sessionData} />
+                    <div className="mt-6 flex gap-4">
+                        {/* Wrapper Grafik: Menggunakan flex-1 sehingga otomatis penuh jika sidebar infus tidak ada */}
+                        {showCharts && (
+                            <div className="flex-1 min-w-0">
+                                <MainGDChart protocolId={sessionData.protocolId} sessionData={sessionData} />
+                                <div className="mt-2">
+                                    <SubCharts protocolId={sessionData.protocolId} sessionData={sessionData} />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div style={{ width: "450px", flexShrink: 0, borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
-                            <InfusionMonitoringSidebar sessionId={sessionData?.sessionId} />
-                        </div>
+                        {/* Wrapper Pemantauan Infus: Ukurannya dinamis berdasarkan kehadiran grafik */}
+                        {showInfusion && (
+                            <div 
+                                className="min-w-0"
+                                style={{ 
+                                    width: showCharts ? "450px" : "100%", 
+                                    flexShrink: showCharts ? 0 : 1,
+                                    flexGrow: showCharts ? 0 : 1,
+                                    borderRadius: "8px", 
+                                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)" 
+                                }}
+                            >
+                                <InfusionMonitoringSidebar sessionId={sessionData?.sessionId} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -168,7 +181,6 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
             />
 
             {/* --- DIALOG RENDERER --- */}
-
             <PreparationDialog
                 isOpen={
                     currentActiveDialog?.activityType === "PREPARATION_CHECK" &&
@@ -220,7 +232,6 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
                 onSuccess={handleBloodSuccess}
             />
 
-            {/* 4. Other Activities */}
             <ModalOtherActivity
                 isOpen={["STABILIZATION", "INSULIN_INJECTION", "OTHER", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(currentActiveDialog?.activityType)}
                 onOpenChange={(open) => !open && handleSuccessStep(currentActiveDialog.activityId)}

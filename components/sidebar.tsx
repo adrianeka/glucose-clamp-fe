@@ -10,6 +10,8 @@ import {
   AlignJustify,
   ChevronDown,
   Wrench,
+  ShieldAlert,
+  IdCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./sidebar-provider";
@@ -79,7 +81,7 @@ const navItems: NavItem[] = [
     href: "/role-access",
     menuName: "ROLEACCESS",
     icon: (active) => (
-      <Users
+      <ShieldAlert
         size={20}
         className={active ? "text-[#0076D2]" : "text-[#707784]"}
       />
@@ -90,7 +92,7 @@ const navItems: NavItem[] = [
     href: "/user-management",
     menuName: "USER",
     icon: (active) => (
-      <Users
+      <IdCard
         size={20}
         className={active ? "text-[#0076D2]" : "text-[#707784]"}
       />

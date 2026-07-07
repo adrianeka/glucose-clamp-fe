@@ -18,6 +18,7 @@ export const MENU_DISPLAY_NAMES: Record<string, string> = {
   ACCESSMENU: "Access Menu",
   PREPARATIONCHECK: "Preparation Check",
   ROLEACCESS: "Role Access",
+  BLOODDRAW: "Blood Draw",
 };
 
 export const ROLE_DISPLAY_NAMES: Record<string, string> = {

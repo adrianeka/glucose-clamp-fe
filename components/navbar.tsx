@@ -67,7 +67,7 @@ export default function Navbar() {
                 height={36}
                 className="rounded-full ring-1 ring-[#E2E4E6] shrink-0"
               />
-              <div className="hidden xs:flex flex-col gap-0.5 md:gap-1">
+              <div className="hidden sm:flex flex-col gap-0.5 md:gap-1">
                 <span className="text-[#212121] text-xs md:text-sm font-medium leading-[14px] md:leading-[18px] max-w-[80px] md:w-[100px] text-left truncate">
                   {name}
                 </span>
