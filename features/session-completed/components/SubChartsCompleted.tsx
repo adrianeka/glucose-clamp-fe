@@ -90,7 +90,7 @@ export default function SubChartsCompleted({ protocolId, sessionData }: Props) {
   return (
     <>
       {/* ==================== 1. PK CHART ==================== */}
-      <div className="bg-white rounded-2xl border border-[#E2E4E6] p-5 shadow-sm min-w-0 overflow-hidden flex flex-col justify-between">
+      <div className="bg-white rounded-2xl border border-[#E2E4E6] p-5 shadow-sm min-w-0 overflow-hidden flex flex-col justify-between w-full">
         <div>
           <h3 className="mb-6 text-sm font-bold text-[#595F6A] tracking-wide">
             PK Chart (mg/L)
@@ -162,7 +162,7 @@ export default function SubChartsCompleted({ protocolId, sessionData }: Props) {
       </div>
 
       {/* ==================== 2. C-PEPTIDE CHART ==================== */}
-      <div className="bg-white rounded-2xl border border-[#E2E4E6] p-5 shadow-sm min-w-0 overflow-hidden flex flex-col justify-between">
+      <div className="bg-white rounded-2xl border border-[#E2E4E6] p-5 shadow-sm min-w-0 overflow-hidden flex flex-col justify-between w-full">
         <div>
           <h3 className="mb-6 text-sm font-bold text-[#595F6A] tracking-wide">
             C-Peptide Chart (ng/mL)
@@ -196,14 +196,15 @@ export default function SubChartsCompleted({ protocolId, sessionData }: Props) {
               />
 
               <YAxis
-                domain={[70, 110]}
+                domain={[0, 5]}
+                allowDecimals={true}
                 tickLine={true}
                 axisLine={{ stroke: "#707784" }}
                 tick={{ fill: "#707784", fontSize: 11 }}
                 dx={-4}
               >
                 <Label
-                  value="mg/dL"
+                  value="ng/mL"
                   angle={-90}
                   position="insideLeft"
                   style={{ textAnchor: "middle", fill: "#707784", fontSize: 10 }}

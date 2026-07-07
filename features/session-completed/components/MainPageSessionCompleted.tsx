@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SessionCompletedHeader from "./SessionCompletedHeader";
 import MainGDChartCompleted from "./MainGDChartCompleted";
 import SubChartsCompleted from "./SubChartsCompleted";
@@ -20,6 +20,9 @@ interface Activity {
 export default function MainPageSessionCompleted({ sessionId, sessionData }: MainPageSessionCompletedProps) {
     const activities = sessionData?.activities || [];
 
+    const mainChartRef = useRef<HTMLDivElement>(null);
+    const subChartsRef = useRef<HTMLDivElement>(null);
+
     const formatTime = (dateString: string) => {
         try {
             return new Date(dateString).toLocaleTimeString("id-ID", {
@@ -35,7 +38,11 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
     return (
         <div className="min-h-screen bg-[#F8F9FB] text-[#333]">
             <div className="max-w-[1600px] mx-auto">
-                <SessionCompletedHeader sessionData={sessionData} />
+                <SessionCompletedHeader
+                    sessionData={sessionData}
+                    mainChartRef={mainChartRef}
+                    subChartsRef={subChartsRef}
+                />
 
                 <div className="p-5 bg-white rounded-xl border border-[#E2E4E6] mt-6">
                     <div className="bg-white mb-6 align-middle">
@@ -43,17 +50,17 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
                         <p className="text-[#737780] text-sm">Activities based on the selected protocol.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full mb-6">
-                        <div className="lg:col-span-2">
+                    <div className="flex gap-4 w-full max-w-full mb-6 overflow-hidden">
+                        <div className="w-3xl flex-shrink-0" ref={mainChartRef}>
                             <MainGDChartCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
                         </div>
-                        <SubChartsCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
+
+                        <div className="flex flex-1 min-w-0 gap-4" ref={subChartsRef}>
+                            <SubChartsCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
+                        </div>
                     </div>
 
-                    {/* PERUBAHAN: Berikan batasan tinggi tetap (misal max-h-[400px] atau h-[400px]) */}
                     <div className="max-h-[500px] rounded-xl border border-[#E2E4E6] overflow-hidden bg-white shadow-sm flex flex-col">
-
-                        {/* ScrollArea sekarang akan bekerja secara internal jika data melebihi 500px */}
                         <div
                             style={{
                                 flex: 1,
@@ -62,7 +69,6 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
                             }}
                         >
                             <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                                {/* Berkat sticky top-0, header akan tetap terkunci di atas saat discroll */}
                                 <thead className="sticky top-0 z-30 bg-[#F1F9FA]">
                                     <tr>
                                         <th className="w-[60px] px-4 py-4 text-left text-xs font-bold text-[#0076D2] uppercase tracking-wider">No</th>
