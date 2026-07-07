@@ -1,5 +1,6 @@
 "use client";
 
+import { PermissionProvider } from "@/hooks/usePermission";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 
@@ -21,7 +22,9 @@ export default function Providers({
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <PermissionProvider>
+        {children}
+      </PermissionProvider>
     </QueryClientProvider>
   );
 }

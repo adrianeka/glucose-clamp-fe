@@ -1,4 +1,4 @@
-"use client"; // Pastikan ini berjalan di sisi client
+"use client";
 
 import { useEffect, useState } from "react";
 import Navbar from "@/components/navbar";
@@ -7,8 +7,6 @@ import Footer from "@/components/footer";
 
 import { ToastProvider } from "@/components/ui/toast";
 import { SidebarProvider } from "@/components/sidebar-provider";
-
-import { getMyPermissions } from "@/features/auth/services"; 
 import { AccessDeniedState } from "@/components/access-denied-state";
 import { usePathname } from "next/navigation";
 
@@ -23,22 +21,6 @@ export default function AppLayout({
   useEffect(() => {
     setIsForbidden(false);
   }, [pathname]);
-
-  useEffect(() => {
-    const syncPermissions = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const latestPermissions = await getMyPermissions();
-          localStorage.setItem("permissions", JSON.stringify(latestPermissions));
-        }
-      } catch (err) {
-        console.error("Gagal sinkronisasi permission terbaru:", err);
-      }
-    };
-
-    syncPermissions();
-  }, []);
 
   useEffect(() => {
     const handleForbidden = () => {
@@ -56,15 +38,14 @@ export default function AppLayout({
       <div className="min-h-screen flex flex-col">
         <Navbar />
 
-        <div className="flex flex-1">
+        <div className="flex flex-1 min-w-0">
           <Sidebar />
 
           <main
-            className="flex-1 p-6"
+            className="flex-1 min-w-0 p-4 md:p-6"
             style={{ backgroundColor: "#FAFAFA" }}
           >
             <ToastProvider>
-              {/* {children} */}
               {isForbidden ? <AccessDeniedState /> : children}
             </ToastProvider>
           </main>

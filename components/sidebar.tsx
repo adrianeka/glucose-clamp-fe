@@ -17,7 +17,7 @@ import { useSidebar } from "./sidebar-provider";
 interface NavChild {
   label: string;
   href: string;
-  menuName: string | string[]; // Mendukung nama menu tunggal atau banyak sekaligus
+  menuName: string | string[];
 }
 
 interface NavItem {
@@ -26,7 +26,7 @@ interface NavItem {
   icon: (active: boolean) => React.ReactNode;
   hasChevron?: boolean;
   children?: NavChild[];
-  menuName?: string | string[]; // Mendukung nama menu tunggal atau banyak sekaligus
+  menuName?: string | string[];
 }
 
 const navItems: NavItem[] = [
@@ -59,14 +59,13 @@ const navItems: NavItem[] = [
       {
         label: "Protocol & Sampling",
         href: "/protocol-sampling",
-        menuName: ["PROTOCOL", "SAMPLINGSCHEDULE"],
+        menuName: ["PROTOCOLSAMPLINGSCHEDULE"],
       },
     ],
   },
   {
     label: "Session Creation",
     href: "/session-creation",
-    // Hak akses jamak (Akan muncul jika user punya salah satu izin di bawah ini)
     menuName: ["SESSION","INFUSIONMONITORING","LABRESULT","BLOODSAMPLE", "PREPARATIONCHECK"], 
     icon: (active) => (
       <CalendarDays
@@ -113,8 +112,6 @@ const navItems: NavItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useSidebar(); 
-  
-  // State untuk menampung izin dari localStorage
   const [permissions, setPermissions] = useState<any[]>([]);
 
   useEffect(() => {
@@ -166,12 +163,13 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "flex-shrink-0 h-full bg-white shadow-[-1px_0px_0px_rgba(0,0,0,0.05)_inset] flex flex-col gap-8 p-5 transition-all duration-300",
-        isCollapsed ? "w-[80px]" : "w-[304px]"
+        "flex-shrink-0 h-full bg-white shadow-[-1px_0px_0px_rgba(0,0,0,0.05)_inset] flex flex-col gap-8 transition-all duration-300",
+        isCollapsed 
+          ? "w-0 md:w-[80px] p-0 md:p-5 overflow-hidden border-none" 
+          : "w-[260px] md:w-[304px] p-5"
       )}
     >
-      {/* Tombol Toggle Collapse Sidebar */}
-      <div className="flex items-center gap-1.5">
+      <div className="hidden md:flex items-center gap-1.5">
         <button
           onClick={toggleSidebar}
           className="p-2.5 rounded-lg hover:bg-gray-100 transition-colors"

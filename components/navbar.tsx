@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronDown, HelpCircle, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, AlignJustify } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useSidebar } from "./sidebar-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,35 +16,41 @@ import {
 export default function Navbar() {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
+  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     setName(localStorage.getItem("name") || "");
     setRole(localStorage.getItem("role") || "");
   }, []);
+  
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("is_logged_in");
-    localStorage.removeItem("operator_email");
-    localStorage.removeItem("operator_name");
-    localStorage.removeItem("name");
-    localStorage.removeItem("role");
+    localStorage.clear();
     router.push("/login");
   };
 
   return (
-    <header className="h-15 px-12 flex items-center justify-between bg-[#FAFAFA] shadow-[0px_-1px_0px_#E2E4E6_inset] flex-shrink-0">
-      <div className="flex items-center gap-4">
+    <header className="h-15 px-4 md:px-12 flex items-center justify-between bg-[#FAFAFA] shadow-[0px_-1px_0px_#E2E4E6_inset] flex-shrink-0">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors md:hidden shrink-0"
+          type="button"
+          aria-label="Toggle Menu"
+        >
+          <AlignJustify size={20} className="text-[#A9ADB5]" />
+        </button>
+
         <div className="flex items-center gap-2">
           <Image
             src="/LogoNavbar.png"
             alt="Glucose Clamp Logo"
-            width={45}
-            height={45}
-            className="rounded-[112px]"
+            width={38}
+            height={38}
+            className="rounded-[112px] shrink-0"
           />
-          <span className="text-[#0076D2] text-[28px] font-bold leading-[38px]">
+          <span className="hidden sm:inline-block text-[#0076D2] text-xl md:text-[28px] font-bold leading-normal md:leading-[38px] whitespace-nowrap">
             Glucose Clamp
           </span>
         </div>
@@ -53,26 +59,26 @@ export default function Navbar() {
       <div className="flex items-center gap-5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 outline-none">
+            <button className="flex items-center gap-2 md:gap-3 outline-none cursor-pointer">
               <Image
                 src="/Profile.png"
                 alt="User avatar"
-                width={40}
-                height={40}
-                className="rounded-full ring-1 ring-[#E2E4E6]"
+                width={36}
+                height={36}
+                className="rounded-full ring-1 ring-[#E2E4E6] shrink-0"
               />
-              <div className="flex flex-col gap-1">
-                <span className="text-[#212121] text-base font-medium leading-[18px] w-[100px] text-left">
+              <div className="hidden xs:flex flex-col gap-0.5 md:gap-1">
+                <span className="text-[#212121] text-xs md:text-sm font-medium leading-[14px] md:leading-[18px] max-w-[80px] md:w-[100px] text-left truncate">
                   {name}
                 </span>
                 <Badge
                   variant="outline"
-                  className="bg-[#F1F9FA] border-[#C4EAEE] text-[#0076D2] text-xs font-normal leading-[14px] rounded-full px-2 py-1 w-fit"
+                  className="bg-[#F1F9FA] border-[#C4EAEE] text-[#0076D2] text-[10px] md:text-xs font-normal rounded-full px-1.5 py-0.5 w-fit"
                 >
                   {role}
                 </Badge>
               </div>
-              <ChevronDown size={20} className="text-[#707784]" />
+              <ChevronDown size={16} className="text-[#707784] shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
