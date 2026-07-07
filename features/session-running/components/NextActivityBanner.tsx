@@ -47,7 +47,7 @@ export default function NextActivityBanner({
   const toTimestamp = (time: any) => {
     if (!time) return 0;
 
-    // ISO String
+    // ISO String (e.g., "2026-07-07T07:13:49.000Z")
     if (typeof time === "string") {
       return new Date(time).getTime();
     }
@@ -64,6 +64,20 @@ export default function NextActivityBanner({
         nano = 0
       ] = time;
 
+      if (time.length === 7 || hour < 7) {
+        // Anggap sebagai UTC, lalu biarkan JavaScript mengonversinya ke waktu lokal otomatis
+        return new Date(Date.UTC(
+          year,
+          month - 1,
+          day,
+          hour,
+          minute,
+          second,
+          Math.floor(nano / 1_000_000)
+        )).getTime();
+      }
+
+      // Jika data Infusion (array panjangnya 5) sudah dalam waktu lokal (WIB):
       return new Date(
         year,
         month - 1,

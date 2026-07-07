@@ -51,11 +51,11 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
                     </div>
 
                     <div className="flex gap-4 w-full max-w-full mb-6 overflow-hidden">
-                        <div className="w-3xl flex-shrink-0" ref={mainChartRef}>
+                        <div className="w-[50%] flex-shrink-0" ref={mainChartRef}>
                             <MainGDChartCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
                         </div>
 
-                        <div className="flex flex-1 min-w-0 gap-4" ref={subChartsRef}>
+                        <div className="flex flex-1 min-w-0 w-[50%] flex-shrink-0 gap-4" ref={subChartsRef}>
                             <SubChartsCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
                         </div>
                     </div>
