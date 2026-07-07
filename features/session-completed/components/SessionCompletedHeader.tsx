@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Clock3, Download, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ClampingReportDocument from "./ClampingReportDocument";
 import { pdf } from "@react-pdf/renderer";
 import { toPng } from "html-to-image";
@@ -20,6 +20,7 @@ export default function SessionCompletedHeader({
 }) {
     const router = useRouter();
     const [isDownloading, setIsDownloading] = useState(false);
+    const searchParams = useSearchParams();
 
     const protocolId = sessionData?.protocolId;
     const { data: protocolResponse } = useProtocolDetail(protocolId);
@@ -55,7 +56,7 @@ export default function SessionCompletedHeader({
         setIsDownloading(true);
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
 
             const measurementsData = (() => {
                 if (!sessionData?.activities?.length) {
@@ -170,6 +171,18 @@ export default function SessionCompletedHeader({
             setIsDownloading(false);
         }
     };
+
+    useEffect(() => {
+        const shouldDownload = searchParams.get("download") === "true";
+
+        if (shouldDownload && mainChartRef.current && subChartsRef.current && sessionData) {
+            handleDownload();
+
+            const url = new URL(window.location.href);
+            url.searchParams.delete("download");
+            window.history.replaceState({}, "", url.toString());
+        }
+    }, [searchParams, sessionData, mainChartRef, subChartsRef]);
 
     return (
         <div className="flex items-center justify-between mb-2">

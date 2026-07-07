@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Session } from "../types/Session";
 
 interface SessionCreationTableProps {
@@ -12,43 +13,46 @@ export default function SessionCreationTable({
   data,
   onViewActivities,
 }: SessionCreationTableProps) {
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case "PREP":
-            return "In Queue";
 
-            case "RUNNING":
-            return "On Progress";
+  const router = useRouter();
 
-            case "HOLD":
-            return "On Hold";
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "PREP":
+        return "In Queue";
 
-            case "COMPLETED":
-            return "Completed";
+      case "RUNNING":
+        return "On Progress";
 
-            default:
-            return status;
-        }
-    };
+      case "HOLD":
+        return "On Hold";
+
+      case "COMPLETED":
+        return "Completed";
+
+      default:
+        return status;
+    }
+  };
 
   const getStatusStyle = (status: string) => {
-        switch (status) {
-            case "PREP":
-            return "bg-[#F3F4F6] text-[#707784]";
+    switch (status) {
+      case "PREP":
+        return "bg-[#F3F4F6] text-[#707784]";
 
-            case "RUNNING":
-            return "bg-[#EAF4FF] text-[#0076D2]";
+      case "RUNNING":
+        return "bg-[#EAF4FF] text-[#0076D2]";
 
-            case "HOLD":
-            return "bg-[#FFF4E5] text-[#F57C00]";
+      case "HOLD":
+        return "bg-[#FFF4E5] text-[#F57C00]";
 
-            case "COMPLETED":
-            return "bg-[#EAF8EC] text-[#43A047]";
+      case "COMPLETED":
+        return "bg-[#EAF8EC] text-[#43A047]";
 
-            default:
-            return "bg-[#F3F4F6] text-[#707784]";
-        }
-    };
+      default:
+        return "bg-[#F3F4F6] text-[#707784]";
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-[#E2E4E6]">
@@ -111,21 +115,31 @@ export default function SessionCreationTable({
 
               <td className="px-4 py-5">
                 <span
-                    className={`inline-flex rounded-full px-2 py-1 text-xs ${getStatusStyle(
-                        item.sessionStatus
-                    )}`}
-                    >
-                    {getStatusLabel(item.sessionStatus)}
+                  className={`inline-flex rounded-full px-2 py-1 text-xs ${getStatusStyle(
+                    item.sessionStatus
+                  )}`}
+                >
+                  {getStatusLabel(item.sessionStatus)}
                 </span>
               </td>
 
-              <td className="px-4 py-5 text-center">
+              <td className="px-4 py-5 text-center flex items-center justify-center gap-2">
                 <button
                   onClick={() => onViewActivities(item)}
                   className="rounded-md border border-[#0076D2] px-3 py-1 text-xs text-[#0076D2] hover:bg-[#F3FBFF]"
                 >
                   View Activities
                 </button>
+                {item.sessionStatus === "COMPLETED" && (
+                  <button
+                    onClick={() => {
+                      router.push(`/session-creation/${item.sessionId}?download=true`);
+                    }}
+                    className="rounded-md border border-[#FABA00] px-3 py-1 text-xs text-[#FABA00] hover:bg-[#FFF7E5]"
+                  >
+                    Download Files
+                  </button>
+                )}
               </td>
             </tr>
           ))}
