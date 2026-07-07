@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Clock3, Download, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ClampingReportDocument from "./ClampingReportDocument";
@@ -172,10 +172,16 @@ export default function SessionCompletedHeader({
         }
     };
 
+    const hasTriggeredDownload = useRef(false);
+
     useEffect(() => {
         const shouldDownload = searchParams.get("download") === "true";
 
-        if (shouldDownload && mainChartRef.current && subChartsRef.current && sessionData) {
+        if (!shouldDownload || hasTriggeredDownload.current) return;
+
+        if (mainChartRef.current && subChartsRef.current && sessionData) {
+            hasTriggeredDownload.current = true;
+
             handleDownload();
 
             const url = new URL(window.location.href);
