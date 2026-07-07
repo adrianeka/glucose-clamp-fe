@@ -66,7 +66,7 @@ const navItems: NavItem[] = [
   {
     label: "Session Creation",
     href: "/session-creation",
-    menuName: ["SESSION","INFUSIONMONITORING","LABRESULT","BLOODSAMPLE", "PREPARATIONCHECK"], 
+    menuName: ["SESSION"], 
     icon: (active) => (
       <CalendarDays
         size={20}
