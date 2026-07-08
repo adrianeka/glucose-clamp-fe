@@ -255,7 +255,8 @@ export default function ModalSamplingSchedule({
   return (
     <Dialog open={open} onOpenChange={handleRequestClose}>
       <DialogContent
-        className="!w-[1450px] !max-w-[1450px] p-0 overflow-hidden bg-[#FAFAFA]"
+        closeIconType="minimize"
+        className="!w-[95vw] xl:!w-[1450px] !max-w-[1450px] h-[90vh] max-h-[620px] xl:max-h-[720px] p-0 overflow-hidden bg-[#FAFAFA] flex flex-col focus-visible:outline-none"
       >
         <DialogTitle className="sr-only">
           Sampling Schedule
@@ -275,7 +276,7 @@ export default function ModalSamplingSchedule({
           </div>
 
           {/* BODY */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6 min-h-0">
             <div className={`grid grid-cols-1 gap-6 items-start ${canAddPhase ? 'lg:grid-cols-[300px_1fr]' : 'lg:grid-cols-1'
               }`}>
               {canAddPhase && (
@@ -324,12 +325,12 @@ export default function ModalSamplingSchedule({
                           setPhaseDuration(e.target.value)
                         }
                         className={`
-                        w-full h-10 rounded-md px-3 bg-[#FAFAFA]
+                        w-full h-10 rounded-md px-3 bg-[#FAFAFA] text-sm border outline-none
                         ${phaseDuration &&
                             interval &&
                             Number(phaseDuration) < Number(interval)
-                            ? "border border-red-500"
-                            : "border border-[#E2E4E6]"
+                            ? "border-red-500"
+                            : "border-[#E2E4E6]"
                           }
                       `}
                       />
@@ -487,7 +488,7 @@ export default function ModalSamplingSchedule({
                             bulkUpdateSamplingSchedulesMutation.isPending
                           }
                           onClick={handleSaveAll}
-                          className="bg-[#0076D2]"
+                          className="bg-[#0076D2] hover:bg-[#0066B8]"
                         >
                           {bulkUpdateSamplingSchedulesMutation.isPending
                             ? "Saving..."
@@ -540,7 +541,6 @@ export default function ModalSamplingSchedule({
                                       key={phase.phase_code}
                                       value={String(phase.phase_code)}
                                     >
-                                      {/* Sekarang phase adalah object, jadi .phase_code bisa diakses */}
                                       {phase.phase_code}
                                     </SelectItem>
                                   ))}
@@ -660,6 +660,7 @@ export default function ModalSamplingSchedule({
                                         e.target.checked
                                       )
                                     }
+                                    className="w-4 h-4 cursor-pointer"
                                   />
                                 </td>
 
@@ -675,6 +676,7 @@ export default function ModalSamplingSchedule({
                                         e.target.checked
                                       )
                                     }
+                                    className="w-4 h-4 cursor-pointer"
                                   />
                                 </td>
 
@@ -701,7 +703,7 @@ export default function ModalSamplingSchedule({
                             <td
                               colSpan={6}
                               className="
-                                      h-[200px]
+                                      h-[180px]
                                       text-center
                                       align-middle
                                       text-[#707784]

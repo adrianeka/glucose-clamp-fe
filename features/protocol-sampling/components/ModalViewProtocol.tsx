@@ -21,12 +21,12 @@ const Row = ({
   label: string;
   value: React.ReactNode;
 }) => (
-  <div className="grid grid-cols-[170px_1fr] border-b last:border-b-0">
-    <div className="px-3 py-2 text-xs text-[#595F6A] bg-[#FAFAFA]">
+  <div className="grid grid-cols-1 sm:grid-cols-[170px_1fr] border-b last:border-b-0">
+    <div className="px-3 py-2 text-xs text-[#595F6A] bg-[#FAFAFA] font-medium sm:font-normal">
       {label}
     </div>
 
-    <div className="px-3 py-2 text-xs text-[#212121]">
+    <div className="px-3 py-2 text-xs text-[#212121] break-all sm:break-normal">
       {value ?? "-"}
     </div>
   </div>
@@ -56,12 +56,14 @@ export default function ModalViewProtocol({
     >
       <DialogContent
         className="
-          w-135
-          max-w-135
-          sm:max-w-135
+          w-[95vw]
+          max-w-[540px]
+          sm:max-w-[540px]
+          max-h-[90vh]
+          overflow-y-auto
           p-0
           gap-0
-          overflow-hidden
+          rounded-xl
 
           [&>button]:hidden
         "
@@ -93,13 +95,13 @@ export default function ModalViewProtocol({
             Protocol Detail
           </p>
 
-          <h2 className="text-[24px] font-semibold leading-tight">
+          <h2 className="text-[20px] sm:text-[24px] font-semibold leading-tight pr-6">
             {data.protocol_name}
           </h2>
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4">
           {/* Medical Identity */}
           <div>
             <h3 className="text-xs font-medium text-[#707784] mb-2">

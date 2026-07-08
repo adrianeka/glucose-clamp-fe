@@ -112,7 +112,7 @@ export default function ModalEditProtocol({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-145 max-w-145 sm:max-w-145 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-[580px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Edit Protocol
@@ -144,7 +144,7 @@ export default function ModalEditProtocol({
           </div>
 
           {/* Name + Version */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">
                 Protocol Name <span className="text-red-500">*</span>
@@ -183,7 +183,7 @@ export default function ModalEditProtocol({
           <div className="border-t" />
 
           {/* Row 1 */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">
                 Duration (hours) <span className="text-red-500">*</span>
@@ -248,7 +248,7 @@ export default function ModalEditProtocol({
           </div>
 
           {/* Row 2 */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">
                 Target Glucose Min <span className="text-red-500">*</span>
@@ -322,7 +322,7 @@ export default function ModalEditProtocol({
           </div>
 
           {/* Row 3 */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">
                 Target Glucose Min Extreme <span className="text-red-500">*</span>
@@ -380,7 +380,7 @@ export default function ModalEditProtocol({
           <div className="border-t" />
 
           {/* Row 4 (Infusion Parameters - Tambahan Baru) */}
-          <div className="grid grid-cols-3 gap-4 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
             <div>
               <label className="text-sm font-medium">
                 Glucose Drop Trigger (%) <span className="text-red-500">*</span>

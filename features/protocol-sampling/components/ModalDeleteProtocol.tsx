@@ -28,9 +28,9 @@ export default function ModalDeleteProtocol({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="sm:max-w-[420px] p-0 gap-0">
+      <DialogContent className="w-[95vw] sm:max-w-[420px] p-0 gap-0 rounded-xl">
         <DialogTitle/>
-        <div className="flex flex-col items-center px-8 py-8">
+        <div className="flex flex-col items-center px-6 sm:px-8 py-8">
           <div className="mb-4">
             <Trash2
               size={48}

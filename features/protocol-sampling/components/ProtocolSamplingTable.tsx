@@ -73,107 +73,109 @@ export default function ProtocolSamplingTable({
   }
 
   return (
-    <div className="min-h-99 overflow-hidden rounded-xl">
-      <table className="w-full">
-        <thead>
-          <tr className="bg-[#F5F8FA] text-left">
-            <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
-              Protocol Code
-            </th>
+    <div className="min-h-99 overflow-hidden rounded-xl border border-[#E2E4E6]">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[800px]">
+          <thead>
+            <tr className="bg-[#F5F8FA] text-left">
+              <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
+                Protocol Code
+              </th>
 
-            <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
-              Name
-            </th>
+              <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
+                Name
+              </th>
 
-            <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
-              Duration
-            </th>
+              <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
+                Duration
+              </th>
 
-            <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
-              Sampling Schedule
-            </th>
+              <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
+                Sampling Schedule
+              </th>
 
-            <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
-              Actions
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((item) => (
-            <tr
-              key={item.protocol_id}
-              className="bg-[#FAFAFA] border-t border-[#E2E4E6]"
-            >
-              <td className="px-4 py-4">
-                <span className="inline-flex items-center rounded-full border border-[#8ED0F9] bg-[#F3FBFF] px-2 py-1 text-xs text-[#0076D2]">
-                  {/* {item.protocol_id} */}
-                  {item.protocol_code} |{" "} {item.version}
-                </span>
-              </td>
-
-              <td className="px-4 py-4">
-                <div className="font-medium text-[#212121]">
-                  {item.protocol_name}
-                </div>
-
-                {/* <div className="text-xs text-[#707784]">
-                  {item.protocol_code} |{" "}
-                  {item.version}
-                </div> */}
-              </td>
-
-              <td className="px-4 py-4 text-[#212121]">
-                {item.duration_hours} h
-              </td>
-
-              <td className="px-4 py-4">
-                {item.sampling_schedules != "0 phase" ? (
-                  <button
-                    onClick={() =>
-                      onSamplingSchedule(item)
-                    }
-                    className="text-left text-xs text-[#0076D2] underline hover:text-[#005DA6]"
-                  >
-                    {item.sampling_schedules}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onSamplingSchedule(item)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#0076D2] px-3 py-2 text-xs text-[#0076D2] hover:bg-[#F3FBFF]"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Sampling Schedule
-                  </button>
-                )}
-              </td>
-
-              <td className="px-4 py-4">
-                <div className="flex items-center gap-3">
-                  <Eye
-                    className="w-4 h-4 cursor-pointer text-[#0076D2]"
-                    onClick={() => onView(item)}
-                  />
-
-                  {canEditPhase && (
-                    <Pencil
-                      className="w-4 h-4 cursor-pointer text-[#FFB800]"
-                      onClick={() => onEdit(item)}
-                    />
-                  )}
-
-                  {canDeletePhase && (
-                    <Trash2
-                      className="w-4 h-4 cursor-pointer text-[#FF5B5B]"
-                      onClick={() => onDelete(item)}
-                    />
-                  )}
-                </div>
-              </td>
+              <th className="px-4 py-4 text-[#0076D2] text-sm font-semibold">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {data.map((item) => (
+              <tr
+                key={item.protocol_id}
+                className="bg-[#FAFAFA] border-t border-[#E2E4E6]"
+              >
+                <td className="px-4 py-4">
+                  <span className="inline-flex items-center rounded-full border border-[#C4EAEE] bg-[#F1F9FA] px-2 py-1 text-xs text-[#0076D2]">
+                    {/* {item.protocol_id} */}
+                    {item.protocol_code} |{" "} {item.version}
+                  </span>
+                </td>
+
+                <td className="px-4 py-4">
+                  <div className="font-medium text-[#212121]">
+                    {item.protocol_name}
+                  </div>
+
+                  {/* <div className="text-xs text-[#707784]">
+                    {item.protocol_code} |{" "}
+                    {item.version}
+                  </div> */}
+                </td>
+
+                <td className="px-4 py-4 text-[#212121]">
+                  {item.duration_hours} h
+                </td>
+
+                <td className="px-4 py-4">
+                  {item.sampling_schedules != "0 phase" ? (
+                    <button
+                      onClick={() =>
+                        onSamplingSchedule(item)
+                      }
+                      className="text-left text-xs text-[#0076D2] underline hover:text-[#005DA6]"
+                    >
+                      {item.sampling_schedules}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onSamplingSchedule(item)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#0076D2] px-3 py-2 text-xs text-[#0076D2] hover:bg-[#F3FBFF]"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Sampling Schedule
+                    </button>
+                  )}
+                </td>
+
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <Eye
+                      className="w-4 h-4 cursor-pointer text-[#0076D2]"
+                      onClick={() => onView(item)}
+                    />
+
+                    {canEditPhase && (
+                      <Pencil
+                        className="w-4 h-4 cursor-pointer text-[#FFB800]"
+                        onClick={() => onEdit(item)}
+                      />
+                    )}
+
+                    {canDeletePhase && (
+                      <Trash2
+                        className="w-4 h-4 cursor-pointer text-[#FF5B5B]"
+                        onClick={() => onDelete(item)}
+                      />
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
