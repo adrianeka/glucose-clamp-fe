@@ -125,8 +125,8 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
     }, [sessionData?.completedActivities, sessionData?.totalActivities, sessionData?.progressPercentage, sessionData?.sessionStatus]);
     
     const { canEdit: canEditSession } = usePermission("SESSION");
-    const { canView: canViewBD } = usePermission("BLOODDRAW");
-    const { canView: canViewIM } = usePermission("INFUSIONMONITORING");
+    const { canView: canViewBD, canAdd: canAddBD } = usePermission("BLOODDRAW");
+    const { canView: canViewIM, canAdd: canAddIM } = usePermission("INFUSIONMONITORING");
     const { canAdd: canAddPC } = usePermission("PREPARATIONCHECK");
 
     const showCharts = canViewBD;
@@ -168,7 +168,7 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
                                     boxShadow: "0 1px 2px rgba(0,0,0,0.05)" 
                                 }}
                             >
-                                <InfusionMonitoringSidebar sessionId={sessionData?.sessionId} />
+                                <InfusionMonitoringSidebar sessionId={sessionData?.sessionId} canAddInfusion={canAddIM} />
                             </div>
                         )}
                     </div>
@@ -207,19 +207,21 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
                 onSuccess={handlePrepSuccess}
             />
 
-            <BloodSampleDialog
-                isOpen={
-                    (
-                        currentActiveDialog?.activityType === "BLOOD_DRAW" ||
-                        currentActiveDialog?.activityType === "INSULIN_CHECK"
-                    ) &&
-                    bloodStep === "FORM"
-                }
-                activity={currentActiveDialog}
-                defaultValues={tempBloodData}
-                onSubmit={handleBloodDraft}
-                onCancel={handleBloodCancel}
-            />
+            {canAddBD && (
+                <BloodSampleDialog
+                    isOpen={
+                        (
+                            currentActiveDialog?.activityType === "BLOOD_DRAW" ||
+                            currentActiveDialog?.activityType === "INSULIN_CHECK"
+                        ) &&
+                        bloodStep === "FORM"
+                    }
+                    activity={currentActiveDialog}
+                    defaultValues={tempBloodData}
+                    onSubmit={handleBloodDraft}
+                    onCancel={handleBloodCancel}
+                />
+            )}
 
             <ConfirmBloodDrawDialog
                 isOpen={
@@ -242,10 +244,12 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
                 activityData={currentActiveDialog}
             />
 
-            <ModalSessionCompleted
-                isOpen={isModalCompleteOpen}
-                sessionId={sessionData?.sessionId}
-            />
+            {canEditSession && (
+                <ModalSessionCompleted
+                    isOpen={isModalCompleteOpen}
+                    sessionId={sessionData?.sessionId}
+                />
+            )}
         </div>
     );
 }

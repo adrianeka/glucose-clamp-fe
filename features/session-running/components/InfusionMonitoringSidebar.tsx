@@ -7,9 +7,10 @@ import { useInfusion } from "../hooks/useInfusionMonitoring";
 
 interface Props {
   sessionId: number;
+  canAddInfusion?: boolean; // Optional prop to control the visibility of the "Add Infusion" button
 }
 
-export default function InfusionMonitoringSidebar({ sessionId }: Props) {
+export default function InfusionMonitoringSidebar({ sessionId, canAddInfusion }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { useGetInfusionsBySession } = useInfusion(sessionId);
   const { data, isLoading } = useGetInfusionsBySession();
@@ -36,13 +37,15 @@ export default function InfusionMonitoringSidebar({ sessionId }: Props) {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#0076D2] text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors shrink-0"
-          >
-            <Plus size={14} strokeWidth={3} />
-            Add Infusion
-          </button>
+          {canAddInfusion && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#0076D2] text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors shrink-0"
+            >
+              <Plus size={14} strokeWidth={3} />
+              Add Infusion
+            </button>
+          )}
         </div>
 
         {/* Table Area */}
