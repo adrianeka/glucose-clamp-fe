@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { phaseService } from "../services";
 import { PhaseConfig } from "../types";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { usePermission } from "@/hooks/usePermission";
 
 function CodeBadge({ code }: { code: string }) {
   return (
@@ -40,6 +41,8 @@ interface TableRowProps {
   onDragStart?: (e: React.DragEvent) => void;
   onDragOver?: (e: React.DragEvent) => void;
   onDragEnd?: () => void;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 function TableRow({
@@ -54,6 +57,8 @@ function TableRow({
   onDragStart,
   onDragOver,
   onDragEnd,
+  canEdit,
+  canDelete
 }: TableRowProps) {
   return (
     <div
@@ -125,20 +130,24 @@ function TableRow({
           </div>
         ) : (
           <>
-            <button
-              onClick={() => onEdit(phase)}
-              className="hover:opacity-70 transition-opacity"
-              aria-label="Edit"
-            >
-              <Pencil size={18} className="text-[#FABA00]" />
-            </button>
-            <button
-              onClick={() => onDelete(phase)}
-              className="hover:opacity-70 transition-opacity"
-              aria-label="Delete"
-            >
-              <Trash2 size={18} className="text-[#FF5630]" />
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => onEdit(phase)}
+                className="hover:opacity-70 transition-opacity"
+                aria-label="Edit"
+              >
+                <Pencil size={18} className="text-[#FABA00]" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => onDelete(phase)}
+                className="hover:opacity-70 transition-opacity"
+                aria-label="Delete"
+              >
+                <Trash2 size={18} className="text-[#FF5630]" />
+              </button>
+            )}
           </>
         )}
       </div>
@@ -344,6 +353,9 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
 
   const hasPriorityChanges = JSON.stringify(phases.map(p => p.id + '-' + p.priority)) !== JSON.stringify(reorderedPhases.map(p => p.id + '-' + p.priority));
 
+  const { canAdd: canAddPhase, canEdit: canEditPhase, canDelete: canDeletePhase } = usePermission("PHASECONFIGURATION");
+
+
   return (
     <>
       <div className="flex-1 self-stretch p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">
@@ -382,7 +394,6 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
             </div>
           ) : (
             <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-              {/* Input search melebar penuh di HP, tetap kompak di layar lebar */}
               <div className="relative w-full sm:w-[280px]">
                 <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
@@ -392,13 +403,15 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
                   className="pl-10 bg-[#FAFAFA] border-gray-200 rounded-lg text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2] w-full"
                 />
               </div>
-              <Button
-                onClick={onAddPhase}
-                className="w-full sm:w-auto bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-base font-semibold px-5 py-2.5 h-10 rounded-lg gap-2 justify-center"
-              >
-                <Plus size={20} className="text-[#FAFAFA]" />
-                Add
-              </Button>
+              {canAddPhase && (
+                <Button
+                  onClick={onAddPhase}
+                  className="w-full sm:w-auto bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-base font-semibold px-5 py-2.5 h-10 rounded-lg gap-2 justify-center"
+                >
+                  <Plus size={20} className="text-[#FAFAFA]" />
+                  Add
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -421,7 +434,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
                 )}>
                   <span>Priority</span>
                   
-                  {!isReordering && (
+                  {(!isReordering && canEditPhase) && (
                     <div className="relative group flex items-center">
                       <button
                         onClick={startReordering}
@@ -480,6 +493,8 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
                       onDragStart={() => handleDragStart(idx)}
                       onDragOver={(e) => handleDragOver(e, idx)}
                       onDragEnd={handleDragEnd}
+                      canEdit={canEditPhase}
+                      canDelete={canDeletePhase}
                     />
                   ))
                 ) : (
