@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { usePermission } from "@/hooks/usePermission";
 
 interface UserManagementHeaderProps {
   search: string;
@@ -16,33 +17,37 @@ export default function UserManagementHeader({
     onAddUser
 }: UserManagementHeaderProps) {
   const router = useRouter();
+  const { canAdd: canAddUser } = usePermission("USER");
   return (
-    <div className="flex items-start justify-between">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-[24px] font-bold text-[#212121]">
+        <h1 className="text-[20px] sm:text-[24px] font-bold text-[#212121]">
           User Management
         </h1>
 
-        <p className="text-[#707784] mt-1">
+        <p className="text-xs sm:text-sm text-[#707784] mt-1">
           Manage, add, and update general participant information.
         </p>
       </div>
 
-      <div className=" flex relative w-[320px] gap-2">
+      {/* Mengubah lebar container input search agar full-width pada mobile */}
+      <div className="flex relative w-full sm:w-[320px] gap-2">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search"
-          className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] focus:ring-0 focus:border-[#0076D2] h-10 rounded-lg"
+          className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] focus:ring-0 focus:border-[#0076D2] h-10 rounded-lg flex-1"
         />
-        <Button
-            onClick={onAddUser} 
-            className="bg-[#0076D2] hover:bg-[#0076D2]/90 text-white gap-1 px-4 py-2 h-auto rounded-lg">
-            <Plus className="w-4 h-4 mr-2" />
-            Add
-        </Button>
+        {canAddUser && (
+          <Button
+              onClick={onAddUser} 
+              className="bg-[#0076D2] hover:bg-[#0076D2]/90 text-white gap-1 px-4 py-2 h-auto rounded-lg whitespace-nowrap">
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              Add
+          </Button>
+        )}
       </div>
 
     </div>

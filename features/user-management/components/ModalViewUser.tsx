@@ -38,13 +38,13 @@ function DetailRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[48%_52%] min-h-13 border-b last:border-b-0">
-      <div className="flex items-center gap-2 px-4 border-r text-sm text-gray-600">
+    <div className="grid grid-cols-1 sm:grid-cols-[48%_52%] min-h-13 border-b last:border-b-0 py-2 sm:py-0">
+      <div className="flex items-center gap-2 px-4 sm:border-r text-sm text-gray-600">
         {icon}
         <span>{label}</span>
       </div>
 
-      <div className="flex items-center px-4 text-sm text-gray-900">
+      <div className="flex items-center px-4 text-sm text-gray-900 mt-1 sm:mt-0 break-all">
         {value}
       </div>
     </div>
@@ -63,12 +63,14 @@ export default function ModalViewUser({
     >
       <DialogContent
         className="
-            w-140
-            max-w-140
-            sm:max-w-140
+            w-[95vw]
+            max-w-[560px]
+            sm:max-w-[560px]
             p-0
             gap-0
-            overflow-hidden
+            overflow-y-auto
+            max-h-[90vh]
+            rounded-xl
 
             [&>button]:text-white
             [&>button]:opacity-100
@@ -83,19 +85,19 @@ export default function ModalViewUser({
         </DialogTitle>
         {/* HEADER */}
 
-        <div className="bg-[#0076D2] text-white px-6 py-4">
+        <div className="bg-[#0076D2] text-white px-6 py-4 pr-12">
           <p className="text-xs">
             User Detail
           </p>
 
-          <h2 className="text-[22px] font-semibold mt-1">
+          <h2 className="text-[20px] sm:text-[22px] font-semibold mt-1">
             {data.name}
           </h2>
         </div>
 
         {/* CONTENT */}
 
-        <div className="p-6 space-y-5 bg-white">
+        <div className="p-4 sm:p-6 space-y-5 bg-white">
 
           {/* MEDICAL IDENTITY */}
 

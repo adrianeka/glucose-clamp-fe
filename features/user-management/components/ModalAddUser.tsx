@@ -220,10 +220,10 @@ export default function ModalAddUser({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="w-140 max-w-140 sm:max-w-140 rounded-3xl p-0 overflow-hidden">
-        <div className="p-8 space-y-6">
+      <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[90vh] overflow-y-auto rounded-3xl p-0">
+        <div className="p-5 sm:p-8 space-y-6">
           <DialogHeader>
-            <DialogTitle className="text-[28px] font-bold">
+            <DialogTitle className="text-[24px] sm:text-[28px] font-bold">
               Add User
             </DialogTitle>
 
@@ -233,7 +233,7 @@ export default function ModalAddUser({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Full Name */}
             <div className="space-y-2">
               <label className="text-sm text-[#595F6A]">
@@ -606,7 +606,7 @@ export default function ModalAddUser({
 
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               className="bg-[rgb(213,234,255)] hover:bg-[#E2E4E6]/90 text-[hsl(221,98%,66%)] rounded-lg"
               variant="secondary"

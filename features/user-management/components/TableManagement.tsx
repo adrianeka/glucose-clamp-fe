@@ -18,6 +18,7 @@ import { useUsers } from "@/features/user-management/hooks/UserManagementHook";
 import { UserManagementResponse } from "../types/user";
 import { deleteUserById } from "@/features/user-management/services/UserManagementService";
 import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { usePermission } from "@/hooks/usePermission";
 
 export default function TableManagement() {
   const [search, setSearch] = useState("");
@@ -30,12 +31,12 @@ export default function TableManagement() {
   const [pageNumber, setPageNumber] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
-    const openDeleteUser = (
-        user: UserManagementResponse
-    ) => {
-        setSelectedUser(user);
-        setIsDeleteOpen(true);
-    };
+  const openDeleteUser = (
+      user: UserManagementResponse
+  ) => {
+      setSelectedUser(user);
+      setIsDeleteOpen(true);
+  };
 
   const handleEditUser = (user: UserManagementResponse) => {
     setSelectedUser(user);
@@ -94,9 +95,11 @@ export default function TableManagement() {
     );
   }
 
+  // const { canAdd: canAddUser, canEdit: canEditUser, canDelete: canDeleteUser } = usePermission("USER");
+
   return (
     <>
-        <div className="bg-white rounded-3xl p-6 space-y-6">
+        <div className="bg-white rounded-3xl p-4 sm:p-6 space-y-6">
           <UserManagementHeader 
               search={search}
               setSearch={(value) => {
@@ -106,7 +109,7 @@ export default function TableManagement() {
               onAddUser={() => setIsAddUserModalOpen(true)}
           />
 
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto w-full">
               <UserManagementTable
                   users={users}
                   onEdit={handleEditUser}

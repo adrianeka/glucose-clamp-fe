@@ -267,10 +267,10 @@ export default function ModalEditUser({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="w-140 max-w-140 sm:max-w-140 rounded-3xl p-0 overflow-hidden">
-        <div className="p-8 space-y-6">
+      <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[90vh] overflow-y-auto rounded-3xl p-0">
+        <div className="p-5 sm:p-8 space-y-6">
           <DialogHeader>
-            <DialogTitle className="text-[28px] font-bold">
+            <DialogTitle className="text-[24px] sm:text-[28px] font-bold">
               Edit User
             </DialogTitle>
 
@@ -280,7 +280,8 @@ export default function ModalEditUser({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-6">
+          {/* grid-cols-1 untuk mobile dan sm:grid-cols-2 untuk layar lebih besar */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Full Name */}
             <div className="space-y-2">
               <label className="text-sm text-[#595F6A]">
@@ -541,18 +542,18 @@ export default function ModalEditUser({
             </div>
 
             {/* Password */}
-            <div className="col-span-2 space-y-3">
+            <div className="col-span-1 sm:col-span-2 space-y-3">
               <label className="text-sm text-[#595F6A]">
                 Password
               </label>
 
               {!changePassword ? (
-                <div className="flex items-start gap-3">
+                <div className="flex flex-col sm:flex-row items-start gap-3">
                   <Input
                     type="password"
                     value="********"
                     disabled
-                    className="w-60 bg-gray-100 cursor-not-allowed"
+                    className="w-full sm:w-60 bg-gray-100 cursor-not-allowed"
                   />
 
                   <Button
@@ -565,14 +566,14 @@ export default function ModalEditUser({
                         password: "",
                       });
                     }}
-                    className="border-[#0076D2] text-[#0076D2] hover:bg-[#DFF4F5] hover:text-[#0076D2] rounded-lg whitespace-nowrap"
+                    className="w-full sm:w-auto border-[#0076D2] text-[#0076D2] hover:bg-[#DFF4F5] hover:text-[#0076D2] rounded-lg whitespace-nowrap"
                   >
                     Change Password
                   </Button>
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-[1fr_1fr_auto] gap-4 items-start">
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-start">
                     {/* New Password */}
                     <div>
                       <label className="text-xs text-[#595F6A] mb-1 block">
@@ -680,7 +681,7 @@ export default function ModalEditUser({
                       )}
                     </div>
 
-                    <div className="pt-6">
+                    <div className="pt-2 sm:pt-6 flex justify-end">
                       <button
                         type="button"
                         onClick={() => {
@@ -691,7 +692,7 @@ export default function ModalEditUser({
                             password: "",
                           });
                         }}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="text-gray-400 hover:text-red-500 transition-colors p-2"
                         title="Cancel change password"
                       >
                         <X className="w-5 h-5" />
@@ -702,7 +703,7 @@ export default function ModalEditUser({
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               className="bg-[rgb(213,234,255)] hover:bg-[#E2E4E6]/90 text-[hsl(221,98%,66%)] rounded-lg"
               variant="secondary"

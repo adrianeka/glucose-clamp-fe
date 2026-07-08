@@ -17,6 +17,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { User, UserManagementResponse } from "../types/user";
+import { usePermission } from "@/hooks/usePermission";
 
 interface Props {
   users: UserManagementResponse[];
@@ -29,10 +30,11 @@ export default function UserManagementTable({
   users,
   onEdit,
   onView,
-  onDelete,
+  onDelete
 }: Props) {
+  const { canEdit: canEditUser, canDelete: canDeleteUser } = usePermission("USER");
   return (
-    <Table>
+    <Table className="min-w-[800px]">
       <TableHeader className="bg-[#ebf4ff] border-b border-[#E2E4E6]">
         <TableRow>
           <TableHead className="text-blue-500">Full Name</TableHead>
@@ -47,15 +49,13 @@ export default function UserManagementTable({
       <TableBody className="bg-[#FAFAFA]">
         {users.map((user) => (
           <TableRow key={user.userId} className="hover:bg-[#F5F5F5]">
-            {/* <TableCell className="text-blue-500 font-medium">{user.userId}</TableCell> */}
-
             <TableCell className = "p-5">{user.name}</TableCell>
 
             <TableCell>{user.positionName}</TableCell>
 
             <TableCell>{user.email}</TableCell>
 
-            <TableCell><Badge className="bg-blue-100 text-blue-800 border-blue-300">{user.roleName}</Badge></TableCell>
+            <TableCell><Badge className="bg-[#F1F9FA] text-[#0076D2] border-[#C4EAEE]">{user.roleName}</Badge></TableCell>
 
             <TableCell>
               <Badge
@@ -74,9 +74,13 @@ export default function UserManagementTable({
               <div className="flex gap-3">
                 <Eye className="w-4 h-4 cursor-pointer text-blue-500" onClick={() => onView(user)} />
 
-                <Pencil className="w-4 h-4 cursor-pointer text-amber-500" onClick={() => onEdit(user)}/>
+                {canEditUser && (
+                  <Pencil className="w-4 h-4 cursor-pointer text-amber-500" onClick={() => onEdit(user)}/>
+                )}
 
-                <Trash2 className="w-4 h-4 cursor-pointer text-red-500" onClick={() => onDelete(user)}/>
+                {canDeleteUser && (
+                  <Trash2 className="w-4 h-4 cursor-pointer text-red-500" onClick={() => onDelete(user)}/>
+                )}
               </div>
             </TableCell>
           </TableRow>

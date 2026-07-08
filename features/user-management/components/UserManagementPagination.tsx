@@ -83,11 +83,9 @@ export default function UserManagementPagination({
   };
 
   return (
-    <div className="flex items-center justify-between border-t pt-4">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t pt-4">
       {/* LEFT */}
-
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-
+      <div className="flex items-center justify-between sm:justify-start gap-2 text-sm text-muted-foreground w-full sm:w-auto">
         <Select
           value={String(pageSize)}
           onValueChange={(value) =>
@@ -123,8 +121,7 @@ export default function UserManagementPagination({
       </div>
 
       {/* RIGHT */}
-
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-center gap-1 w-full sm:w-auto flex-wrap">
         <button
           className="h-9 w-9 flex items-center justify-center rounded-md border hover:bg-muted disabled:opacity-50"
           disabled={currentPage === 0}
