@@ -53,13 +53,9 @@ export default function ModalSessionCompleted({
         showCloseButton={false}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        style={{
-          maxWidth: "460px",
-          padding: "40px 32px 24px",
-          borderRadius: "14px",
-        }}
+        className="w-[92vw] max-w-[460px] p-6 sm:p-10 bg-white rounded-2xl border-none shadow-xl flex flex-col focus-visible:outline-none"
       >
-        <DialogTitle className="text-2xl font-bold">Activity Complete</DialogTitle>
+        <DialogTitle className="text-2xl font-bold text-center sr-only">Activity Complete</DialogTitle>
         <div
           style={{
             display: "flex",

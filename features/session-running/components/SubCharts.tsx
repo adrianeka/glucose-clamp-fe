@@ -13,22 +13,17 @@ import {
 
 import dayjs from "dayjs";
 
-const dummyPKData = [
-  { time: "07:00", value: 85 },
-  { time: "08:00", value: 75 },
-  { time: "09:00", value: 78 },
-  { time: "10:00", value: 84 },
-];
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
 
 function CustomTooltip({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) {
+}: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
 
   return (
@@ -135,7 +130,7 @@ export default function SubCharts({
           );
     }, [sessionData]);
   return (
-    <div className="grid grid-cols-2 xl:grid-cols-2 gap-2 min-w-0">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
       {/* PK Chart */}
       <div className="bg-white rounded-xl border border-[#E2E4E6] p-5 shadow-sm min-w-0 overflow-hidden">
         <h3 className="mb-4 text-sm font-bold text-[#595F6A] uppercase tracking-wide">

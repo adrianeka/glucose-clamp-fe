@@ -30,7 +30,6 @@ export default function ModalOtherActivity({
     useCompleteActivity(sessionId);
 
   const handleConfirm = async () => {
-
     if (!activityData?.activityId) return;
 
     try {
@@ -42,23 +41,13 @@ export default function ModalOtherActivity({
     } catch (err) {
       console.error(err);
     }
-
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={onOpenChange}
-    >
-
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
-        style={{
-          maxWidth: "400px",
-          width: "400px",
-          padding: "32px",
-        }}
+        className="w-[92vw] max-w-[400px] p-6 sm:p-8 bg-white rounded-2xl border-none shadow-xl focus-visible:outline-none"
       >
-
         <div
           style={{
             display: "flex",
@@ -67,9 +56,7 @@ export default function ModalOtherActivity({
             textAlign: "center",
           }}
         >
-
           <DialogHeader>
-
             <DialogTitle
               style={{
                 fontSize: "20px",
@@ -78,11 +65,9 @@ export default function ModalOtherActivity({
                 textAlign: "center",
               }}
             >
-
               {activityData?.activityType
                 ? `${activityData.activityType} ACTIVITY`
                 : "OTHER ACTIVITY"}
-
             </DialogTitle>
 
             <DialogDescription
@@ -94,11 +79,8 @@ export default function ModalOtherActivity({
                 textAlign: "center",
               }}
             >
-
               {activityData?.activityDesc}
-
             </DialogDescription>
-
           </DialogHeader>
 
           <div
@@ -109,17 +91,13 @@ export default function ModalOtherActivity({
               color: "#334155",
             }}
           >
-
             Apakah sudah melaksanakan kegiatan tersebut?
-
           </div>
 
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={
-              completeActivityMutation.isPending
-            }
+            disabled={completeActivityMutation.isPending}
             style={{
               width: "100%",
               marginTop: "24px",
@@ -132,31 +110,19 @@ export default function ModalOtherActivity({
               border: "none",
               cursor: "pointer",
               transition: "background-color 0.2s",
-              opacity:
-                completeActivityMutation.isPending
-                  ? 0.7
-                  : 1,
+              opacity: completeActivityMutation.isPending ? 0.7 : 1,
             }}
             onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor =
-                "#005A9C")
+              (e.currentTarget.style.backgroundColor = "#005A9C")
             }
             onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor =
-                "#0070C0")
+              (e.currentTarget.style.backgroundColor = "#0070C0")
             }
           >
-
-            {completeActivityMutation.isPending
-              ? "Confirming..."
-              : "Confirm"}
-
+            {completeActivityMutation.isPending ? "Confirming..." : "Confirm"}
           </button>
-
         </div>
-
       </DialogContent>
-
     </Dialog>
   );
 }

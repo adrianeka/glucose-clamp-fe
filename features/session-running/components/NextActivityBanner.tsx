@@ -4,12 +4,11 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { useNextActivityCountdown } from "../hooks/useNextActivityCountdown";
 import { useNextProgressActivity } from "@/features/session-creation/hooks/SessionCreationHook";
 import { useParams } from "next/navigation";
-import { TimerDialog } from "./modalStepActivity/ModalTimerGlobalConfig"; // Pastikan path import benar
+import { TimerDialog } from "./modalStepActivity/ModalTimerGlobalConfig";
 import { ModalConfirmationEndSessionRunning } from "./ModalConfirmationEndSessionRunning";
 import { ConfirmEndSessionDialog } from "./ConfirmEndSessionDialog";
 import NextActivityCountdown from "./helper/NextActivityCoundown";
 import NextActivityManager from "./helper/NextActivityManager";
-import { log } from "console";
 
 interface NextActivityBannerProps {
   sessionData: any;
@@ -29,7 +28,6 @@ export default function NextActivityBanner({
     nextActivities.length - displayedActivities.length,
     0
   );
-  // const [now, setNow] = useState<Date | null>(null);
   const warningThreshold = Number(configData?.data?.gconfValue) ?? 60;
   const [endSessionStep, setEndSessionStep] = useState<"Close" | "FORM" | "CONFIRM">("Close");
 
@@ -47,12 +45,10 @@ export default function NextActivityBanner({
   const toTimestamp = (time: any) => {
     if (!time) return 0;
 
-    // ISO String (e.g., "2026-07-07T07:13:49.000Z")
     if (typeof time === "string") {
       return new Date(time).getTime();
     }
 
-    // Java LocalDateTime serialized as array
     if (Array.isArray(time)) {
       const [
         year,
@@ -65,7 +61,6 @@ export default function NextActivityBanner({
       ] = time;
 
       if (time.length === 7 || hour < 7) {
-        // Anggap sebagai UTC, lalu biarkan JavaScript mengonversinya ke waktu lokal otomatis
         return new Date(Date.UTC(
           year,
           month - 1,
@@ -77,7 +72,6 @@ export default function NextActivityBanner({
         )).getTime();
       }
 
-      // Jika data Infusion (array panjangnya 5) sudah dalam waktu lokal (WIB):
       return new Date(
         year,
         month - 1,
@@ -174,34 +168,17 @@ export default function NextActivityBanner({
     setEndSessionStep("FORM");
 
   }, [glucoseFromLab]);
+
   return (
     <>
       <div
-        style={{
-          border: "1px solid #E2E4E6",
-          borderRadius: "16px",
-          padding: "15px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: "#FAFAFA",
-        }}
+        className="border border-[#E2E4E6] rounded-2xl p-4 md:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between bg-[#FAFAFA] gap-4 md:gap-6"
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        {/* PANEL KIRI: INFO AKTIVITAS */}
+        <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-3">
             <span
-              style={{
-                background: "#EAF5FD",
-                color: "#0076D2",
-                fontSize: "13px",
-                fontWeight: 800,
-                padding: "4px 14px",
-                borderRadius: "100px",
-                border: "1px solid #B3E5FC",
-                display: "inline-flex",
-                alignItems: "center",
-              }}
+              className="bg-[#EAF5FD] color-[#0076D2] text-xs font-extrabold px-3.5 py-1 rounded-full border border-[#B3E5FC] inline-flex items-center"
             >
               Next Activity
             </span>
@@ -213,87 +190,70 @@ export default function NextActivityBanner({
             />
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "2px",
-              fontSize: "14px",
-              fontWeight: 700,
-              color: "#212121",
-              maxWidth: 600,
-            }}
-          >
+          <div className="flex flex-col gap-0.5 text-sm font-bold text-[#212121] max-w-full lg:max-w-[600px] overflow-hidden">
             {displayedActivities.length > 0 ? (
               <>
-                {displayedActivities.map((activity: any) => (
-                  <div
-                    key={activity.activityId}
-                    style={{
-                      overflow: "hidden",
-                      whiteSpace: "nowrap",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {formatTime(activity.time)} - {activity.activityType}
-                    {activity.activityDesc
-                      ? ` (${activity.activityDesc})`
-                      : ""}
-                  </div>
-                ))}
+                {displayedActivities.map((activity: any) => {
+                  // Menyusun teks lengkap (Full Text) untuk ditampilkan di popup hover
+                  const fullText = `${formatTime(activity.time)} - ${activity.activityType}${
+                    activity.activityDesc ? ` (${activity.activityDesc})` : ""
+                  }`;
+
+                  return (
+                    <div
+                      key={activity.activityId}
+                      // cursor-help memberikan indikasi visual bahwa elemen ini memiliki petunjuk (popup)
+                      className="truncate cursor-help hover:text-[#0076D2] transition-colors"
+                      title={fullText}
+                    >
+                      {formatTime(activity.time)} - {activity.activityType}
+                      {activity.activityDesc
+                        ? ` (${activity.activityDesc})`
+                        : ""}
+                    </div>
+                  );
+                })}
 
                 {hiddenCount > 0 && (
-                  <div
-                    style={{
-                      color: "#707784",
-                      fontWeight: 500,
-                      fontSize: "13px",
-                    }}
-                  >
+                  <div className="text-[#707784] font-medium text-xs mt-0.5">
                     ... dan {hiddenCount} aktivitas lainnya
                   </div>
                 )}
               </>
             ) : (
-              "No upcoming activity"
+              <span className="text-gray-500 font-medium">No upcoming activity</span>
             )}
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "150px" }}>
-          <div style={{ textAlign: "left", borderLeft: "1px solid #E2E4E6", paddingLeft: "24px" }}>
-            <div style={{ fontSize: "12px", color: "#707784", fontWeight: 500, textTransform: "uppercase", marginBottom: "4px" }}>
+        {/* PANEL KANAN: GLUCOSE & INFUSION GIR */}
+        <div 
+          className="flex items-center gap-8 sm:gap-16 lg:gap-24 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-[#E2E4E6] md:pl-6 lg:pl-10"
+        >
+          {/* STATS: GLUCOSE */}
+          <div className="text-left">
+            <div className="text-[11px] text-[#707784] font-semibold uppercase tracking-wider mb-1">
               Glucose
             </div>
-            <div
-              style={{
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "#212121"
-              }}
-            >
+            <div className="text-2xl font-bold text-[#212121]">
               {latestGlucose?.value ??
                 latestGlucose?.glucoseValue ??
                 "--"}
             </div>
           </div>
 
-          <div style={{ textAlign: "left", borderLeft: "1px solid #E2E4E6", paddingLeft: "24px", paddingRight: "50px" }}>
-            <div style={{ fontSize: "12px", color: "#707784", fontWeight: 500, textTransform: "uppercase", marginBottom: "4px" }}>
+          {/* STATS: INFUSION GIR */}
+          <div className="text-left border-l border-[#E2E4E6] pl-6 md:pl-10">
+            <div className="text-[11px] text-[#707784] font-semibold uppercase tracking-wider mb-1">
               Infusion Gir
             </div>
-            <div
-              style={{
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "#212121"
-              }}
-            >
+            <div className="text-2xl font-bold text-[#212121]">
               {latestRate?.actualGir ?? "--"}
             </div>
           </div>
         </div>
       </div>
+
       <NextActivityManager
         sessionId={sessionId}
         nextActivity={nextActivity}

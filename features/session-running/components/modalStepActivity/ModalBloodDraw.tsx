@@ -1,4 +1,3 @@
-// components/modalStepActivity/ModalBloodDraw.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -17,26 +16,23 @@ interface BloodSampleDialogProps {
 }
 
 export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, onCancel }: BloodSampleDialogProps) {
-  // Gunakan string kosong ("") sebagai default agar user tahu kolom tersebut wajib diisi baru
   const [form, setForm] = useState({
     sampleCode: "",
     tubeType: "",
     volume: "",
     resultPk: "",
-    unitPk: "mg/L", // Satuan PK default tetap diisi untuk mempermudah
+    unitPk: "mg/L", 
     resultCPeptide: "",
-    unitCPeptide: "ng/mL", // Satuan C-Peptide default tetap diisi
+    unitCPeptide: "ng/mL", 
   });
 
   useEffect(() => {
     if (isOpen && activity) {
       if (defaultValues) {
-        // JIKA KEMBALI DARI CONFIRM: Tampilkan kembali ketikan terakhir user
         setForm(defaultValues);
       } else {
-        // JIKA BARU DIBUKA (ADD NEW): Bersihkan semua field agar kosong
         setForm({
-          sampleCode: activity.scheduleCode || "", // Kode sampel bawaan dari BE (misal: GD-01) tetap diisi otomatis
+          sampleCode: activity.scheduleCode || "", 
           tubeType: "",
           volume: "",
           resultPk: "",
@@ -53,14 +49,13 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
   };
 
   const handleSubmitting = () => {
-    // Validasi sederhana sebelum lanjut ke konfirmasi
     if (!form.sampleCode || !form.tubeType || !form.volume || !form.resultPk || !form.unitPk) {
       alert("Mohon lengkapi semua kolom yang wajib diisi (*).");
       return;
     }
     
     if (!isGlucose && (!form.resultCPeptide || !form.unitCPeptide)) {
-    alert("Mohon lengkapi kolom PK & C-Peptide.");
+      alert("Mohon lengkapi kolom PK & C-Peptide.");
       return;
     }
     onSubmit(form);
@@ -81,15 +76,7 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent
-        style={{
-          maxWidth: "36rem",      // max-w-xl
-          padding: "2rem",        // p-8
-          backgroundColor: "#fff",
-          borderRadius: "12px",   // rounded-xl
-          border: "none",
-          boxShadow:
-            "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)", // shadow-lg
-        }}
+        className="w-[92vw] max-w-[576px] max-h-[90vh] overflow-y-auto p-6 sm:p-8 bg-white rounded-xl border-none shadow-xl flex flex-col focus-visible:outline-none"
       >
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-2xl font-bold text-slate-800">
@@ -102,7 +89,7 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-6 border-t border-slate-100 mt-3">
+        <div className="space-y-5 py-5 border-t border-slate-100 mt-3 flex-1">
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-slate-700">
               Sample Code <span className="text-red-500">*</span>
@@ -116,7 +103,8 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-5">
+          {/* Mengubah ke grid adaptif 1 kolom (mobile) & 2 kolom (tablet ke atas) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">
                 Tube Type <span className="text-red-500">*</span>
@@ -142,11 +130,11 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
           </div>
 
           <div className="pt-6 border-t border-slate-100">
-            <h4 className="font-bold text-slate-800 mb-5 text-base">
+            <h4 className="font-bold text-slate-800 mb-4 text-base">
               {isGlucose ? "Result Glucose" : "Result PK & C-Peptide"}
             </h4>
             
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-slate-700">
                   Result {isGlucose ? "Glucose" : "PK"}<span className="text-red-500">*</span>
@@ -198,34 +186,18 @@ export function BloodSampleDialog({ isOpen, activity, onSubmit, defaultValues, o
           </div>
         </div>
 
-        <DialogFooter className="flex justify-end gap-3 pt-4">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-100">
           <Button
             variant="ghost"
             onClick={onCancel} 
-            style={{
-              height: "44px",
-              backgroundColor: "#E0F2FE",
-              color: "#0070C0",
-              fontWeight: 600,
-              borderRadius: "6px",
-              padding: "0 32px",
-              transition: "background-color .2s ease",
-            }}
+            className="w-full sm:w-auto h-11 bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[#0070C0] font-semibold rounded-lg px-8 transition-colors"
           >
             Cancel
           </Button>
 
           <Button
             onClick={handleSubmitting}
-            style={{
-              height: "44px",
-              backgroundColor: "#0070C0",
-              color: "#FFFFFF",
-              fontWeight: 600,
-              borderRadius: "6px",
-              padding: "0 32px",
-              transition: "background-color .2s ease",
-            }}
+            className="w-full sm:w-auto h-11 bg-[#0070C0] hover:bg-[#005A9C] text-white font-semibold rounded-lg px-8 transition-colors"
           >
             Submit
           </Button>

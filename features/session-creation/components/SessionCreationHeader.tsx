@@ -6,12 +6,14 @@ interface SessionCreationHeaderProps {
   search: string;
   onSearchChange: (value: string) => void;
   onAdd: () => void;
+  canAdd: boolean;
 }
 
 export default function SessionCreationHeader({
   search,
   onSearchChange,
   onAdd,
+  canAdd
 }: SessionCreationHeaderProps) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between w-full">
@@ -41,13 +43,15 @@ export default function SessionCreationHeader({
           />
         </div>
 
-        <button
-          onClick={onAdd}
-          className="flex h-11 shrink-0 items-center gap-2 rounded-lg bg-[#0076D2] px-4 md:px-5 text-sm font-medium text-white hover:bg-[#0067B8] transition-colors"
-        >
-          <Plus size={16} />
-          Add
-        </button>
+        {canAdd && (
+          <button
+            onClick={onAdd}
+            className="flex h-11 shrink-0 items-center gap-2 rounded-lg bg-[#0076D2] px-4 md:px-5 text-sm font-medium text-white hover:bg-[#0067B8] transition-colors"
+          >
+            <Plus size={16} />
+            Add
+          </button>
+        )}
       </div>
     </div>
   );

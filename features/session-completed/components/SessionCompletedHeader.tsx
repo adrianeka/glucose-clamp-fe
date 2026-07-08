@@ -191,36 +191,35 @@ export default function SessionCompletedHeader({
     }, [searchParams, sessionData, mainChartRef, subChartsRef]);
 
     return (
-        <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">            
+            <div className="flex items-center gap-3 md:gap-4 flex-wrap">
                 <button
                     onClick={() => router.back()}
-                    className="text-[#707784] hover:bg-gray-100 p-2 rounded-full transition-colors"
+                    className="text-[#707784] hover:bg-gray-100 p-2 rounded-full transition-colors shrink-0"
                 >
                     <ArrowLeft size={20} />
                 </button>
 
-                <h1 className="text-[30px] font-bold text-[#212121]">
+                <h1 className="text-2xl md:text-[30px] font-bold text-[#212121] shrink-0">
                     S-{sessionData?.sessionId}
                 </h1>
 
-                <div className="h-10 w-[1px] bg-gray-300 mx-2" />
+                <div className="h-6 md:h-10 w-[1px] bg-gray-300 mx-1 md:mx-2 shrink-0" />
 
-                <div>
-                    <div className="font-semibold text-lg text-[#212121]">
+                <div className="min-w-0">
+                    <div className="font-semibold text-sm md:text-lg text-[#212121] truncate">
                         Participant: {sessionData?.participantName || "Loading..."}
                     </div>
-                    <div className="text-sm text-[#707784]">
+                    <div className="text-xs md:text-sm text-[#707784] truncate">
                         {sessionData?.protocolName} • {sessionData?.visitDate}
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
-
-                <div className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-lg font-mono font-semibold text-lg text-[#707784] min-w-[140px] justify-center">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end">
+                <div className="flex items-center gap-2 bg-white border border-gray-200 px-3 md:px-4 py-2 rounded-lg font-mono font-semibold text-sm md:text-lg text-[#707784] min-w-[120px] md:min-w-[140px] justify-center h-10 md:h-11">
                     <Clock3
-                        size={20}
+                        size={16}
                         className="text-gray-400"
                     />
                     Completed
@@ -229,7 +228,7 @@ export default function SessionCompletedHeader({
                 <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#FABA00] border border-[#FABA00] text-white rounded-lg font-medium hover:bg-[#F9C000] transition-colors cursor-pointer disabled:opacity-50"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#FABA00] border border-[#FABA00] text-white rounded-lg font-medium hover:bg-[#F9C000] transition-colors cursor-pointer disabled:opacity-50 h-10 md:h-11 text-sm md:text-base"
                 >
                     {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     <span>{isDownloading ? "Generating..." : "Download File"}</span>

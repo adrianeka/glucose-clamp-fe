@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useSessions } from "@/features/session-creation/hooks/SessionCreationHook";
 import { Session } from "@/features/session-creation/types/Session";
 import { useCreateSession } from "@/features/session-creation/hooks/SessionCreationHook";
+import { usePermission } from "@/hooks/usePermission";
 
 export default function SessionCreationPage() {
   const [search, setSearch] = useState("");
@@ -41,6 +42,8 @@ export default function SessionCreationPage() {
     });
   };
 
+  const { canAdd: canAddSession } = usePermission("SESSION");
+
   return (
     <div className="rounded-3xl bg-white p-6 space-y-6">
       <SessionCreationHeader
@@ -50,6 +53,7 @@ export default function SessionCreationPage() {
           setCurrentPage(1);
         }}
         onAdd={() => setOpenAddModal(true)}
+        canAdd={canAddSession}
       />
 
       <SessionCreationTable

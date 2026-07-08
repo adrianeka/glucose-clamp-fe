@@ -249,15 +249,16 @@ export default function ModalSamplingSchedule({
   return (
     <Dialog open={open} onOpenChange={handleRequestClose}>
       <DialogContent
-        className="!w-[1450px] !max-w-[1450px] p-0 overflow-hidden bg-[#FAFAFA]"
-    >
+        closeIconType="minimize"
+        className="!w-[95vw] xl:!w-[1200px] !max-w-[1200px] h-[90vh] max-h-[620px] xl:max-h-[720px] p-0 overflow-hidden bg-[#FAFAFA] flex flex-col focus-visible:outline-none"
+      >
         <DialogTitle className="sr-only">
           Sampling Schedule
         </DialogTitle>
 
-        <div className="flex flex-col max-h-[85vh]">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* HEADER */}
-          <div className="px-6 py-5 border-b shrink-0">
+          <div className="px-6 py-5 border-b shrink-0 bg-white">
             <h2 className="text-xl font-semibold text-[#212121]">
               {protocol?.protocol_code} -{" "}
               {protocol?.protocol_name}
@@ -269,7 +270,7 @@ export default function ModalSamplingSchedule({
           </div>
 
           {/* BODY */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6 min-h-0">
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
               {/* LEFT PANEL */}
               <div className="rounded-xl border bg-[#FFFFFF] p-4 h-fit">
@@ -317,13 +318,13 @@ export default function ModalSamplingSchedule({
                         setPhaseDuration(e.target.value)
                       }
                       className={`
-                        w-full h-10 rounded-md px-3 bg-[#FAFAFA]
+                        w-full h-10 rounded-md px-3 bg-[#FAFAFA] text-sm border outline-none
                         ${
                           phaseDuration &&
                           interval &&
                           Number(phaseDuration) < Number(interval)
-                            ? "border border-red-500"
-                            : "border border-[#E2E4E6]"
+                            ? "border-red-500"
+                            : "border-[#E2E4E6]"
                         }
                       `}
                     />
@@ -480,7 +481,7 @@ export default function ModalSamplingSchedule({
                               bulkUpdateSamplingSchedulesMutation.isPending
                             }
                             onClick={handleSaveAll}
-                            className="bg-[#0076D2]"
+                            className="bg-[#0076D2] hover:bg-[#0066B8]"
                           >
                             {bulkUpdateSamplingSchedulesMutation.isPending
                               ? "Saving..."
@@ -532,7 +533,6 @@ export default function ModalSamplingSchedule({
                                                     key={phase.phase_code}
                                                     value={String(phase.phase_code)}
                                                   >
-                                                    {/* Sekarang phase adalah object, jadi .phase_code bisa diakses */}
                                                     {phase.phase_code}
                                                   </SelectItem>
                                                 ))}
@@ -569,7 +569,7 @@ export default function ModalSamplingSchedule({
                 {isLoading ? (
                   <ModalLoadingSkeleton rows={10} />
                 ) : (
-                  <div className="border rounded-lg overflow-auto max-h-[60vh] bg-white">
+                  <div className="border rounded-lg overflow-auto max-h-[32vh] xl:max-h-[42vh] bg-white">
                     <table className="w-full min-w-[900px] text-sm">
                       <thead className="bg-[#F1F9FA] sticky top-0 z-10">
                         <tr className="text-[#0076D2]">
@@ -652,6 +652,7 @@ export default function ModalSamplingSchedule({
                                       e.target.checked
                                     )
                                   }
+                                  className="w-4 h-4 cursor-pointer"
                                 />
                             </td>
 
@@ -666,6 +667,7 @@ export default function ModalSamplingSchedule({
                                       e.target.checked
                                     )
                                   }
+                                  className="w-4 h-4 cursor-pointer"
                                 />
                             </td>
 
@@ -680,6 +682,7 @@ export default function ModalSamplingSchedule({
                                         e.target.checked
                                       )
                                     }
+                                    className="w-4 h-4 cursor-pointer"
                                   />
                             </td>
                           </tr>
@@ -690,7 +693,7 @@ export default function ModalSamplingSchedule({
                               <td
                                   colSpan={6}
                                   className="
-                                      h-[200px]
+                                      h-[180px]
                                       text-center
                                       align-middle
                                       text-[#707784]
@@ -709,11 +712,12 @@ export default function ModalSamplingSchedule({
           </div>
         </div>
       </DialogContent>
+
       {/* MODAL PERINGATAN DISCARD CHANGES */}
       <Dialog open={showDiscardWarning} onOpenChange={setShowDiscardWarning}>
         <DialogContent className="max-w-[400px] p-8 text-center rounded-2xl">
           <DialogTitle className="sr-only">
-            Waarning pop up change
+            Warning pop up change
           </DialogTitle>
           <div className="flex flex-col items-center justify-center">
             {/* Icon Warning Kuning */}
@@ -743,13 +747,13 @@ export default function ModalSamplingSchedule({
             <div className="flex w-full gap-3">
               <Button
                 variant="outline"
-                className="flex-1 bg-cyan-50 border-none text-cyan-700 hover:bg-cyan-100 font-semibold h-12"
+                className="flex-1 bg-cyan-50 border-none text-cyan-700 hover:bg-cyan-100 font-semibold h-12 rounded-xl"
                 onClick={() => setShowDiscardWarning(false)}
               >
                 Continue Editing
               </Button>
               <Button
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold h-12"
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold h-12 rounded-xl"
                 onClick={handleConfirmDiscard}
               >
                 Discard Changes

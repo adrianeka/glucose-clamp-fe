@@ -1,4 +1,3 @@
-// components/modalStepActivity/ConfirmBloodDrawDialog.tsx
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -7,7 +6,6 @@ import ConfirmationWarning from "./ConfirmationWarning";
 import { ActivityDetail } from "@/features/session-running/services/ActivityService";
 import { useCreateBloodSample } from "@/features/session-running/hooks/useActivityMutation";
 import { useToast } from "@/components/ui/toast";
-
 
 interface ConfirmBloodDrawDialogProps {
   isOpen: boolean;
@@ -85,15 +83,7 @@ export function ConfirmBloodDrawDialog({ isOpen, activity, data, onCancel, onSuc
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent
-        style={{
-          maxWidth: "36rem",
-          padding: "2rem",
-          backgroundColor: "#fff",
-          borderRadius: "12px",
-          border: "none",
-          boxShadow:
-            "0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1)",
-        }}
+        className="w-[92vw] max-w-[576px] max-h-[90vh] overflow-y-auto p-6 sm:p-8 bg-white rounded-xl border-none shadow-xl flex flex-col focus-visible:outline-none"
       >
         <DialogHeader className="space-y-1.5">
           <DialogTitle className="text-2xl font-bold text-slate-800">
@@ -102,53 +92,48 @@ export function ConfirmBloodDrawDialog({ isOpen, activity, data, onCancel, onSuc
           <DialogDescription className="text-sm text-slate-500 font-medium">
             {activity 
               ? `${activity.phaseCode} | ${activity.activityType} ${formatTime(activity.time)}`
-              : "S-101 | BLOOD_DRAW 08:30"}
+              : ""}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-6">
+        <div className="flex-1 space-y-5 my-4">
           <ConfirmationWarning />
-          
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Sample Code</p>
-              <p className="text-sm font-semibold text-slate-800">{data.sampleCode}</p>
+
+          {/* Grid responsif: 1 kolom di ponsel, 2 kolom di tablet/desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+            <div>
+              <span className="text-xs text-slate-400 block">Tube Type</span>
+              <span className="text-sm font-semibold text-slate-800">{data.tubeType}</span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Tube Type</p>
-                <p className="text-sm font-semibold text-slate-800">{data.tubeType}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Volume</p>
-                <p className="text-sm font-semibold text-slate-800">{data.volume} mL</p>
-              </div>
+            <div>
+              <span className="text-xs text-slate-400 block">Volume (mL)</span>
+              <span className="text-sm font-semibold text-slate-800">{data.volume} mL</span>
             </div>
           </div>
 
-          <div className="pt-5 border-t border-slate-100">
-            <h4 className="text-sm font-bold mb-4 uppercase text-slate-800 tracking-wider">
+          <div className="border-t border-slate-100 pt-4">
+            <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-3">
               {isGlucose ? "Result Glucose" : "Result PK & C-Peptide"}
             </h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Result {isGlucose ? "Glucose" : "PK"}</p>
-                <p className="text-sm font-semibold text-slate-800">{data.resultPk}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <span className="text-xs text-slate-400 block">Result {isGlucose ? "Glucose" : "PK"}</span>
+                <span className="text-sm font-semibold text-slate-800">{data.resultPk}</span>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Unit {isGlucose ? "Glucose" : "PK"}</p>
-                <p className="text-sm font-semibold text-slate-800">{data.unitPk}</p>
+              <div>
+                <span className="text-xs text-slate-400 block">Unit {isGlucose ? "Glucose" : "PK"}</span>
+                <span className="text-sm font-semibold text-slate-800">{data.unitPk}</span>
               </div>
 
               {!isGlucose && (
                 <>
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Result C-Peptide</p>
-                    <p className="text-sm font-semibold text-slate-800">{data.resultCPeptide}</p>
+                  <div>
+                    <span className="text-xs text-slate-400 block">Result C-Peptide</span>
+                    <span className="text-sm font-semibold text-slate-800">{data.resultCPeptide}</span>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-xs uppercase font-bold text-slate-400 tracking-wider">Unit C-Peptide</p>
-                    <p className="text-sm font-semibold text-slate-800">{data.unitCPeptide}</p>
+                  <div>
+                    <span className="text-xs text-slate-400 block">Unit C-Peptide</span>
+                    <span className="text-sm font-semibold text-slate-800">{data.unitCPeptide}</span>
                   </div>
                 </>
               )}
@@ -156,41 +141,21 @@ export function ConfirmBloodDrawDialog({ isOpen, activity, data, onCancel, onSuc
           </div>
         </div>
 
-        <DialogFooter className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
           <Button
             variant="ghost"
             onClick={handleCancelAction}
             disabled={createBloodSampleMutation.isPending}
-            style={{
-              height: "44px",
-              backgroundColor: "#E0F2FE",
-              color: "#0070C0",
-              fontWeight: 600,
-              borderRadius: "6px",
-              paddingLeft: "32px",
-              paddingRight: "32px",
-              transition: "background-color .2s ease",
-            }}
+            className="w-full sm:w-auto h-11 bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[#0070C0] font-semibold rounded-lg px-8 transition-colors"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={createBloodSampleMutation.isPending}
-            style={{
-              height: "44px",
-              backgroundColor: "#0070C0",
-              color: "#FFFFFF",
-              fontWeight: 600,
-              borderRadius: "6px",
-              paddingLeft: "32px",
-              paddingRight: "32px",
-              transition: "background-color .2s ease",
-            }}
+            className="w-full sm:w-auto h-11 bg-[#0070C0] hover:bg-[#005A9C] text-white font-semibold rounded-lg px-8 transition-colors"
           >
-            {createBloodSampleMutation.isPending
-              ? "Confirming..."
-              : "Confirm"}
+            {createBloodSampleMutation.isPending ? "Confirming..." : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>

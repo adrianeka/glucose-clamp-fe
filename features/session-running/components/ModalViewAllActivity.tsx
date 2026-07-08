@@ -89,30 +89,30 @@ export default function ModalViewAllActivity({
                 borderRadius: "16px",
                 display: "flex",
                 flexDirection: "column",
-            }}>
+            }}
+       >
         {/* Header Section */}
-        <DialogHeader className="px-8 py-6 border-b border-gray-100 space-y-1">
-          <DialogTitle className="text-[28px] font-bold text-[#212121]">
+        <DialogHeader className="px-6 sm:px-8 py-5 sm:py-6 border-b border-gray-100 space-y-1">
+          <DialogTitle className="text-xl sm:text-[28px] font-bold text-[#212121]">
             All Activities
           </DialogTitle>
-          <p className="text-[#707784] font-medium">
+          <p className="text-xs sm:text-sm text-[#707784] font-medium">
             S-{sessionData?.sessionId} | {sessionData?.participantName}
           </p>
         </DialogHeader>
 
         {/* Content Section */}
-        <div className="flex-1 overflow-hidden p-6 bg-[#F8F9FB]">
+        <div className="flex-1 overflow-hidden p-4 sm:p-6 bg-[#F8F9FB]">
           <div className="h-full rounded-xl border border-[#E2E4E6] overflow-hidden bg-white shadow-sm flex flex-col">
             
-            {/* ScrollArea mengisi seluruh tinggi container putih */}
             <div
                 style={{
                     flex: 1,
                     overflowY: "auto",
-                    overflowX: "hidden",
+                    overflowX: "auto", 
                 }}
             >
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
                 <thead className="sticky top-0 z-30 bg-[#F1F9FA]">
                   <tr>
                     <th className="w-[60px] px-4 py-4 text-left text-xs font-bold text-[#0076D2] uppercase tracking-wider">No</th>

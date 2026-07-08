@@ -11,11 +11,10 @@ import { useToast } from "@/components/ui/toast";
 interface ConfirmPreparationDialogProps {
   isOpen: boolean;
   activity: ActivityDetail | null;
-  data: any; // Menerima form data dari modal input
+  data: any; 
   onCancel: () => void;
   onSuccess: () => void;
   sessionId : number;
-
 }
 
 export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onSuccess, sessionId }: ConfirmPreparationDialogProps) {
@@ -38,11 +37,10 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
   ];
 
   const handleConfirm = () => {
-    const timestampISO = new Date().toISOString(); // "2026-05-21T07:10:00"
+    const timestampISO = new Date().toISOString(); 
 
     const payload = {
       activityId: activity.activityId,
-      // 1. DTO VitalSign
       vitalSign: {
         sessionId,
         measuredAt: timestampISO,
@@ -52,17 +50,15 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
         respiratoryRate: parseInt(data.respiratory),
         temperatureC: parseFloat(data.temp),
         spo2: parseFloat(data.spo2),
-        assignedBy: 1, // Mock user ID
+        assignedBy: 1, 
       },
-      // 2. DTO Anamnesis
       anamnesis: {
         sessionId,
-        date: timestampISO.split("T")[0], // YYYY-MM-DD
+        date: timestampISO.split("T")[0], 
         chiefComplaint: data.complaints,
         medicalHistory: data.history || "Tidak ada riwayat penyakit berat",
         assignedBy: 1,
       },
-      // 3. DTO Anthropometry
       anthropometry: {
         sessionId,
         measuredAt: timestampISO,
@@ -74,7 +70,6 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
       }
     };
 
-    // Jalankan mutasi paralel 3 API + 1 complete activity
     submitPrepMutation.mutate(payload, {
       onSuccess: () => {
         showToast("Data Preparation berhasil disimpan secara resmi!");
@@ -90,14 +85,7 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
   return (
     <Dialog open={isOpen}>
       <DialogContent
-        style={{
-          maxWidth: "42rem",
-          padding: "2rem",
-          backgroundColor: "#fff",
-          borderRadius: "12px",
-          border: "none",
-          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
-        }}
+        className="w-[92vw] max-w-[672px] max-h-[90vh] overflow-y-auto p-6 sm:p-8 bg-white rounded-xl border-none shadow-xl flex flex-col focus-visible:outline-none"
       >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-slate-800">Confirm Preparation Data</DialogTitle>
@@ -106,10 +94,11 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-6">
+        <div className="py-4 space-y-6 flex-1">
           <ConfirmationWarning />
           
-          <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+          {/* Grid responsif: 1 kolom di HP, 2 kolom di tablet/desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 border-t border-slate-100 pt-4">
             {displayFields.map((f, i) => (
               <div key={i} className="space-y-1">
                 <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{f.label}</p>
@@ -130,20 +119,12 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
           </div>
         </div>
 
-        <DialogFooter className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+        <DialogFooter className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
           <Button
             variant="ghost"
             onClick={onCancel}
             disabled={submitPrepMutation.isPending}
-            style={{
-              height: "44px",
-              backgroundColor: "#E0F2FE",
-              color: "#0070C0",
-              fontWeight: 600,
-              borderRadius: "6px",
-              padding: "0 32px",
-              transition: "background-color 0.2s ease",
-            }}
+            className="w-full sm:w-auto h-11 bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[#0070C0] font-semibold rounded-lg px-8 transition-colors"
           >
             Cancel
           </Button>
@@ -151,15 +132,7 @@ export function ConfirmPreparationDialog({ isOpen, activity, data, onCancel, onS
           <Button
             onClick={handleConfirm}
             disabled={submitPrepMutation.isPending}
-            style={{
-              height: "44px",
-              backgroundColor: "#0070C0",
-              color: "#FFFFFF",
-              fontWeight: 600,
-              borderRadius: "6px",
-              padding: "0 32px",
-              transition: "background-color 0.2s ease",
-            }}
+            className="w-full sm:w-auto h-11 bg-[#0070C0] hover:bg-[#005A9C] text-white font-semibold rounded-lg px-8 transition-colors"
           >
             {submitPrepMutation.isPending ? "Confirming..." : "Confirm"}
           </Button>

@@ -102,7 +102,7 @@ export default function SessionActivitiesPage({sessionId, sessionData}:SessionAc
     }
   };
 
-  const { canView: canViewSession, canAdd: canAddSession, canEdit: canEditSession, canDelete: canDeleteSession } = usePermission("SESSION");
+  const { canAdd: canAddSession, canEdit: canEditSession } = usePermission("SESSION");
 
   return (
     <div className="flex flex-col gap-6 max-h-screen overflow-hidden">

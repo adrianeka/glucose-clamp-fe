@@ -20,6 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 // Hooks
 import { useGlobalConfig } from "@/features/global-configuration-uzy/hooks/globalConfigurationHook";
 import { usePermission } from "@/hooks/usePermission";
+import { cn } from "@/lib/utils";
 
 interface SessionRunningPageProps {
     sessionId: number;
@@ -123,15 +124,16 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
         }
     }, [sessionData?.completedActivities, sessionData?.totalActivities, sessionData?.progressPercentage, sessionData?.sessionStatus]);
     
-    const { canView: canViewSession, canAdd: canAddSession, canEdit: canEditSession, canDelete: canDeleteSession } = usePermission("SESSION");
-    const { canView: canViewBD, canAdd: canAddBD, canEdit: canEditBD, canDelete: canDeleteBD } = usePermission("BLOODDRAW");
-    const { canView: canViewIM, canAdd: canAddIM, canEdit: canEditIM, canDelete: canDeleteIM } = usePermission("INFUSIONMONITORING");
+    const { canEdit: canEditSession } = usePermission("SESSION");
+    const { canView: canViewBD } = usePermission("BLOODDRAW");
+    const { canView: canViewIM } = usePermission("INFUSIONMONITORING");
+    const { canAdd: canAddPC } = usePermission("PREPARATIONCHECK");
 
     const showCharts = canViewBD;
     const showInfusion = canViewIM;
 
     return (
-        <div className="min-h-screen bg-[#F8F9FB] text-[#333]">
+        <div className="min-h-screen bg-[#F8F9FB] text-[#333] p-4 md:p-6">
             <div className="max-w-[1600px] mx-auto">
                 <RunningHeader
                     sessionData={sessionData}
@@ -139,30 +141,29 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
                     canEnd={canEditSession}
                 />
 
-                <div className="p-3 bg-white rounded-xl border border-[#E2E4E6]">
+                <div className="p-3 md:p-5 bg-white rounded-xl border border-[#E2E4E6]">
                     <div className="bg-white mb-4 align-middle">
                         <NextActivityBanner sessionData={sessionData} configData={configData} />
                     </div>
 
-                    <div className="mt-6 flex gap-4">
-                        {/* Wrapper Grafik: Menggunakan flex-1 sehingga otomatis penuh jika sidebar infus tidak ada */}
+                    <div className="mt-6 flex flex-col lg:flex-row gap-4">
+                        {/* Wrapper Grafik */}
                         {showCharts && (
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 w-full">
                                 <MainGDChart protocolId={sessionData.protocolId} sessionData={sessionData} />
-                                <div className="mt-2">
+                                <div className="mt-4">
                                     <SubCharts protocolId={sessionData.protocolId} sessionData={sessionData} />
                                 </div>
                             </div>
                         )}
 
-                        {/* Wrapper Pemantauan Infus: Ukurannya dinamis berdasarkan kehadiran grafik */}
                         {showInfusion && (
                             <div 
-                                className="min-w-0"
+                                className={cn(
+                                    "w-full min-w-0",
+                                    showCharts ? "lg:w-[450px] lg:shrink-0" : "flex-1"
+                                )}
                                 style={{ 
-                                    width: showCharts ? "450px" : "100%", 
-                                    flexShrink: showCharts ? 0 : 1,
-                                    flexGrow: showCharts ? 0 : 1,
                                     borderRadius: "8px", 
                                     boxShadow: "0 1px 2px rgba(0,0,0,0.05)" 
                                 }}
@@ -181,16 +182,18 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
             />
 
             {/* --- DIALOG RENDERER --- */}
-            <PreparationDialog
-                isOpen={
-                    currentActiveDialog?.activityType === "PREPARATION_CHECK" &&
-                    prepStep === "FORM"
-                }
-                activity={currentActiveDialog}
-                defaultValues={tempPrepData}
-                onSubmit={handlePreparationDraft}
-                onCancel={handlePrepCancel}
-            />
+            {canAddPC && (
+                <PreparationDialog
+                    isOpen={
+                        currentActiveDialog?.activityType === "PREPARATION_CHECK" &&
+                        prepStep === "FORM"
+                    }
+                    activity={currentActiveDialog}
+                    defaultValues={tempPrepData}
+                    onSubmit={handlePreparationDraft}
+                    onCancel={handlePrepCancel}
+                />
+            )}
 
             <ConfirmPreparationDialog
                 sessionId={sessionData?.sessionId}
