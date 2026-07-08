@@ -28,7 +28,7 @@ export default function SessionCreationHeader({
       </div>
 
       <div className="flex items-center gap-2 w-full md:w-auto">
-        
+
         <div className="relative flex-1 md:flex-initial">
           <Search
             size={16}

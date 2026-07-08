@@ -16,12 +16,12 @@ import { formatMinutesToHHMMSS } from "@/lib/time";
 
 import { useToast } from "@/components/ui/toast";
 import { usePermission } from "@/hooks/usePermission";
-interface SessionActivitiesPageProps{
-    sessionId: number;
-    sessionData: any;
+interface SessionActivitiesPageProps {
+  sessionId: number;
+  sessionData: any;
 }
 
-export default function SessionActivitiesPage({sessionId, sessionData}:SessionActivitiesPageProps) {
+export default function SessionActivitiesPage({ sessionId, sessionData }: SessionActivitiesPageProps) {
   const { showToast } = useToast();
 
   const [
@@ -96,7 +96,7 @@ export default function SessionActivitiesPage({sessionId, sessionData}:SessionAc
 
       setOpenAddActivity(false);
       showToast("added activity successfully");
-    } catch (error:any) {
+    } catch (error: any) {
       showToast(error.message, "error");
       console.error(error);
     }
@@ -111,7 +111,7 @@ export default function SessionActivitiesPage({sessionId, sessionData}:SessionAc
         participant={sessionData?.participantName}
         protocol={sessionData?.protocolName}
         visitDate={sessionData?.visitDate}
-        statusSession = {sessionData?.sessionStatus}
+        statusSession={sessionData?.sessionStatus}
         displayTime={displayTime}
         canRun={canEditSession}
       />

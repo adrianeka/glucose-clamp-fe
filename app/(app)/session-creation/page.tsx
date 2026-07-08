@@ -16,7 +16,6 @@ export default function SessionCreationPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [openAddModal, setOpenAddModal] = useState(false);
-
   const router = useRouter();
 
   // Query untuk mengambil data

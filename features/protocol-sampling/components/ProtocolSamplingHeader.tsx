@@ -5,17 +5,19 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-
+import { usePermission } from "@/hooks/usePermission";
 interface ProtocolSamplingHeaderProps {
   search: string;
   setSearch: (search: string) => void;
   onAddProtocol: () => void;
+  canAddPhase: boolean;
 }
 
 export default function ProtocolSamplingHeader({
-    search,
-    setSearch,
-    onAddProtocol
+  search,
+  setSearch,
+  onAddProtocol,
+  canAddPhase
 }: ProtocolSamplingHeaderProps) {
   const router = useRouter();
   return (
@@ -39,12 +41,14 @@ export default function ProtocolSamplingHeader({
           placeholder="Search"
           className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] focus:ring-0 focus:border-[#0076D2] h-10 rounded-lg"
         />
-        <Button
+        {canAddPhase && (
+          <Button
             onClick={onAddProtocol}
             className="bg-[#0076D2] hover:bg-[#0076D2]/90 text-white gap-1 px-4 py-2 h-auto rounded-lg">
             <Plus className="w-4 h-4 mr-2" />
             Add
-        </Button>
+          </Button>
+        )}
       </div>
 
     </div>

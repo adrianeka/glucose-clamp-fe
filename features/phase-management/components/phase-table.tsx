@@ -216,7 +216,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
     const paginated = filtered.slice(startIdx, startIdx + itemsPerPage);
 
     setPhases(paginated);
-    
+
     if (!isReordering) {
       setReorderedPhases(paginated);
     }
@@ -289,7 +289,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
 
     const updated = [...reorderedPhases];
     const draggedItem = updated[draggedIndex];
-    
+
     updated.splice(draggedIndex, 1);
     updated.splice(index, 0, draggedItem);
 
@@ -359,7 +359,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
   return (
     <>
       <div className="flex-1 self-stretch p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">
-        
+
         {/* Header Section */}
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between w-full">
           <div>
@@ -370,7 +370,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
               Configure sequential clinical workflow phases
             </p>
           </div>
-          
+
           {isReordering ? (
             <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
               <Button
@@ -418,22 +418,22 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
 
         {/* Table Structure Container */}
         <div className="flex flex-col border border-gray-100 rounded-xl overflow-hidden bg-white w-full">
-          
+
           <div className="overflow-x-auto w-full">
             <div className="min-w-[800px] flex flex-col">
-              
+
               {/* Table Header Row */}
               <div className="flex items-center w-full bg-[#F8FAFC] border-b border-gray-100 py-1">
                 {isReordering && (
                   <div className="w-[48px] flex-shrink-0" />
                 )}
-                
+
                 <div className={cn(
                   "w-[120px] flex-shrink-0 px-6 py-3 flex items-center text-[#0076D2] text-sm font-semibold",
                   isReordering && "pl-2"
                 )}>
                   <span>Priority</span>
-                  
+
                   {(!isReordering && canEditPhase) && (
                     <div className="relative group flex items-center">
                       <button
@@ -442,7 +442,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
                         aria-label="Change Priority"
                       >
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M2.5 4.5H13.5M2.5 8H13.5M2.5 11.5H13.5" stroke="#0076D2" strokeWidth="1.6" strokeLinecap="round"/>
+                          <path d="M2.5 4.5H13.5M2.5 8H13.5M2.5 11.5H13.5" stroke="#0076D2" strokeWidth="1.6" strokeLinecap="round" />
                           <circle cx="5" cy="4.5" r="1.5" fill="#0076D2" />
                           <circle cx="11" cy="8" r="1.5" fill="#0076D2" />
                           <circle cx="6.5" cy="11.5" r="1.5" fill="#0076D2" />

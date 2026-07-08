@@ -34,223 +34,228 @@ interface ModalSamplingScheduleProps {
     open: boolean
   ) => void;
   protocol: Protocol | null;
+  canAddPhase: boolean;
+  canDeletePhase: boolean;
+  canEditPhase: boolean;
 }
 
 export default function ModalSamplingSchedule({
   open,
   onOpenChange,
   protocol,
+  canAddPhase,
+  canDeletePhase,
+  canEditPhase,
 }: ModalSamplingScheduleProps) {
-    const [phaseConfig, setPhaseConfig] =
+  const [phaseConfig, setPhaseConfig] =
     useState("");
-    const [phaseDuration, setPhaseDuration] =
+  const [phaseDuration, setPhaseDuration] =
     useState("");
-    const [interval, setInterval] =
+  const [interval, setInterval] =
     useState("");
-    const [labelPrefix, setLabelPrefix] =
+  const [labelPrefix, setLabelPrefix] =
     useState("");
 
-    const [showDiscardWarning, setShowDiscardWarning] = useState(false);
-    const [showDeletePhase, setShowDeletePhase] = useState(false);
-    const [selectedPhaseId, setSelectedPhaseId] = useState("");
-    const addSamplingScheduleMutation = useAddSamplingSchedule();
-    const deleteSamplingScheduleMutation = useDeleteSamplingSchedule();
-    const bulkUpdateSamplingSchedulesMutation = useBulkUpdateSamplingSchedules();
-    const [localSchedules, setLocalSchedules] = useState<any[]>([]);
-    const [isDirty, setIsDirty] = useState(false);
-    const {
-      data: schedulesData,
-      isLoading,
-    } = useSamplingSchedules(
-      protocol?.protocol_id,
-      open
-    );
-    const {
-      data: phaseConfigs = [],
-      isLoading: phaseConfigLoading,
-    } = usePhaseConfigs();
+  const [showDiscardWarning, setShowDiscardWarning] = useState(false);
+  const [showDeletePhase, setShowDeletePhase] = useState(false);
+  const [selectedPhaseId, setSelectedPhaseId] = useState("");
+  const addSamplingScheduleMutation = useAddSamplingSchedule();
+  const deleteSamplingScheduleMutation = useDeleteSamplingSchedule();
+  const bulkUpdateSamplingSchedulesMutation = useBulkUpdateSamplingSchedules();
+  const [localSchedules, setLocalSchedules] = useState<any[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
+  const {
+    data: schedulesData,
+    isLoading,
+  } = useSamplingSchedules(
+    protocol?.protocol_id,
+    open
+  );
+  const {
+    data: phaseConfigs = [],
+    isLoading: phaseConfigLoading,
+  } = usePhaseConfigs();
 
-    const selectedPhase = useMemo(
-      () =>
-        phaseConfigs.find(
-          (phase) => phase.code.toLowerCase() === phaseConfig.toLowerCase()
-        ),
-      [phaseConfig, phaseConfigs]
-    );
-    const { showToast } = useToast();
+  const selectedPhase = useMemo(
+    () =>
+      phaseConfigs.find(
+        (phase) => phase.code.toLowerCase() === phaseConfig.toLowerCase()
+      ),
+    [phaseConfig, phaseConfigs]
+  );
+  const { showToast } = useToast();
 
-    const phaseDurationNumber = Number(phaseDuration);
-    const intervalNumber = Number(interval);
+  const phaseDurationNumber = Number(phaseDuration);
+  const intervalNumber = Number(interval);
 
-    const isPhaseDurationValid = phaseDurationNumber >= intervalNumber;
+  const isPhaseDurationValid = phaseDurationNumber >= intervalNumber;
 
-    const isFormValid =
-      phaseConfig.trim() !== "" &&
-      phaseDuration !== "" &&
-      interval.trim() !== "" &&
-      labelPrefix.trim() !== "" &&
-      isPhaseDurationValid;
+  const isFormValid =
+    phaseConfig.trim() !== "" &&
+    phaseDuration !== "" &&
+    interval.trim() !== "" &&
+    labelPrefix.trim() !== "" &&
+    isPhaseDurationValid;
 
-    // Mendapatkan list object phase yang unik untuk ditampilkan di dropdown delete
-    const uniquePhases = useMemo(() => {
-      if (!schedulesData) return [];
-      
-      const seen = new Set();
-      return schedulesData.filter((item) => {
-        const duplicate = seen.has(item.phase_code);
-        seen.add(item.phase_code);
-        return !duplicate; // Hanya ambil yang belum pernah muncul
-      });
-    }, [schedulesData]);
+  // Mendapatkan list object phase yang unik untuk ditampilkan di dropdown delete
+  const uniquePhases = useMemo(() => {
+    if (!schedulesData) return [];
 
-    const handleAddSchedule =
-        async () => {
-            if (!protocol) return;
-            const isBloodDraw = phaseConfig.toLowerCase() === "base" || phaseConfig.toLowerCase().startsWith("ph");
+    const seen = new Set();
+    return schedulesData.filter((item) => {
+      const duplicate = seen.has(item.phase_code);
+      seen.add(item.phase_code);
+      return !duplicate; // Hanya ambil yang belum pernah muncul
+    });
+  }, [schedulesData]);
 
-            try {
-
-            await addSamplingScheduleMutation.mutateAsync(
-                {
-                protocol_id:protocol.protocol_id,
-                phase_code: selectedPhase?.code ?? "",
-                phase_name: selectedPhase?.name ?? "",
-                phase_type: selectedPhase?.type ?? "",
-                phase_duration: Number(phaseDuration),
-                time_interval:Number(interval),
-                label_prefix : labelPrefix,
-                blood_raw: isBloodDraw,
-                insulin_inject: false,
-                pk_sample_collection:
-                    false,
-                }
-            );
-
-            setPhaseConfig("");
-            setPhaseDuration("");
-            setInterval("");
-            setLabelPrefix("");
-            showToast( "Add Sampling Schedule Successfully" );
-            } catch (error:any) {
-              showToast( error.message,"error" );
-              console.error(error);
-            }
-        };
-
-
-    const handleDeleteSchedule = async () => {
-      if (!selectedPhaseId || !protocol) return;
+  const handleAddSchedule =
+    async () => {
+      if (!protocol) return;
+      const isBloodDraw = phaseConfig.toLowerCase() === "base" || phaseConfig.toLowerCase().startsWith("ph");
 
       try {
-        await deleteSamplingScheduleMutation.mutateAsync({
-          protocolId: protocol.protocol_id,
-          phaseCode: selectedPhaseId,
-        });
 
-        setSelectedPhaseId("");
-        setShowDeletePhase(false);
-
-        showToast(
-          "Delete Sampling Schedule Successfully"
+        await addSamplingScheduleMutation.mutateAsync(
+          {
+            protocol_id: protocol.protocol_id,
+            phase_code: selectedPhase?.code ?? "",
+            phase_name: selectedPhase?.name ?? "",
+            phase_type: selectedPhase?.type ?? "",
+            phase_duration: Number(phaseDuration),
+            time_interval: Number(interval),
+            label_prefix: labelPrefix,
+            blood_raw: isBloodDraw,
+            insulin_inject: false,
+            pk_sample_collection:
+              false,
+          }
         );
+
+        setPhaseConfig("");
+        setPhaseDuration("");
+        setInterval("");
+        setLabelPrefix("");
+        showToast("Add Sampling Schedule Successfully");
       } catch (error: any) {
-        showToast(
-          error?.message ||
-            "Failed to delete sampling schedule",
-          "error"
-        );
-
+        showToast(error.message, "error");
         console.error(error);
       }
     };
 
-    const handleCheckboxLocalChange = (id: number, field: string, value: boolean) => {
-        setLocalSchedules(prev => 
-            prev.map(item => 
-                item.sampling_schedule_id === id ? { ...item, [field]: value } : item
-            )
-        );
-        setIsDirty(true);
-    };
 
-    const handleSaveAll = async () => {
-      try {
-        const payload = {
-          items: localSchedules.map((s) => ({
-            id: s.sampling_schedule_id,
-            bloodRaw: s.blood_raw,
-            insulinInject: s.insulin_inject,
-            pkSampleCollection:
-              s.pk_sample_collection,
-          })),
-        };
+  const handleDeleteSchedule = async () => {
+    if (!selectedPhaseId || !protocol) return;
 
-        await bulkUpdateSamplingSchedulesMutation.mutateAsync(
-          payload
-        );
+    try {
+      await deleteSamplingScheduleMutation.mutateAsync({
+        protocolId: protocol.protocol_id,
+        phaseCode: selectedPhaseId,
+      });
 
-        showToast(
-          "Sampling schedule updated successfully"
-        );
+      setSelectedPhaseId("");
+      setShowDeletePhase(false);
 
-        setIsDirty(false);
-      } catch (error: any) {
-        showToast(
-          error?.message || "Failed to update",
-          "error"
-        );
-      }
-    };
+      showToast(
+        "Delete Sampling Schedule Successfully"
+      );
+    } catch (error: any) {
+      showToast(
+        error?.message ||
+        "Failed to delete sampling schedule",
+        "error"
+      );
 
-    const handleRequestClose = (open: boolean) => {
-        // Jika mencoba menutup (open === false) dan ada perubahan (isDirty)
-        if (!open && isDirty) {
-          setShowDiscardWarning(true);
-        } else {
-          // Jika tidak ada perubahan atau sedang mencoba membuka, jalankan fungsi normal
-          onOpenChange(open);
-        }
+      console.error(error);
+    }
+  };
+
+  const handleCheckboxLocalChange = (id: number, field: string, value: boolean) => {
+    setLocalSchedules(prev =>
+      prev.map(item =>
+        item.sampling_schedule_id === id ? { ...item, [field]: value } : item
+      )
+    );
+    setIsDirty(true);
+  };
+
+  const handleSaveAll = async () => {
+    try {
+      const payload = {
+        items: localSchedules.map((s) => ({
+          id: s.sampling_schedule_id,
+          bloodRaw: s.blood_raw,
+          insulinInject: s.insulin_inject,
+          pkSampleCollection:
+            s.pk_sample_collection,
+        })),
       };
 
-      const handleConfirmDiscard = () => {
-        setIsDirty(false);
-        setShowDiscardWarning(false);
-        onOpenChange(false); // Tutup modal utama
-      };
+      await bulkUpdateSamplingSchedulesMutation.mutateAsync(
+        payload
+      );
 
-      useEffect(() => {
-        if (!selectedPhase?.code) return;
+      showToast(
+        "Sampling schedule updated successfully"
+      );
 
-        const codeLower = selectedPhase.code.toLowerCase();
+      setIsDirty(false);
+    } catch (error: any) {
+      showToast(
+        error?.message || "Failed to update",
+        "error"
+      );
+    }
+  };
 
-        if (codeLower === "prep1" || codeLower === "prep2") {
-          setLabelPrefix("PREP");
-        }
-        else if (codeLower === "base") {
-          setLabelPrefix("T");
-        }
-        else if (codeLower === "final") {
-          setLabelPrefix("FINAL"); 
-        }
-        else if (["ph1", "ph2", "ph3"].includes(codeLower)) {
-          setLabelPrefix("GD");
-        }
-        else {
-          setLabelPrefix(""); 
-        }
-      }, [selectedPhase]);
+  const handleRequestClose = (open: boolean) => {
+    // Jika mencoba menutup (open === false) dan ada perubahan (isDirty)
+    if (!open && isDirty) {
+      setShowDiscardWarning(true);
+    } else {
+      // Jika tidak ada perubahan atau sedang mencoba membuka, jalankan fungsi normal
+      onOpenChange(open);
+    }
+  };
 
-    useEffect(() => {
-      if (schedulesData) {
-        setLocalSchedules(schedulesData);
-      }
-    }, [schedulesData]);
+  const handleConfirmDiscard = () => {
+    setIsDirty(false);
+    setShowDiscardWarning(false);
+    onOpenChange(false); // Tutup modal utama
+  };
+
+  useEffect(() => {
+    if (!selectedPhase?.code) return;
+
+    const codeLower = selectedPhase.code.toLowerCase();
+
+    if (codeLower === "prep1" || codeLower === "prep2") {
+      setLabelPrefix("PREP");
+    }
+    else if (codeLower === "base") {
+      setLabelPrefix("T");
+    }
+    else if (codeLower === "final") {
+      setLabelPrefix("FINAL");
+    }
+    else if (["ph1", "ph2", "ph3"].includes(codeLower)) {
+      setLabelPrefix("GD");
+    }
+    else {
+      setLabelPrefix("");
+    }
+  }, [selectedPhase]);
+
+  useEffect(() => {
+    if (schedulesData) {
+      setLocalSchedules(schedulesData);
+    }
+  }, [schedulesData]);
 
   return (
     <Dialog open={open} onOpenChange={handleRequestClose}>
       <DialogContent
-        closeIconType="minimize"
-        className="!w-[95vw] xl:!w-[1200px] !max-w-[1200px] h-[90vh] max-h-[620px] xl:max-h-[720px] p-0 overflow-hidden bg-[#FAFAFA] flex flex-col focus-visible:outline-none"
+        className="!w-[1450px] !max-w-[1450px] p-0 overflow-hidden bg-[#FAFAFA]"
       >
         <DialogTitle className="sr-only">
           Sampling Schedule
@@ -270,228 +275,230 @@ export default function ModalSamplingSchedule({
           </div>
 
           {/* BODY */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6 min-h-0">
-            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 items-start">
-              {/* LEFT PANEL */}
-              <div className="rounded-xl border bg-[#FFFFFF] p-4 h-fit">
-                <h3 className="font-medium text-sm mb-4">
-                  Input Sampling Schedule
-                </h3>
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className={`grid grid-cols-1 gap-6 items-start ${canAddPhase ? 'lg:grid-cols-[300px_1fr]' : 'lg:grid-cols-1'
+              }`}>
+              {canAddPhase && (
+                <div className="rounded-xl border bg-[#FFFFFF] p-4 h-fit">
+                  <h3 className="font-medium text-sm mb-4">
+                    Input Sampling Schedule
+                  </h3>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs text-[#707784]">
-                      Phase Config *
-                    </label>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs text-[#707784]">
+                        Phase Config *
+                      </label>
 
-                    <Select
+                      <Select
                         value={phaseConfig}
                         onValueChange={setPhaseConfig}
-                    >
-                      <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]">
-                        <SelectValue placeholder="Choose Phase" />
-                      </SelectTrigger>
+                      >
+                        <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]">
+                          <SelectValue placeholder="Choose Phase" />
+                        </SelectTrigger>
 
-                      <SelectContent>
-                        {phaseConfigs.map((phase) => (
-                          <SelectItem
-                            key={phase.id}
-                            value={phase.code.toLowerCase()}
-                          >
-                            {phase.code} - {phase.type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                        <SelectContent>
+                          {phaseConfigs.map((phase) => (
+                            <SelectItem
+                              key={phase.id}
+                              value={phase.code.toLowerCase()}
+                            >
+                              {phase.code} - {phase.type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div>
-                    <label className="text-xs text-[#707784]">
-                      Phase Duration (minutes) *
-                    </label>
+                    <div>
+                      <label className="text-xs text-[#707784]">
+                        Phase Duration (minutes) *
+                      </label>
 
-                    <input
-                      type="number"
-                      value={phaseDuration}
-                      placeholder="e.g. 10"
-                      onChange={(e) =>
-                        setPhaseDuration(e.target.value)
-                      }
-                      className={`
-                        w-full h-10 rounded-md px-3 bg-[#FAFAFA] text-sm border outline-none
-                        ${
-                          phaseDuration &&
-                          interval &&
-                          Number(phaseDuration) < Number(interval)
-                            ? "border-red-500"
-                            : "border-[#E2E4E6]"
+                      <input
+                        type="number"
+                        value={phaseDuration}
+                        placeholder="e.g. 10"
+                        onChange={(e) =>
+                          setPhaseDuration(e.target.value)
                         }
+                        className={`
+                        w-full h-10 rounded-md px-3 bg-[#FAFAFA]
+                        ${phaseDuration &&
+                            interval &&
+                            Number(phaseDuration) < Number(interval)
+                            ? "border border-red-500"
+                            : "border border-[#E2E4E6]"
+                          }
                       `}
-                    />
+                      />
 
-                    {phaseDuration &&
-                      interval &&
-                      Number(phaseDuration) < Number(interval) && (
-                        <p className="text-xs text-red-500 mt-1">
+                      {phaseDuration &&
+                        interval &&
+                        Number(phaseDuration) < Number(interval) && (
+                          <p className="text-xs text-red-500 mt-1">
                             Phase Duration cannot be less than Interval.
-                        </p>
-                    )}
-                  </div>
+                          </p>
+                        )}
+                    </div>
 
-                  <div>
-                    <label className="text-xs text-[#707784]">
-                      Interval
-                      (minutes) *
-                    </label>
+                    <div>
+                      <label className="text-xs text-[#707784]">
+                        Interval
+                        (minutes) *
+                      </label>
 
-                    <Select
+                      <Select
                         value={interval}
                         onValueChange={setInterval}
-                    >
-                      <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]" >
-                        <SelectValue placeholder="Choose Interval" />
-                      </SelectTrigger>
+                      >
+                        <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]" >
+                          <SelectValue placeholder="Choose Interval" />
+                        </SelectTrigger>
 
-                      <SelectContent>
-                        <SelectItem value="3">
-                          3
-                        </SelectItem>
-                        
-                        <SelectItem value="5">
-                          5
-                        </SelectItem>
+                        <SelectContent>
+                          <SelectItem value="3">
+                            3
+                          </SelectItem>
 
-                        <SelectItem value="10">
-                          10
-                        </SelectItem>
+                          <SelectItem value="5">
+                            5
+                          </SelectItem>
 
-                        <SelectItem value="20">
-                          20
-                        </SelectItem>
+                          <SelectItem value="10">
+                            10
+                          </SelectItem>
 
-                        <SelectItem value="30">
-                          30
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                          <SelectItem value="20">
+                            20
+                          </SelectItem>
 
-                  <div>
-                    <label className="text-xs text-[#707784]">
-                      Label Prefix *
-                    </label>
+                          <SelectItem value="30">
+                            30
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                   <Select
-                      value={labelPrefix}
-                      onValueChange={setLabelPrefix}
-                    >
-                      <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]">
-                        <SelectValue placeholder={phaseConfig ? "Choose Prefix" : "Select phase first"} />
-                      </SelectTrigger>
+                    <div>
+                      <label className="text-xs text-[#707784]">
+                        Label Prefix *
+                      </label>
 
-                      <SelectContent>
-                        {(() => {
-                          const codeLower = phaseConfig?.toLowerCase() || "";
+                      <Select
+                        value={labelPrefix}
+                        onValueChange={setLabelPrefix}
+                      >
+                        <SelectTrigger className="w-full min-h-10 bg-[#FAFAFA]">
+                          <SelectValue placeholder={phaseConfig ? "Choose Prefix" : "Select phase first"} />
+                        </SelectTrigger>
 
-                          if (codeLower === "prep1" || codeLower === "prep2") {
-                            return <SelectItem value="PREP">PREP</SelectItem>;
-                          }
+                        <SelectContent>
+                          {(() => {
+                            const codeLower = phaseConfig?.toLowerCase() || "";
 
-                          if (codeLower === "base") {
-                            return <SelectItem value="T">T</SelectItem>;
-                          }
+                            if (codeLower === "prep1" || codeLower === "prep2") {
+                              return <SelectItem value="PREP">PREP</SelectItem>;
+                            }
 
-                          if (["ph1", "ph2", "ph3"].includes(codeLower)) {
-                            return <SelectItem value="GD">GD</SelectItem>;
-                          }
+                            if (codeLower === "base") {
+                              return <SelectItem value="T">T</SelectItem>;
+                            }
 
-                          if (codeLower === "final") {
-                            return <SelectItem value="FINAL">FINAL</SelectItem>; 
-                          }
+                            if (["ph1", "ph2", "ph3"].includes(codeLower)) {
+                              return <SelectItem value="GD">GD</SelectItem>;
+                            }
 
-                          return (
-                            <>
-                              <SelectItem value="GD">GD</SelectItem>
-                              <SelectItem value="T">T</SelectItem>
-                              <SelectItem value="PREP">PREP</SelectItem>
-                              <SelectItem value="FINAL">FINAL</SelectItem> 
-                            </>
-                          );
-                        })()}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                            if (codeLower === "final") {
+                              return <SelectItem value="FINAL">FINAL</SelectItem>;
+                            }
 
-                  <Button
-                    disabled={
+                            return (
+                              <>
+                                <SelectItem value="GD">GD</SelectItem>
+                                <SelectItem value="T">T</SelectItem>
+                                <SelectItem value="PREP">PREP</SelectItem>
+                                <SelectItem value="FINAL">FINAL</SelectItem>
+                              </>
+                            );
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button
+                      disabled={
                         !isFormValid ||
                         addSamplingScheduleMutation.isPending
-                    }
-                    onClick={handleAddSchedule}
-                    className={`
+                      }
+                      onClick={handleAddSchedule}
+                      className={`
                         w-full min-h-10
-                        ${
-                        isFormValid
-                            ? "bg-[#0076D2] hover:bg-[#0066B8]"
-                            : "bg-[#D1D5DB]"
+                        ${isFormValid
+                          ? "bg-[#0076D2] hover:bg-[#0066B8]"
+                          : "bg-[#D1D5DB]"
                         }
                     `}
                     >
-                    <Plus className="w-4 h-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2" />
 
-                    {addSamplingScheduleMutation.isPending
+                      {addSamplingScheduleMutation.isPending
                         ? "Adding Schedule Row..."
                         : "Add Schedule Row"}
                     </Button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* RIGHT PANEL */}
               <div className="rounded-xl border bg-[#FFFFFF] p-4 min-w-0">
                 <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 className="font-medium text-sm">
-                            Sampling Schedule Registry
-                        </h3>
+                  <div>
+                    <h3 className="font-medium text-sm">
+                      Sampling Schedule Registry
+                    </h3>
 
-                        <p className="text-xs text-[#707784] mt-1">
-                        Stakeholders can see the direct
-                        relationship between the
-                        schedule and the activities.
-                        </p>
-                    </div>
+                    <p className="text-xs text-[#707784] mt-1">
+                      Stakeholders can see the direct
+                      relationship between the
+                      schedule and the activities.
+                    </p>
+                  </div>
 
-                    {/* DELETE BUTTON + POPUP */}
-                    <div className="relative flex-shrink-0">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              setShowDeletePhase(!showDeletePhase)
-                            }
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Phase
-                          </Button>
+                  {/* DELETE BUTTON + POPUP */}
+                  <div className="relative flex-shrink-0">
+                    {canEditPhase && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setShowDeletePhase(!showDeletePhase)
+                          }
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Phase
+                        </Button>
 
-                          <Button
-                            disabled={
-                              !isDirty ||
-                              bulkUpdateSamplingSchedulesMutation.isPending
-                            }
-                            onClick={handleSaveAll}
-                            className="bg-[#0076D2] hover:bg-[#0066B8]"
-                          >
-                            {bulkUpdateSamplingSchedulesMutation.isPending
-                              ? "Saving..."
-                              : "Save"}
-                          </Button>
-                        </div>
+                        <Button
+                          disabled={
+                            !isDirty ||
+                            bulkUpdateSamplingSchedulesMutation.isPending
+                          }
+                          onClick={handleSaveAll}
+                          className="bg-[#0076D2]"
+                        >
+                          {bulkUpdateSamplingSchedulesMutation.isPending
+                            ? "Saving..."
+                            : "Save"}
+                        </Button>
+                      </div>
+                    )}
 
-                        {showDeletePhase && (
-                        <div
-                            className="
+                    {showDeletePhase && (
+                      <div
+                        className="
                             absolute
                             top-full
                             right-0
@@ -504,67 +511,67 @@ export default function ModalSamplingSchedule({
                             shadow-lg
                             p-4
                             "
-                        >
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs text-[#707784]">
-                                        Select Phase *
-                                    </label>
+                      >
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs text-[#707784]">
+                              Select Phase *
+                            </label>
 
-                                    <Select
-                                        value={selectedPhaseId}
-                                        onValueChange={
-                                            setSelectedPhaseId
-                                        }
+                            <Select
+                              value={selectedPhaseId}
+                              onValueChange={
+                                setSelectedPhaseId
+                              }
+                            >
+                              <SelectTrigger className="w-full mt-1 bg-[#FAFAFA]">
+                                <SelectValue placeholder="Select Phase" />
+                              </SelectTrigger>
+
+                              <SelectContent
+                                position="popper"
+                                side="bottom"
+                                align="start"
+                                sideOffset={4}
+                              >
+                                <div className="max-h-[220px] overflow-y-auto">
+                                  {uniquePhases.map((phase) => (
+                                    <SelectItem
+                                      key={phase.phase_code}
+                                      value={String(phase.phase_code)}
                                     >
-                                        <SelectTrigger className="w-full mt-1 bg-[#FAFAFA]">
-                                            <SelectValue placeholder="Select Phase" />
-                                        </SelectTrigger>
-
-                                        <SelectContent
-                                            position="popper"
-                                            side="bottom"
-                                            align="start"
-                                            sideOffset={4}
-                                        >
-                                            <div className="max-h-[220px] overflow-y-auto">
-                                                {uniquePhases.map((phase) => (
-                                                  <SelectItem
-                                                    key={phase.phase_code}
-                                                    value={String(phase.phase_code)}
-                                                  >
-                                                    {phase.phase_code}
-                                                  </SelectItem>
-                                                ))}
-                                            </div>
-                                        </SelectContent>
-                                    </Select>
+                                      {/* Sekarang phase adalah object, jadi .phase_code bisa diakses */}
+                                      {phase.phase_code}
+                                    </SelectItem>
+                                  ))}
                                 </div>
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                                <Button
-                                  disabled={
-                                    !selectedPhaseId ||
-                                    deleteSamplingScheduleMutation.isPending
-                                  }
-                                  onClick={handleDeleteSchedule}
-                                  className={`
+                          <Button
+                            disabled={
+                              !selectedPhaseId ||
+                              deleteSamplingScheduleMutation.isPending
+                            }
+                            onClick={handleDeleteSchedule}
+                            className={`
                                     w-full
-                                    ${
-                                      selectedPhaseId
-                                        ? "bg-[#FF5A36] hover:bg-[#E64A28]"
-                                        : "bg-[#D1D5DB]"
-                                    }
+                                    ${selectedPhaseId
+                                ? "bg-[#FF5A36] hover:bg-[#E64A28]"
+                                : "bg-[#D1D5DB]"
+                              }
                                   `}
-                                >
-                                  {deleteSamplingScheduleMutation.isPending
-                                    ? "Deleting..."
-                                    : "Delete Phase"}
-                                </Button>
-                              </div>
-                            </div>
-                            )}
+                          >
+                            {deleteSamplingScheduleMutation.isPending
+                              ? "Deleting..."
+                              : "Delete Phase"}
+                          </Button>
                         </div>
-                    </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {isLoading ? (
                   <ModalLoadingSkeleton rows={10} />
@@ -600,12 +607,12 @@ export default function ModalSamplingSchedule({
                       </thead>
 
                       <tbody className="bg-[#FAFAFA] ">
-                      {localSchedules?.length ? (
-                        localSchedules.map(
-                          (schedule) => (
+                        {localSchedules?.length ? (
+                          localSchedules.map(
+                            (schedule) => (
                               <tr
-                              key={schedule.sampling_schedule_id}
-                              className="
+                                key={schedule.sampling_schedule_id}
+                                className="
                                   border-t border-[#E2E4E6]
                                   hover:bg-white
                                   hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]
@@ -614,13 +621,13 @@ export default function ModalSamplingSchedule({
                                   cursor-pointer
                               "
                               >
-                              <td className="px-4 py-3 text-[#212121]">
+                                <td className="px-4 py-3 text-[#212121]">
                                   {schedule.phase_name}
-                              </td>
+                                </td>
 
-                              <td className="px-4 py-3">
-                                <span
-                                  className="
+                                <td className="px-4 py-3">
+                                  <span
+                                    className="
                                     inline-flex
                                     items-center
                                     px-2.5
@@ -633,48 +640,49 @@ export default function ModalSamplingSchedule({
                                     border
                                     border-[#BFE6D0]
                                   "
-                                >
-                                  {schedule.schedule_code}
-                                </span>
-                              </td>
+                                  >
+                                    {schedule.schedule_code}
+                                  </span>
+                                </td>
 
-                              <td className="px-4 py-3 text-[#212121]">
+                                <td className="px-4 py-3 text-[#212121]">
                                   {schedule.relative_minute}
-                              </td>
-                            <td className="px-4 py-3 text-center">
-                                <input
-                                  type="checkbox"
-                                  checked={schedule.blood_raw}
-                                  onChange={(e) =>
-                                    handleCheckboxLocalChange(
-                                      schedule.sampling_schedule_id,
-                                      "blood_raw",
-                                      e.target.checked
-                                    )
-                                  }
-                                  className="w-4 h-4 cursor-pointer"
-                                />
-                            </td>
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={schedule.blood_raw}
+                                    disabled={!canEditPhase}
+                                    onChange={(e) =>
+                                      handleCheckboxLocalChange(
+                                        schedule.sampling_schedule_id,
+                                        "blood_raw",
+                                        e.target.checked
+                                      )
+                                    }
+                                  />
+                                </td>
 
-                              <td className="px-4 py-3 text-center">
-                                <input
-                                  type="checkbox"
-                                  checked={schedule.insulin_inject}
-                                  onChange={(e) =>
-                                    handleCheckboxLocalChange(
-                                      schedule.sampling_schedule_id,
-                                      "insulin_inject",
-                                      e.target.checked
-                                    )
-                                  }
-                                  className="w-4 h-4 cursor-pointer"
-                                />
-                            </td>
+                                <td className="px-4 py-3 text-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={schedule.insulin_inject}
+                                    disabled={!canEditPhase}
+                                    onChange={(e) =>
+                                      handleCheckboxLocalChange(
+                                        schedule.sampling_schedule_id,
+                                        "insulin_inject",
+                                        e.target.checked
+                                      )
+                                    }
+                                  />
+                                </td>
 
-                              <td className="px-4 py-3 text-center">
-                                <input
+                                <td className="px-4 py-3 text-center">
+                                  <input
                                     type="checkbox"
                                     checked={schedule.pk_sample_collection}
+                                    disabled={!canEditPhase}
                                     onChange={(e) =>
                                       handleCheckboxLocalChange(
                                         schedule.sampling_schedule_id,
@@ -684,25 +692,25 @@ export default function ModalSamplingSchedule({
                                     }
                                     className="w-4 h-4 cursor-pointer"
                                   />
-                            </td>
-                          </tr>
+                                </td>
+                              </tr>
+                            )
                           )
-                          )
-                      ) : (
+                        ) : (
                           <tr>
-                              <td
-                                  colSpan={6}
-                                  className="
-                                      h-[180px]
+                            <td
+                              colSpan={6}
+                              className="
+                                      h-[200px]
                                       text-center
                                       align-middle
                                       text-[#707784]
                                   "
-                                  >
-                                  No sampling schedule created yet
-                              </td>
+                            >
+                              No sampling schedule created yet
+                            </td>
                           </tr>
-                      )}
+                        )}
                       </tbody>
                     </table>
                   </div>

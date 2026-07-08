@@ -17,6 +17,8 @@ interface ProtocolSamplingTableProps {
   onEdit: (protocol: any) => void;
   onDelete: (protocol: any) => void;
   onSamplingSchedule: (protocol: Protocol) => void;
+  canEditPhase: boolean;
+  canDeletePhase: boolean;
 }
 
 export default function ProtocolSamplingTable({
@@ -25,7 +27,9 @@ export default function ProtocolSamplingTable({
   onView,
   onEdit,
   onDelete,
-  onSamplingSchedule
+  onSamplingSchedule,
+  canEditPhase,
+  canDeletePhase
 }: ProtocolSamplingTableProps) {
   const formatDuration = (
     totalMinutes: number
@@ -41,9 +45,8 @@ export default function ProtocolSamplingTable({
       totalMinutes % 60;
 
     if (minutes === 0) {
-      return `${hours} ${
-        hours > 1 ? "hours" : "hour"
-      }`;
+      return `${hours} ${hours > 1 ? "hours" : "hour"
+        }`;
     }
 
     return `${hours} h ${minutes} m`;
@@ -126,7 +129,7 @@ export default function ProtocolSamplingTable({
 
               <td className="px-4 py-4">
                 {item.sampling_schedules != "0 phase" ? (
-                   <button
+                  <button
                     onClick={() =>
                       onSamplingSchedule(item)
                     }
@@ -152,15 +155,19 @@ export default function ProtocolSamplingTable({
                     onClick={() => onView(item)}
                   />
 
-                  <Pencil
-                    className="w-4 h-4 cursor-pointer text-[#FFB800]"
-                    onClick={() => onEdit(item)}
-                  />
+                  {canEditPhase && (
+                    <Pencil
+                      className="w-4 h-4 cursor-pointer text-[#FFB800]"
+                      onClick={() => onEdit(item)}
+                    />
+                  )}
 
-                  <Trash2
-                    className="w-4 h-4 cursor-pointer text-[#FF5B5B]"
-                    onClick={() => onDelete(item)}
-                  />
+                  {canDeletePhase && (
+                    <Trash2
+                      className="w-4 h-4 cursor-pointer text-[#FF5B5B]"
+                      onClick={() => onDelete(item)}
+                    />
+                  )}
                 </div>
               </td>
             </tr>

@@ -61,7 +61,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const getMenuPermission = (menuName: string) => {
     const target = menuName.toUpperCase().trim();
     const perm = permissions.find((p) => p.menuName?.toUpperCase().trim() === target);
-    
+
     return {
       canView: !!perm?.canView,
       canAdd: !!perm?.canAdd,

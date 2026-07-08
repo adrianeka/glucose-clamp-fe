@@ -21,6 +21,8 @@ import { ParticipantDetailModal } from "./participant-detail-modal";
 // Mengimpor komponen TablePagination yang reusable
 import { TablePagination } from "@/components/ui/table-pagination";
 import { log } from "console";
+import { usePermission } from "@/hooks/usePermission";
+import { AccessDeniedState } from "@/components/access-denied-state";
 
 function MrBadge({ mr }: { mr: string }) {
   return (
@@ -35,11 +37,15 @@ function TableRow({
   onView,
   onEdit,
   onDelete,
+  canEdit,
+  canDelete,
 }: {
   participant: Participant;
   onView: (p: Participant) => void;
   onEdit: (p: Participant) => void;
   onDelete: (p: Participant) => void;
+  canEdit: boolean;
+  canDelete: boolean;
 }) {
   return (
     <div className="flex items-start w-full bg-[#FAFAFA] rounded-lg overflow-hidden py-1">
@@ -66,20 +72,24 @@ function TableRow({
         >
           <Eye size={18} className="text-[#0076D2]" />
         </button>
-        <button
-          onClick={() => onEdit(participant)}
-          className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity"
-          aria-label="Edit"
-        >
-          <Pencil size={18} className="text-[#FABA00]" />
-        </button>
-        <button
-          onClick={() => onDelete(participant)}
-          className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity"
-          aria-label="Delete"
-        >
-          <Trash2 size={18} className="text-[#FF5630]" />
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => onEdit(participant)}
+            className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity"
+            aria-label="Edit"
+          >
+            <Pencil size={18} className="text-[#FABA00]" />
+          </button>
+        )}
+        {canDelete && (
+          <button
+            onClick={() => onDelete(participant)}
+            className="w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity"
+            aria-label="Delete"
+          >
+            <Trash2 size={18} className="text-[#FF5630]" />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -115,6 +125,8 @@ export function ParticipantTable({
   const [deleteTarget, setDeleteTarget] = useState<Participant | null>(null);
   const [editTarget, setEditTarget] = useState<Participant | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  const { canView: canViewSession, canAdd: canAddSession, canEdit: canEditSession, canDelete: canDeleteSession } = usePermission("PARTICIPANT");
 
   // debounce search input
   useEffect(() => {
@@ -223,13 +235,15 @@ export function ParticipantTable({
                 className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2]"
               />
             </div>
-            <Button
-              onClick={onAddParticipant}
-              className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
-            >
-              <Plus size={20} className="text-[#FAFAFA]" />
-              Add
-            </Button>
+            {canAddSession && (
+              <Button
+                onClick={onAddParticipant}
+                className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
+              >
+                <Plus size={20} className="text-[#FAFAFA]" />
+                Add
+              </Button>
+            )}
           </div>
         </div>
 
@@ -269,6 +283,8 @@ export function ParticipantTable({
                   onView={handleView}
                   onEdit={handleEditClick}
                   onDelete={handleDeleteClick}
+                  canEdit={canEditSession}
+                  canDelete={canDeleteSession}
                 />
               ))
             ) : (

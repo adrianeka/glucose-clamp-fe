@@ -20,8 +20,9 @@ import {
 import { Protocol, UpdateProtocolRequest, AddProtocolRequest } from "@/features/protocol-sampling/types/Protocol";
 import { useToast } from "@/components/ui/toast";
 import { useDebounce } from "use-debounce";
+import { usePermission } from "@/hooks/usePermission";
 export default function ProtocolSamplingPage() {
-  const { showToast } =useToast();
+  const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounce(search, 500);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -58,8 +59,8 @@ export default function ProtocolSamplingPage() {
     } catch (error: any) {
       showToast(
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to add protocol",
+        error?.message ||
+        "Failed to add protocol",
         "error"
       );
 
@@ -78,22 +79,22 @@ export default function ProtocolSamplingPage() {
   };
 
   const handleDeleteProtocol =
-  async () => {
-    if (!selectedProtocol) return;
+    async () => {
+      if (!selectedProtocol) return;
 
-    try {
-      await deleteProtocolMutation.mutateAsync(
-        selectedProtocol.protocol_id
-      );
+      try {
+        await deleteProtocolMutation.mutateAsync(
+          selectedProtocol.protocol_id
+        );
 
-      setIsDeleteModalOpen(false);
-      setSelectedProtocol(null);
-      showToast("Delete Protocol Successfully")
-    } catch (error:any) {
+        setIsDeleteModalOpen(false);
+        setSelectedProtocol(null);
+        showToast("Delete Protocol Successfully")
+      } catch (error: any) {
         showToast(
           error?.response?.data?.message ||
-            error?.message ||
-            "Failed to add protocol",
+          error?.message ||
+          "Failed to add protocol",
           "error"
         );
 
@@ -101,52 +102,55 @@ export default function ProtocolSamplingPage() {
           "Failed to add protocol:",
           error
         );
-    }
-  };
+      }
+    };
 
   const updateProtocolMutation =
-  useEditProtocol();
+    useEditProtocol();
 
-const handleEditProtocol =
-  async (protocolId : number, payload: UpdateProtocolRequest) => {
-    try {
-      await updateProtocolMutation.mutateAsync({
-        protocolId: protocolId,
-        data: payload,
-      });
+  const handleEditProtocol =
+    async (protocolId: number, payload: UpdateProtocolRequest) => {
+      try {
+        await updateProtocolMutation.mutateAsync({
+          protocolId: protocolId,
+          data: payload,
+        });
 
-      setIsEditModalOpen(false);
-      setSelectedProtocol(null);
-      showToast("Update Protocol Successfully")
-    } catch (error:any) {
-      showToast(
-        error?.response?.data?.message ||
+        setIsEditModalOpen(false);
+        setSelectedProtocol(null);
+        showToast("Update Protocol Successfully")
+      } catch (error: any) {
+        showToast(
+          error?.response?.data?.message ||
           error?.message ||
           "Failed to add protocol",
-        "error"
-      );
+          "error"
+        );
 
-      console.error(
-        "Failed to add protocol:",
-        error
-      );
-    }
-  };
+        console.error(
+          "Failed to add protocol:",
+          error
+        );
+      }
+    };
+
+  const { canView: canViewPhase, canAdd: canAddPhase, canEdit: canEditPhase, canDelete: canDeletePhase } = usePermission("PROTOCOLSAMPLINGSCHEDULE");
 
   return (
     <>
       <div className="bg-white rounded-3xl p-6 space-y-6">
         <ProtocolSamplingHeader
-            search={search}
-            setSearch={(value) => {
-              setSearch(value);
-              setPage(0);
-            }}
-            onAddProtocol={openAddModal}
-          />
+          search={search}
+          setSearch={(value) => {
+            setSearch(value);
+            setPage(0);
+          }}
+          onAddProtocol={openAddModal}
+          canAddPhase={canAddPhase}
+        />
 
         <ProtocolSamplingTable
-          data={data?.data?? []}
+          data={data?.data ?? []}
           isLoading={isLoading}
           onView={(protocol) => {
             setSelectedProtocol(protocol);
@@ -161,6 +165,8 @@ const handleEditProtocol =
             setIsDeleteModalOpen(true);
           }}
           onSamplingSchedule={handleSamplingSchedule}
+          canEditPhase={canEditPhase}
+          canDeletePhase={canDeletePhase}
         />
 
         <TablePagination
@@ -221,9 +227,12 @@ const handleEditProtocol =
       />
 
       <ModalSamplingSchedule
-        open = {isSamplingScheduleModalOpen}
+        open={isSamplingScheduleModalOpen}
         onOpenChange={setIsSamplingScheduleModalOpen}
         protocol={selectedProtocol}
+        canAddPhase={canAddPhase}
+        canDeletePhase={canDeletePhase}
+        canEditPhase={canEditPhase}
       />
     </>
   );
