@@ -129,27 +129,27 @@ export function AddPhaseModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleMinimize()}>
       <DialogContent
-        style={{ width: "560px", maxWidth: "560px" }}
-        className="p-0 gap-0 rounded-2xl overflow-hidden border-0 shadow-xl [&>button]:hidden"
+        className="w-[92vw] sm:w-[560px] max-w-[560px] p-0 gap-0 rounded-2xl overflow-hidden border-0 shadow-xl [&>button]:hidden focus-visible:outline-none"
       >
         <button
           onClick={handleMinimize}
-          className="!flex absolute top-6 right-8 w-6 h-6 items-center justify-center text-[#707784] hover:opacity-70"
+          className="!flex absolute top-6 right-6 sm:right-8 w-6 h-6 items-center justify-center text-[#707784] hover:opacity-70 focus:outline-none"
         >
           <span className="text-2xl leading-none">−</span>
         </button>
 
-        <DialogHeader className="px-8 pt-6 pb-5 space-y-0">
-          <DialogTitle className="text-[#2D2F35] text-2xl font-bold leading-7">
+        <DialogHeader className="px-6 sm:px-8 pt-6 pb-5 space-y-0">
+          <DialogTitle className="text-[#2D2F35] text-xl sm:text-2xl font-bold leading-7">
             Add New Phase
           </DialogTitle>
-          <p className="text-[#707784] text-sm font-normal leading-5 mt-1.5">
+          <p className="text-[#707784] text-xs sm:text-sm font-normal leading-5 mt-1.5">
             Follow the guided steps to complete the participant data.
           </p>
         </DialogHeader>
 
         {/* Form Inputs Ditumpuk Vertikal ke Bawah Sesuai Gambar Mockup */}
-        <div className="px-8 pb-4 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 bg-white">
+        {/* Form Inputs */}
+        <div className="px-6 sm:px-8 pb-4 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 bg-white">
           {/* Phase Code */}
           <div className="flex flex-col gap-[11px]">
             <FieldLabel>Phase Code</FieldLabel>
@@ -223,11 +223,10 @@ export function AddPhaseModal({
               placeholder="0"
             />
           </div>
-
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 px-8 py-6 border-t border-[#E2E4E6] bg-white">
+        <div className="flex justify-end gap-3 px-6 sm:px-8 py-6 border-t border-[#E2E4E6] bg-white">
           <Button
             type="button"
             variant="outline"
