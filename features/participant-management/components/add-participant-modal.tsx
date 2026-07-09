@@ -102,8 +102,7 @@ export function AddParticipantModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleMinimize()}>
       <DialogContent
-        style={{ width: "560px", maxWidth: "560px" }}
-        className="p-0 gap-0 rounded-xl overflow-hidden border-0 shadow-xl [&>button]:hidden"
+        className="p-0 gap-0 rounded-xl overflow-hidden border-0 shadow-xl [&>button]:hidden w-[calc(100%-32px)] max-w-[560px] md:w-[560px]"
       >
         <button
           onClick={handleMinimize}
@@ -112,7 +111,7 @@ export function AddParticipantModal({
           <span className="text-2xl leading-none">−</span>
         </button>
 
-        <DialogHeader className="px-8 pt-6 pb-5 space-y-0">
+        <DialogHeader className="px-6 md:px-8 pt-6 pb-5 space-y-0">
           <DialogTitle className="text-[#2D2F35] text-2xl font-bold leading-7">
             Add Participant
           </DialogTitle>
@@ -121,24 +120,24 @@ export function AddParticipantModal({
           </p>
         </DialogHeader>
 
-        <div className="px-8 pb-2 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5">
+        <div className="px-6 md:px-8 pb-4 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 max-h-[60vh] overflow-y-auto">
           <div className="flex flex-col gap-[11px]">
             <FieldLabel>Medical Record</FieldLabel>
             <Input
               value={form.medicalRecordNo}
               onChange={(e) => handleChange({ medicalRecordNo: e.target.value })}
-              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2]"
+              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
               placeholder="e.g. MR889106"
             />
           </div>
 
-          <div className="flex gap-6">
+          <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
             <div className="flex-1 flex flex-col gap-[11px]">
               <FieldLabel>Full Name</FieldLabel>
               <Input
                 value={form.fullName}
                 onChange={(e) => handleChange({ fullName: e.target.value })}
-                className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2]"
+                className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
                 placeholder="e.g. Adrian Saputra"
               />
             </div>
@@ -152,7 +151,7 @@ export function AddParticipantModal({
                     type="button"
                     onClick={() => handleChange({ gender: g })}
                     className={cn(
-                      "flex-1 px-3 bg-[#FAFAFA] rounded-md border flex items-center gap-2 transition-colors",
+                      "flex-1 px-3 bg-[#FAFAFA] rounded-md border flex items-center justify-center sm:justify-start gap-2 transition-colors",
                       form.gender === g
                         ? "border-[#0076D2]"
                         : "border-[#E2E4E6] hover:border-[#A9ADB5]"
@@ -177,7 +176,7 @@ export function AddParticipantModal({
             </div>
           </div>
 
-          <div className="flex gap-6">
+          <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
             <div className="flex-1 flex flex-col gap-[11px]">
               <FieldLabel>Date of Birth</FieldLabel>
               <div className="relative">
@@ -216,7 +215,7 @@ export function AddParticipantModal({
                 <Input
                   value={form.phone}
                   onChange={(e) => handleChange({ phone: e.target.value })}
-                  className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2]"
+                  className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2] w-full"
                   placeholder="e.g. 081234567890"
                 />
               </div>
@@ -224,12 +223,13 @@ export function AddParticipantModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-8 py-6 mt-2 border-t border-[#E2E4E6]">
+        {/* Tombol aksi responsif di layar kecil */}
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 px-6 md:px-8 py-6 mt-2 border-t border-[#E2E4E6]">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
-            className="px-6 py-3 h-auto !rounded-1xl border-0 bg-[#DBF2F3] text-[#0076D2] text-base font-medium hover:bg-[#c5e9eb]"
+            className="px-6 py-3 h-[42px] sm:h-auto !rounded-1xl border-0 bg-[#DBF2F3] text-[#0076D2] text-base font-medium hover:bg-[#c5e9eb] w-full sm:w-auto"
           >
             Cancel
           </Button>
@@ -238,7 +238,7 @@ export function AddParticipantModal({
             onClick={handleSubmit}
             disabled={!isComplete || isSubmitting}
             className={cn(
-              "px-6 py-3 h-auto !rounded-1xl text-base font-medium text-[#FAFAFA] border-0",
+              "px-6 py-3 h-[42px] sm:h-auto !rounded-1xl text-base font-medium text-[#FAFAFA] border-0 w-full sm:w-auto",
               isComplete && !isSubmitting
                 ? "bg-[#0076D2] hover:bg-[#005fa3]"
                 : "bg-[#A9ADB5] cursor-not-allowed"

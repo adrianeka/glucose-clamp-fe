@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Participant } from "../types"
+import { Participant } from "../types";
 
 function calculateAge(dob: string): string {
   if (!dob) return "—";
@@ -61,13 +61,13 @@ function DetailTable({
       {rows.map((row, i) => (
         <div
           key={row.label}
-          className={`flex ${i !== rows.length - 1 ? "border-b border-[#E2E4E6]" : ""}`}
+          className={`flex flex-col sm:flex-row ${i !== rows.length - 1 ? "border-b border-[#E2E4E6]" : ""}`}
         >
-          <div className="flex-1 flex items-center gap-2 px-4 py-3 border-r border-[#E2E4E6] text-[#43474F] text-sm">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 sm:py-3 border-b sm:border-b-0 sm:border-r border-[#E2E4E6] text-[#43474F] text-sm bg-white sm:bg-transparent">
             <span className="w-4 h-4 shrink-0 text-[#99A1AF]">{row.icon}</span>
             {row.label}
           </div>
-          <div className="flex-1 flex items-center justify-end px-4 py-3 text-[#101828] text-sm font-medium text-right">
+          <div className="flex-1 flex items-center sm:justify-end px-4 py-2.5 sm:py-3 text-[#101828] text-sm font-medium text-left sm:text-right bg-[#FAFAFA] sm:bg-transparent">
             {row.value}
           </div>
         </div>
@@ -99,11 +99,12 @@ export function ParticipantDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="p-0 gap-0 rounded-xl overflow-hidden !w-[600px] !max-w-[600px] border-0 shadow-xl [&>button]:hidden">
+      {/* Mengubah fixed width menjadi fluid width dengan batas maksimum pada layar besar */}
+      <DialogContent className="p-0 gap-0 rounded-xl overflow-hidden w-[calc(100%-32px)] max-w-[600px] md:w-[600px] border-0 shadow-xl [&>button]:hidden mx-auto">
         <VisuallyHidden>
           <DialogTitle>Participant Detail — {participant.name}</DialogTitle>
         </VisuallyHidden>
-        <DialogHeader className="p-5 bg-[#0076D2] flex-row justify-between items-start space-y-0">
+        <DialogHeader className="p-5 bg-[#0076D2] flex flex-row justify-between items-start space-y-0">
           <div className="flex flex-col gap-[9px]">
             <span className="text-[#FAFAFA] text-base font-normal leading-[18px]">
               Participant Detail
@@ -120,7 +121,7 @@ export function ParticipantDetailModal({
           </button>
         </DialogHeader>
 
-        <div className="p-5 bg-[#FAFAFA] rounded-b-xl flex flex-col gap-5">
+        <div className="p-5 bg-[#FAFAFA] rounded-b-xl flex flex-col gap-5 max-h-[75vh] overflow-y-auto">
           <div className="flex flex-col gap-2">
             <SectionLabel>Medical Identity</SectionLabel>
             <DetailTable

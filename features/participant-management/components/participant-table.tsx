@@ -18,15 +18,12 @@ import { cn } from "@/lib/utils";
 import { getAllParticipants, searchParticipants, deleteParticipant } from "../services";
 import { Participant } from "../types";
 import { ParticipantDetailModal } from "./participant-detail-modal";
-// Mengimpor komponen TablePagination yang reusable
 import { TablePagination } from "@/components/ui/table-pagination";
-import { log } from "console";
 import { usePermission } from "@/hooks/usePermission";
-import { AccessDeniedState } from "@/components/access-denied-state";
 
 function MrBadge({ mr }: { mr: string }) {
   return (
-    <div className="px-1.5 py-1 bg-[#FAFAFA] rounded-full border border-[#E2E4E6]">
+    <div className="px-1.5 py-1 bg-[#FAFAFA] rounded-full border border-[#E2E4E6] inline-block">
       <span className="text-[#595F6A] text-xs font-medium leading-[14px]">{mr}</span>
     </div>
   );
@@ -179,7 +176,6 @@ export function ParticipantTable({
     fetchData();
   }, [debouncedSearch, currentPage, pageSize]);
 
-
   const handleView = (p: Participant) => {
     setSelectedParticipant(p);
     setModalOpen(true);
@@ -213,30 +209,30 @@ export function ParticipantTable({
 
   return (
     <>
-      <div className="flex-1 self-stretch px-8 py-6 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">
-        <div className="flex items-center justify-between">
+      <div className="flex-1 self-stretch px-4 py-6 md:px-8 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex flex-col gap-1.5">
-            <h1 className="text-[#2D2F35] text-[28px] font-bold leading-[38px]">
+            <h1 className="text-[#2D2F35] text-2xl md:text-[28px] font-bold leading-7 md:leading-[38px]">
               Participant Management
             </h1>
             <p className="text-[#707784] text-sm font-normal leading-5">
               Manage and view all registered study participants
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative w-[260px]">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+            <div className="relative w-full sm:w-[260px]">
               <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#2D2F35]" />
               <Input
                 placeholder="Search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2]"
+                className="pl-10 bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base placeholder:text-[#707784] h-10 focus-visible:ring-[#0076D2] w-full"
               />
             </div>
             {canAddSession && (
               <Button
                 onClick={onAddParticipant}
-                className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-auto rounded-lg gap-2"
+                className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-lg font-medium leading-5 px-6 py-3 h-10 rounded-lg gap-2 w-full sm:w-auto justify-center"
               >
                 <Plus size={20} className="text-[#FAFAFA]" />
                 Add
@@ -245,64 +241,68 @@ export function ParticipantTable({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 bg-[#FAFAFA]">
-          <div className="flex items-center w-full bg-[#F1F9FA] rounded-lg overflow-hidden">
-            {[
-              { label: "Medical Record", width: "flex-1" },
-              { label: "Participant", width: "flex-1" },
-              { label: "Gender", width: "flex-1" },
-              { label: "Age", width: "flex-1" },
-              { label: "Phone", width: "flex-1" },
-              { label: "Actions", width: "flex-1" },
-            ].map(({ label, width }) => (
-              <div
-                key={label}
-                className={cn("flex-shrink-0 h-14 px-4 py-2 flex items-center", width)}
-              >
-                <span className="text-[#0076D2] text-base font-semibold leading-[18px]">
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="min-w-[800px] flex flex-col gap-2 bg-[#FAFAFA]">
+            <div className="flex items-center w-full bg-[#F1F9FA] rounded-lg overflow-hidden">
+              {[
+                { label: "Medical Record", width: "flex-1" },
+                { label: "Participant", width: "flex-1" },
+                { label: "Gender", width: "flex-1" },
+                { label: "Age", width: "flex-1" },
+                { label: "Phone", width: "flex-1" },
+                { label: "Actions", width: "flex-1" },
+              ].map(({ label, width }) => (
+                <div
+                  key={label}
+                  className={cn("flex-shrink-0 h-14 px-4 py-2 flex items-center", width)}
+                >
+                  <span className="text-[#0076D2] text-base font-semibold leading-[18px]">
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-          <div className="flex flex-col gap-2">
-            {loading ? (
-              <div className="py-10 text-center text-[#707784] text-sm">
-                Memuat data...
-              </div>
-            ) : error ? (
-              <div className="py-10 text-center text-red-500 text-sm">{error}</div>
-            ) : participants.length > 0 ? (
-              participants.map((p) => (
-                <TableRow
-                  key={p.participantId}
-                  participant={p}
-                  onView={handleView}
-                  onEdit={handleEditClick}
-                  onDelete={handleDeleteClick}
-                  canEdit={canEditSession}
-                  canDelete={canDeleteSession}
-                />
-              ))
-            ) : (
-              <div className="py-10 text-center text-[#707784] text-sm">
-                No participants found.
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              {loading ? (
+                <div className="py-10 text-center text-[#707784] text-sm bg-white rounded-lg">
+                  Memuat data...
+                </div>
+              ) : error ? (
+                <div className="py-10 text-center text-red-500 text-sm bg-white rounded-lg">{error}</div>
+              ) : participants.length > 0 ? (
+                participants.map((p) => (
+                  <TableRow
+                    key={p.participantId}
+                    participant={p}
+                    onView={handleView}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                    canEdit={canEditSession}
+                    canDelete={canDeleteSession}
+                  />
+                ))
+              ) : (
+                <div className="py-10 text-center text-[#707784] text-sm bg-white rounded-lg">
+                  No participants found.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {!loading && totalElements > 0 && (
-          <TablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalElements={totalElements}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={handlePageSizeChange}
-            pageSizeOptions={[10, 25, 50]}
-          />
+          <div className="overflow-x-auto">
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={handlePageSizeChange}
+              pageSizeOptions={[10, 25, 50]}
+            />
+          </div>
         )}
       </div>
 
