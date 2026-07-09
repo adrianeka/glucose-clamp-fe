@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { globalConfigurationService } from "../services";
 import { GlobalConfiguration } from "../types";
+import { usePermission } from "@/hooks/usePermission";
 
 export function GlobalConfigurationForm() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,9 @@ export function GlobalConfigurationForm() {
   const [configs, setConfigs] = useState<GlobalConfiguration[]>([]);
   // Menyimpan nilai input dinamis berdasarkan ID konfigurasi { [id]: value }
   const [editedValues, setEditedValues] = useState<Record<string, string>>({});
+
+  const { canAdd: canAddSession, canEdit: canEditSession, canDelete: canDeleteSession } = usePermission("GLOBALCONFIGURATION");
+
 
   const fetchConfigurations = async () => {
     setLoading(true);
@@ -116,7 +120,7 @@ export function GlobalConfigurationForm() {
 
   return (
     <div className="flex-1 self-stretch px-8 py-6 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">
-      
+
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1.5">
@@ -127,19 +131,20 @@ export function GlobalConfigurationForm() {
             Configure system-wide settings for session workflow
           </p>
         </div>
-        
+
         <div>
-          <Button
-            onClick={handleSaveChanges}
-            disabled={!hasChanges || saving}
-            className={`text-base font-semibold px-6 py-2.5 h-11 rounded-lg transition-colors ${
-              hasChanges 
-                ? "bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA]" 
+          {canEditSession && (
+            <Button
+              onClick={handleSaveChanges}
+              disabled={!hasChanges || saving}
+              className={`text-base font-semibold px-6 py-2.5 h-11 rounded-lg transition-colors ${hasChanges
+                ? "bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA]"
                 : "bg-[#B2BBC6] text-white cursor-not-allowed"
-            }`}
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+                }`}
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -161,8 +166,8 @@ export function GlobalConfigurationForm() {
           if (!config.id) return null;
 
           return (
-            <div 
-              key={config.id} 
+            <div
+              key={config.id}
               className="border border-[#E2E8F0] rounded-2xl bg-[#F8FAFC] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6"
             >
               <div className="flex flex-col gap-1 max-w-[70%]">
@@ -173,13 +178,14 @@ export function GlobalConfigurationForm() {
                   {config.description}
                 </p>
               </div>
-              
+
               <div className="flex-shrink-0">
                 <Input
                   type="number"
                   value={editedValues[config.id] ?? ""}
                   onChange={(e) => handleInputChange(config.id!, e.target.value)}
                   className="w-24 text-center text-base bg-white border-[#E2E8F0] rounded-lg h-11 focus-visible:ring-[#0076D2]"
+                  disabled={!canEditSession}
                 />
               </div>
             </div>
