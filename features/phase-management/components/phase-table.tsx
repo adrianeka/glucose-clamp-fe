@@ -175,13 +175,11 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [showDiscardWarning, setShowDiscardWarning] = useState(false);
   const [showDeletePhase, setShowDeletePhase] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PhaseConfig | null>(null);
   const [editTarget, setEditTarget] = useState<PhaseConfig | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  // States untuk pengaturan prioritas
   const [isReordering, setIsReordering] = useState(false);
   const [reorderedPhases, setReorderedPhases] = useState<PhaseConfig[]>([]);
   const [isSubmittingPriority, setIsSubmittingPriority] = useState(false);
@@ -355,13 +353,12 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
 
   const { canAdd: canAddPhase, canEdit: canEditPhase, canDelete: canDeletePhase } = usePermission("PHASECONFIGURATION");
 
-
   return (
     <>
-      <div className="flex-1 self-stretch p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">
+      <div className="flex-1 self-stretch p-4 sm:p-6 md:p-8 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0 max-w-full">
 
         {/* Header Section */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between w-full">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between w-full">
           <div>
             <h1 className="text-2xl md:text-[32px] font-semibold text-[#212121] leading-tight">
               Phase Management
@@ -372,10 +369,10 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
           </div>
 
           {isReordering ? (
-            <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
               <Button
                 onClick={cancelReordering}
-                className="flex-1 sm:flex-none bg-[#EBF3FC] hover:bg-[#D4E7FA] text-[#0076D2] text-base font-semibold px-6 py-2.5 h-10 rounded-lg border-0"
+                className="bg-[#EBF3FC] hover:bg-[#D4E7FA] text-[#0076D2] text-base font-semibold px-6 py-2.5 h-10 rounded-lg border-0 w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -383,7 +380,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
                 onClick={applyPriorityChanges}
                 disabled={!hasPriorityChanges || isSubmittingPriority}
                 className={cn(
-                  "flex-1 sm:flex-none text-base font-semibold px-6 py-2.5 h-10 rounded-lg border-0 text-white",
+                  "text-base font-semibold px-6 py-2.5 h-10 rounded-lg border-0 text-white w-full sm:w-auto",
                   hasPriorityChanges && !isSubmittingPriority
                     ? "bg-[#0076D2] hover:bg-[#005fa3]"
                     : "bg-[#A9ADB5] cursor-not-allowed"
@@ -393,7 +390,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
               <div className="relative w-full sm:w-[280px]">
                 <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
@@ -406,7 +403,7 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
               {canAddPhase && (
                 <Button
                   onClick={onAddPhase}
-                  className="w-full sm:w-auto bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-base font-semibold px-5 py-2.5 h-10 rounded-lg gap-2 justify-center"
+                  className="bg-[#0076D2] hover:bg-[#005fa3] text-[#FAFAFA] text-base font-semibold px-5 py-2.5 h-10 rounded-lg gap-2 justify-center w-full sm:w-auto"
                 >
                   <Plus size={20} className="text-[#FAFAFA]" />
                   Add
@@ -417,9 +414,8 @@ export function PhaseTable({ onAddPhase, refreshKey }: PhaseTableProps) {
         </div>
 
         {/* Table Structure Container */}
-        <div className="flex flex-col border border-gray-100 rounded-xl overflow-hidden bg-white w-full">
-
-          <div className="overflow-x-auto w-full">
+        <div className="flex flex-col border border-gray-100 rounded-xl overflow-hidden bg-white w-full max-w-full">
+          <div className="overflow-x-auto w-full max-w-full">
             <div className="min-w-[800px] flex flex-col">
 
               {/* Table Header Row */}

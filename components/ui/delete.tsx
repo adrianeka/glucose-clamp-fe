@@ -40,15 +40,19 @@ export function ConfirmDeleteDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      {/* 
+        MENGUBAH STYLE FIXED WIDTH MENJADI KELAS TAILWIND YANG RESPONSIF:
+        - w-[92vw] untuk layar HP (92% lebar viewport)
+        - sm:w-[480px] max-w-[480px] untuk layar tablet/PC ke atas
+      */}
       <DialogContent
-        style={{ width: "480px", maxWidth: "480px" }}
-        className="p-0 gap-0 rounded-xl overflow-hidden border-0 shadow-xl [&>button]:hidden"
+        className="w-[92vw] sm:w-[480px] max-w-[480px] p-0 gap-0 rounded-xl overflow-hidden border-0 shadow-xl [&>button]:hidden focus-visible:outline-none"
       >
         <VisuallyHidden>
           <DialogTitle>{title}</DialogTitle>
         </VisuallyHidden>
 
-        <div className="flex flex-col items-center gap-4 px-8 pt-10 pb-8 text-center">
+        <div className="flex flex-col items-center gap-4 px-6 sm:px-8 pt-10 pb-8 text-center bg-white">
           <Trash2 size={48} strokeWidth={1.5} className="text-[#E84E2C]" />
           <h2 className="text-[#2D2F35] text-xl font-bold leading-6">
             {title}
@@ -58,7 +62,7 @@ export function ConfirmDeleteDialog({
           </p>
         </div>
 
-        <div className="flex gap-4 px-8 py-6 border-t border-[#E2E4E6]">
+        <div className="flex gap-4 px-6 sm:px-8 py-6 border-t border-[#E2E4E6] bg-white">
           <Button
             type="button"
             variant="outline"
