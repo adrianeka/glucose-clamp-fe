@@ -95,12 +95,8 @@ export default function ActiveSessionsTicker() {
     const activeSession = sessions[currentIndex];
     if (!activeSession) return;
 
-    const activityParam = activeSession.nextActivity?.activityId
-      ? `&activityId=${activeSession.nextActivity.activityId}`
-      : "";
-
     router.push(
-      `/session-creation?sessionId=${activeSession.sessionId}${activityParam}&openModal=true`
+      `/session-creation/${activeSession.sessionId}`
     );
   };
 
