@@ -101,49 +101,34 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
 
                                 <div className="space-y-0">
                                     <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
-                                        <div>Duration (hours)</div>
+                                        <div>Duration</div>
                                         <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.duration_hours ?? "-"}</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.duration_hours ?? "-"} hours</div>
                                     </div>
                                     <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
                                         <div>Insulin Dose</div>
                                         <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.insulin_dose_rule ?? "-"}</div>
-                                    </div>
-                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
-                                        <div>Dose Unit</div>
-                                        <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.insulin_dose_unit ?? "-"}</div>
-                                    </div>
-                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 lg:border-b-0 border-b border-[#E2E4E6]">
-                                        <div>Target Glucose Min</div>
-                                        <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_min ?? "-"}</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.insulin_dose_rule ?? "-"} {protocolDetail.insulin_dose_unit ?? "-"}</div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-0">
                                     <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
-                                        <div>Target Glucose Max</div>
+                                        <div>Target Glucose</div>
                                         <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_max ?? "-"}</div>
-                                    </div>
-                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
-                                        <div>Target Unit</div>
-                                        <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_unit ?? "-"}</div>
-                                    </div>
-                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
-                                        <div>Target Glucose Min Extreme</div>
-                                        <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_min_extreme ?? "-"}</div>
+                                        <div className="font-semibold text-slate-800">
+                                            {protocolDetail.glucose_target_min ?? "-"} - {protocolDetail.glucose_target_max ?? "-"} {protocolDetail.glucose_target_unit ?? "-"}
+                                        </div>
                                     </div>
                                     <div className="grid grid-cols-[200px_10px_1fr] py-2.5">
-                                        <div>Target Glucose Max Extreme</div>
+                                        <div>Target Glucose Extreme</div>
                                         <div>:</div>
-                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_max_extreme ?? "-"}</div>
+                                        <div className="font-semibold text-slate-800">
+                                            {protocolDetail.glucose_target_min_extreme ?? "-"} - {protocolDetail.glucose_target_max_extreme ?? "-"} {protocolDetail.glucose_target_unit ?? "-"}
+                                        </div>
                                     </div>
                                 </div>
+
                             </div>
                         ) : (
                             <div className="text-center py-4 text-sm text-amber-600">
