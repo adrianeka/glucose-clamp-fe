@@ -238,7 +238,10 @@ export default function SessionRunningPage({ sessionId, sessionData }: SessionRu
             />
 
             <ModalOtherActivity
-                isOpen={["STABILIZATION", "INSULIN_INJECTION", "OTHER", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(currentActiveDialog?.activityType)}
+                isOpen={
+                    (canAddPC && ["STABILIZATION", "INSULIN_INJECTION"].includes(currentActiveDialog?.activityType)) ||
+                    ["OTHER", "FINAL_OBSERVATION", "DEXTROSE_STOP_CHECK"].includes(currentActiveDialog?.activityType)
+                }
                 onOpenChange={(open) => !open && handleSuccessStep(currentActiveDialog.activityId)}
                 sessionId={sessionId}
                 activityData={currentActiveDialog}
