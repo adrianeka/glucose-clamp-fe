@@ -473,7 +473,9 @@ export default function ModalAddUser({
                 </SelectTrigger>
 
                 <SelectContent>
-                  {roles.map(
+                  {roles
+                  .filter((role: Roles) => role.roleName !== "Superadmin")
+                  .map(
                     (role: Roles) => (
                       <SelectItem
                         key={role.roleId}

@@ -41,6 +41,7 @@ export default function TableManagement() {
   const handleEditUser = (user: UserManagementResponse) => {
     setSelectedUser(user);
     setIsEditUserModalOpen(true);
+    refetch();
   };
 
   const handleViewUser = (user: UserManagementResponse) => {
@@ -59,6 +60,8 @@ export default function TableManagement() {
             );
 
             setIsDeleteOpen(false);
+
+            refetch();
         } catch {
             toast.error(
             "Failed to delete user"
@@ -66,7 +69,7 @@ export default function TableManagement() {
         }
     };
 
-  const { data, isLoading, isError } = useUsers({
+  const { data, isLoading, isError, refetch } = useUsers({
     keyword,
     pageNumber,
     pageSize,
