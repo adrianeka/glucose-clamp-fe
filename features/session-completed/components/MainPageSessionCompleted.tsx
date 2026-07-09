@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SessionCompletedHeader from "./SessionCompletedHeader";
 import MainGDChartCompleted from "./MainGDChartCompleted";
 import SubChartsCompleted from "./SubChartsCompleted";
+import { getProtocolById } from "@/features/protocol-sampling/services/ProtocolSamplingService";
 
 interface MainPageSessionCompletedProps {
     sessionId: number;
@@ -17,11 +18,32 @@ interface Activity {
     activityStatus: string;
 }
 
+interface ProtocolDetail {
+    protocol_id: number;
+    protocol_code: string;
+    protocol_name: string;
+    insulin_dose_rule: string;
+    insulin_dose_unit: string;
+    glucose_target_min: number;
+    glucose_target_max: number;
+    glucose_target_unit: string;
+    glucose_target_min_extreme: number;
+    glucose_target_max_extreme: number;
+    duration_hours: number;
+    glucose_drop_trigger_percentage: number;
+    initial_glucose_infusion_rate: number;
+    initial_glucose_infusion_rate_unit: string;
+    version: number;
+}
+
 export default function MainPageSessionCompleted({ sessionId, sessionData }: MainPageSessionCompletedProps) {
     const activities = sessionData?.activities || [];
 
     const mainChartRef = useRef<HTMLDivElement>(null);
     const subChartsRef = useRef<HTMLDivElement>(null);
+
+    const [protocolDetail, setProtocolDetail] = useState<ProtocolDetail | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const formatTime = (dateString: string) => {
         try {
@@ -34,6 +56,24 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
             return dateString;
         }
     };
+
+    useEffect(() => {
+        const fetchProtocol = async () => {
+            if (sessionData?.protocolId) {
+                setIsLoading(true);
+                try {
+                    const response = await getProtocolById(sessionData.protocolId);
+                    setProtocolDetail(response.data);
+                } catch (error) {
+                    console.error("Failed to fetch protocol details:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        fetchProtocol();
+    }, [sessionData?.protocolId]);
 
     return (
         <div className="min-h-screen bg-[#F8F9FB] text-[#333]">
@@ -49,26 +89,88 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
                         <h1 className="text-xl font-bold text-[#43474F]">Session Activities</h1>
                         <p className="text-[#737780] text-sm">Activities based on the selected protocol.</p>
                     </div>
+                    <div className="mb-6 w-full bg-white rounded-xl border border-[#E2E4E6] p-5 text-[#43474F] text-sm font-medium shadow-sm">
+                        <h2 className="text-[#737780] font-bold text-sm mb-4">Protocol Configuration - {protocolDetail?.protocol_name}</h2>
 
-                    <div className="flex gap-4 w-full max-w-full mb-6 overflow-hidden">
-                        <div className="w-[45%] flex-shrink-0" ref={mainChartRef}>
+                        {isLoading ? (
+                            <div className="text-center py-4 text-[#737780] animate-pulse">
+                                Loading protocol configurations...
+                            </div>
+                        ) : protocolDetail ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8">
+
+                                <div className="space-y-0">
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
+                                        <div>Duration (hours)</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.duration_hours ?? "-"}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
+                                        <div>Insulin Dose</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.insulin_dose_rule ?? "-"}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
+                                        <div>Dose Unit</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.insulin_dose_unit ?? "-"}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 lg:border-b-0 border-b border-[#E2E4E6]">
+                                        <div>Target Glucose Min</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_min ?? "-"}</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-0">
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
+                                        <div>Target Glucose Max</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_max ?? "-"}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
+                                        <div>Target Unit</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_unit ?? "-"}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
+                                        <div>Target Glucose Min Extreme</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_min_extreme ?? "-"}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5">
+                                        <div>Target Glucose Max Extreme</div>
+                                        <div>:</div>
+                                        <div className="font-semibold text-slate-800">{protocolDetail.glucose_target_max_extreme ?? "-"}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 text-sm text-amber-600">
+                                Protocol detail data is unavailable.
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row gap-4 w-full max-w-full mb-6 overflow-hidden">
+                        <div className="w-full lg:w-[45%] flex-shrink-0" ref={mainChartRef}>
                             <MainGDChartCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
                         </div>
-
-                        <div className="flex flex-1 min-w-0 w-[55%] flex-shrink-0 gap-4" ref={subChartsRef}>
+                        <div className="flex flex-col md:flex-row flex-1 min-w-0 w-full lg:w-[55%] flex-shrink-0 gap-4" ref={subChartsRef}>
                             <SubChartsCompleted protocolId={sessionData.protocolId} sessionData={sessionData} />
                         </div>
                     </div>
 
-                    <div className="max-h-[500px] rounded-xl border border-[#E2E4E6] overflow-hidden bg-white shadow-sm flex flex-col">
+                    <div className="max-h-[500px] rounded-xl border border-[#E2E4E6] overflow-hidden bg-white shadow-sm flex flex-col w-full">
                         <div
+                            className="w-full overflow-x-auto"
                             style={{
                                 flex: 1,
                                 overflowY: "auto",
-                                overflowX: "hidden",
+                                overflowX: "auto",
                             }}
                         >
-                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <table className="min-w-[700px] w-full" style={{ borderCollapse: "collapse" }}>
                                 <thead className="sticky top-0 z-30 bg-[#F1F9FA]">
                                     <tr>
                                         <th className="w-[60px] px-4 py-4 text-left text-xs font-bold text-[#0076D2] uppercase tracking-wider">No</th>
