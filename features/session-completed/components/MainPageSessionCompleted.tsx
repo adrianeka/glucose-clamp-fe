@@ -120,7 +120,7 @@ export default function MainPageSessionCompleted({ sessionId, sessionData }: Mai
                                             {protocolDetail.glucose_target_min ?? "-"} - {protocolDetail.glucose_target_max ?? "-"} {protocolDetail.glucose_target_unit ?? "-"}
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5">
+                                    <div className="grid grid-cols-[200px_10px_1fr] py-2.5 border-b border-[#E2E4E6]">
                                         <div>Target Glucose Extreme</div>
                                         <div>:</div>
                                         <div className="font-semibold text-slate-800">
