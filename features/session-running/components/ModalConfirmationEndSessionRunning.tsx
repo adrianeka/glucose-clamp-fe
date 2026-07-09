@@ -27,7 +27,6 @@ export function ModalConfirmationEndSessionRunning({
   glucoseMin,
   glucoseValue
 }: ModalConfirmationEndSessionRunningProps) {
-  console.log("dipanggil mode ::", mode);
   const [internalStep, setInternalStep] = useState<1 | 2>(1);
   const [category, setCategory] = useState("");
   const [notes, setNotes] = useState("");
@@ -80,8 +79,6 @@ export function ModalConfirmationEndSessionRunning({
     }
     onSubmit({ category, notes });
   };
-  // console.log("internal step ::", internalStep);
-  // console.log("mode ::", mode);
   return (
     <Dialog open={isOpen} onOpenChange={onCancel}>
       <DialogContent

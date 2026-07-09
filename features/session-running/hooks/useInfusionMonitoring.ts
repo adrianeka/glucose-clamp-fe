@@ -76,10 +76,6 @@ export const useInfusion = (
             sessionId,
           ],
         });
-
-        console.log(
-          "Data infusion berhasil ditambahkan"
-        );
       },
 
       onError: (error) => {

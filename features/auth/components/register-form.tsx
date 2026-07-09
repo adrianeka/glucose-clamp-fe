@@ -34,10 +34,8 @@ export const RegisterForm = () => {
       await new Promise((resolve) =>
         setTimeout(resolve, 1500)
       );
-
-      console.log("register success");
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }

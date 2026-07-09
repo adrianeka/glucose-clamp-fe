@@ -14,7 +14,6 @@ export const useGlobalConfig = (id: number) => {
     if (query.data?.data?.gconfValue) {
       const value = query.data.data.gconfValue;
       localStorage.setItem("gconfValue", value);
-      console.log("Saved to localStorage:", value);
     }
   }, [query.data]);
 

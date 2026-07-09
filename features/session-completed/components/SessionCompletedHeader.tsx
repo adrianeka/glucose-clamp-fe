@@ -66,8 +66,6 @@ export default function SessionCompletedHeader({
                     ];
                 }
 
-                console.log("Daftar Activities:", sessionData.activities);
-
                 return sessionData.activities
                     .flatMap((activity: any) => {
                         const labResults = activity.labResults || [];

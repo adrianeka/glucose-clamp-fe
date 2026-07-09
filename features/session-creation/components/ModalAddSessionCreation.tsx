@@ -73,8 +73,6 @@ export default function ModalAddSession({
       fastingHour: Number(form.fastingHour),
     };
 
-    console.log("Payload yang dikirim:", payload);
-
     onSubmit(payload);
   };
 

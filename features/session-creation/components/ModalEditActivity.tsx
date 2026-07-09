@@ -38,8 +38,6 @@ export default function ModalEditActivity({
         const minutes = String(date.getMinutes()).padStart(2, '0');
         
         const timeFormatted = `${hours}:${minutes}`; // Hasil: "09:50" (pasti pakai titik dua)
-
-        console.log("FORMATTED TIME :: ", timeFormatted);
         
         setForm({
         phase: activity.phaseCode,

@@ -181,7 +181,7 @@ export default function ModalEditUser({
   const handleSubmit = async () => {
     if (!validateForm()) {
       showToast("Please fix the errors in the form", "error");
-      console.log("Validation failed");
+      console.error("Validation failed");
 
       return;
     } 

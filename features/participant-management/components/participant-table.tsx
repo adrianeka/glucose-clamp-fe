@@ -211,8 +211,6 @@ export function ParticipantTable({
     setCurrentPage(1);
   };
 
-  console.log("Participants:", participants);
-
   return (
     <>
       <div className="flex-1 self-stretch px-8 py-6 bg-white rounded-2xl shadow-[0px_0px_1px_rgba(0,0,0,0.25),0px_1px_1px_rgba(0,0,0,0.05)] flex flex-col gap-6 min-w-0">

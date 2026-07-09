@@ -97,8 +97,6 @@ export function ParticipantDetailModal({
 }: ParticipantDetailModalProps) {
   if (!participant) return null;
 
-  console.log("Data Participant saat ini:", participant);
-
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="p-0 gap-0 rounded-xl overflow-hidden !w-[600px] !max-w-[600px] border-0 shadow-xl [&>button]:hidden">
