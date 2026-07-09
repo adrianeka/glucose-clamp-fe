@@ -102,7 +102,7 @@ export default function SessionActivitiesPage({ sessionId, sessionData }: Sessio
     }
   };
 
-  const { canAdd: canAddSession, canEdit: canEditSession } = usePermission("SESSION");
+  const { canAdd: canAddSession, canEdit: canEditSession, canDelete: canDeleteSession } = usePermission("SESSION");
 
   return (
     <div className="flex flex-col gap-6 max-h-screen overflow-hidden">
@@ -138,6 +138,8 @@ export default function SessionActivitiesPage({ sessionId, sessionData }: Sessio
           data={sessionData?.activities ?? []}
           onEdit={onEditTrigger}
           onDelete={onDeleteTrigger}
+          canEdit={canEditSession}
+          canDelete={canDeleteSession}
         />
       </div>
 

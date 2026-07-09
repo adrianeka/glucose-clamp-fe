@@ -10,16 +10,22 @@ interface ActivitiesTableProps {
   loading?: boolean;
   onEdit: (activity: Activity) => void;  // Tambahkan ini
   onDelete: (id: number) => void;        // Tambahkan ini
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
-const ActionCell = ({ 
-  activity, 
-  onEdit, 
-  onDelete 
-}: { 
-  activity: Activity, 
-  onEdit: (a: Activity) => void, 
-  onDelete: (id: number) => void 
+const ActionCell = ({
+  activity,
+  onEdit,
+  onDelete,
+  canEdit,
+  canDelete,
+}: {
+  activity: Activity,
+  onEdit: (a: Activity) => void,
+  onDelete: (id: number) => void,
+  canEdit: boolean,
+  canDelete: boolean
 }) => {
   if (activity.activityType !== "OTHER") {
     return <span className="text-[#707784]">-</span>;
@@ -27,12 +33,17 @@ const ActionCell = ({
 
   return (
     <div className="flex items-center gap-3">
-      <button onClick={() => onEdit(activity)} className="transition-opacity hover:opacity-70">
-        <SquarePen size={15} strokeWidth={2.5} className="text-[#FFB800]" />
-      </button>
-      <button onClick={() => onDelete(activity.activityId)} className="transition-opacity hover:opacity-70">
-        <Trash2 size={15} strokeWidth={2.5} className="text-[#FF5B5B]" />
-      </button>
+      {canEdit && (
+        <button onClick={() => onEdit(activity)} className="transition-opacity hover:opacity-70">
+          <SquarePen size={15} strokeWidth={2.5} className="text-[#FFB800]" />
+        </button>
+      )}
+      {canDelete && (
+        <button onClick={() => onDelete(activity.activityId)} className="transition-opacity hover:opacity-70">
+          <Trash2 size={15} strokeWidth={2.5} className="text-[#FF5B5B]" />
+        </button>
+      )}
+      {!canEdit && !canDelete && <span className="text-gray-400">-</span>}
     </div>
   );
 };
@@ -41,7 +52,9 @@ export default function ActivitiesTable({
   data,
   loading = false,
   onEdit,
-  onDelete
+  onDelete,
+  canEdit,
+  canDelete
 }: ActivitiesTableProps) {
 
   const formatTime = (dateString: string) => {
@@ -59,7 +72,7 @@ export default function ActivitiesTable({
   return (
     <div className="rounded-xl border border-[#E2E4E6] bg-white overflow-hidden flex flex-col">
       {/* Container Tabel dengan Scroll Internal */}
-      <div className="overflow-y-auto max-h-[calc(100vh-350px)] scrollbar-thin"> 
+      <div className="overflow-y-auto max-h-[calc(100vh-350px)] scrollbar-thin">
         <table className="w-full min-w-[900px] border-collapse">
           <thead className="sticky top-0 z-20 bg-[#F1F9FA]">
             <tr>
@@ -85,18 +98,18 @@ export default function ActivitiesTable({
                 </td>
                 <td className="px-4 py-4">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium 
-                    ${item.activityStatus === 'COMPLETED' ? 'bg-[#EAF8EC] text-[#43A047]' : 
-                      item.activityStatus === 'INPUT_DATA' ? 'bg-[#FFF5E6] text-[#FF9800]' : 
-                      'bg-[#F3F4F6] text-[#707784]'}`}>
+                    ${item.activityStatus === 'COMPLETED' ? 'bg-[#EAF8EC] text-[#43A047]' :
+                      item.activityStatus === 'INPUT_DATA' ? 'bg-[#FFF5E6] text-[#FF9800]' :
+                        'bg-[#F3F4F6] text-[#707784]'}`}>
                     {item.activityStatus.replace('_', ' ')}
                   </span>
                 </td>
                 <td className="px-4 py-4">
-                  <ActionCell activity={item} onDelete={onDelete} onEdit={onEdit}/>
+                  <ActionCell activity={item} onDelete={onDelete} onEdit={onEdit} canEdit={canEdit} canDelete={canDelete} />
                 </td>
               </tr>
             ))}
-            
+
             {data.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-20 text-center text-[#707784]">No activities found</td>
