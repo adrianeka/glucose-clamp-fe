@@ -3,10 +3,11 @@ import { CreateSessionRequest } from "../types/Session";
 
 export const getSessions = async (
   pageNumber = 0,
-  pageSize = 10
+  pageSize = 10,
+  keyword: string,
 ) => {
   const response = await axiosInstance.get(
-    `/session?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    `/session?pageNumber=${pageNumber}&pageSize=${pageSize}&keyword=${keyword}`
   );
 
   return response.data.data;

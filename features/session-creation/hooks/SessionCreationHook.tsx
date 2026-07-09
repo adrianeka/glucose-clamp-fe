@@ -3,11 +3,12 @@ import { getSessions, getSessionDetail, createSession, sessionStart, nextProgres
 
 export const useSessions = (
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
+  keyword: string
 ) => {
   return useQuery({
-    queryKey: ["sessions", pageNumber, pageSize],
-    queryFn: () => getSessions(pageNumber, pageSize),
+    queryKey: ["sessions", pageNumber, pageSize, keyword],
+    queryFn: () => getSessions(pageNumber, pageSize, keyword),
   });
 };
 

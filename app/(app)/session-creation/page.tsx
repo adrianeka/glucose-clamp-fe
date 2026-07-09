@@ -10,6 +10,7 @@ import { useSessions } from "@/features/session-creation/hooks/SessionCreationHo
 import { Session } from "@/features/session-creation/types/Session";
 import { useCreateSession } from "@/features/session-creation/hooks/SessionCreationHook";
 import { usePermission } from "@/hooks/usePermission";
+import { useDebounce } from "use-debounce";
 
 export default function SessionCreationPage() {
   const [search, setSearch] = useState("");
@@ -18,8 +19,9 @@ export default function SessionCreationPage() {
   const [openAddModal, setOpenAddModal] = useState(false);
   const router = useRouter();
 
+  const [keyword] = useDebounce(search, 500);
   // Query untuk mengambil data
-  const { data, isLoading } = useSessions(currentPage, pageSize);
+  const { data, isLoading } = useSessions(currentPage, pageSize, keyword);
 
   // Mutation untuk membuat session baru
   const { mutate: createSession, isPending: isCreating } = useCreateSession();
