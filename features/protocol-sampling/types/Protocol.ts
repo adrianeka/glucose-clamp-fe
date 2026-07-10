@@ -15,7 +15,6 @@ export interface Protocol {
   initial_glucose_infusion_rate_unit: string; 
   version: number;
   sampling_schedules: string;
-  is_used: boolean;
 }
 
 export interface AddProtocolRequest {
