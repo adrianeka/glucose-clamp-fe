@@ -73,6 +73,26 @@ export default function ModalEditProtocol({
     }
   }, [open, data]);
 
+
+  const minTarget = Number(form.glucose_target_min);
+  const maxTarget = Number(form.glucose_target_max);
+  const minExtreme = Number(form.glucose_target_min_extreme);
+  const maxExtreme = Number(form.glucose_target_max_extreme);
+  const isDoseUnitError = form.insulin_dose_unit.includes("^");
+  const isTargetUnitError = form.glucose_target_unit.includes("^");
+  const isInfusionUnitError = form.initial_glucose_infusion_rate_unit.includes("^");
+
+  const isMinMaxError =
+    form.glucose_target_min && form.glucose_target_max && minTarget >= maxTarget;
+
+  const isMinExtremeError =
+    form.glucose_target_min_extreme && form.glucose_target_min && minExtreme >= minTarget;
+
+  const isMaxExtremeError =
+    form.glucose_target_max && form.glucose_target_max_extreme && maxTarget >= maxExtreme;
+
+  const isTargetLogicValid = !isMinMaxError && !isMinExtremeError && !isMaxExtremeError;
+
   const isFormReady =
     form.protocol_code.trim() &&
     form.protocol_name.trim() &&
@@ -85,9 +105,11 @@ export default function ModalEditProtocol({
     form.glucose_target_unit.trim() &&
     form.glucose_target_min_extreme &&
     form.glucose_target_max_extreme &&
-    form.glucose_drop_trigger_percentage &&   
-    form.initial_glucose_infusion_rate &&     
-    form.initial_glucose_infusion_rate_unit.trim();
+    form.glucose_drop_trigger_percentage &&
+    form.initial_glucose_infusion_rate &&
+    form.initial_glucose_infusion_rate_unit.trim() &&
+    isTargetLogicValid &&
+    !isDoseUnitError && !isTargetUnitError && !isInfusionUnitError;
 
   const handleSubmit = () => {
     onSubmit(data.protocol_id, {
@@ -109,6 +131,8 @@ export default function ModalEditProtocol({
   };
 
   const { showToast } = useToast();
+
+  const errorInputClass = "border-red-500 focus-visible:ring-red-500 bg-red-50/30 text-red-900 placeholder:text-red-300";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -170,12 +194,14 @@ export default function ModalEditProtocol({
               <Input
                 placeholder="e.g. 1.0"
                 value={form.version}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const sanitizedValue = e.target.value.replace(/,/g, ".");
+
                   setForm({
                     ...form,
-                    version: e.target.value,
-                  })
-                }
+                    version: sanitizedValue,
+                  });
+                }}
               />
             </div>
           </div>
@@ -220,44 +246,56 @@ export default function ModalEditProtocol({
               <Input
                 placeholder="e.g. 0.5"
                 value={form.insulin_dose_rule}
-                onChange={(e) =>
+                onChange={(e) => {
+                  let sanitized = e.target.value.replace(/,/g, ".");
+                  sanitized = sanitized.replace(/[^0-9.]/g, "");
+                  const parts = sanitized.split(".");
+                  if (parts.length > 2) {
+                    sanitized = parts[0] + "." + parts.slice(1).join("");
+                  }
                   setForm({
                     ...form,
-                    insulin_dose_rule: e.target.value,
-                  })
-                }
+                    insulin_dose_rule: sanitized,
+                  });
+                }}
               />
             </div>
-
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isDoseUnitError ? "text-red-500" : ""}`}>
                 Dose Unit <span className="text-red-500">*</span>
               </label>
-
               <Input
                 placeholder="e.g. U/KgBWSC"
+                className={isDoseUnitError ? errorInputClass : ""}
                 value={form.insulin_dose_unit}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    insulin_dose_unit: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  let value = e.target.value;
+                  const superscriptMap: { [key: string]: string } = {
+                    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+                    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+                  };
+                  value = value.replace(/\^([0-9])/g, (match, p1) => superscriptMap[p1] || match);
+                  const sanitized = value.replace(/[^a-zA-Z\/\(\)\.\u0370-\u03FF\u2070-\u2079²³\^]/g, "");
+                  setForm({ ...form, insulin_dose_unit: sanitized });
+                }}
               />
+              {isDoseUnitError && (
+                <p className="text-[11px] text-red-500 mt-1">Invalid character '^'</p>
+              )}
             </div>
           </div>
 
           {/* Row 2 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isMinMaxError ? "text-red-500" : ""}`}>
                 Target Glucose Min <span className="text-red-500">*</span>
               </label>
-
               <Input
                 type="number"
                 min="1"
                 placeholder="e.g. 80"
+                className={isMinMaxError ? errorInputClass : ""}
                 value={form.glucose_target_min}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -274,106 +312,129 @@ export default function ModalEditProtocol({
                   }
                 }}
               />
+              {isMinMaxError && (
+                <p className="text-[11px] text-red-500 mt-1">Must be less than Max</p>
+              )}
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isMinMaxError || isMaxExtremeError ? "text-red-500" : ""}`}>
                 Target Glucose Max <span className="text-red-500">*</span>
               </label>
-
               <Input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 150"
-                  value={form.glucose_target_max}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setForm({ ...form, glucose_target_max: "" });
-                      return;
-                    }
-                    const numVal = parseInt(val, 10);
-                    if (numVal < 1) {
-                      setForm({ ...form, glucose_target_max: "1" });
-                      showToast("Target Glucose Max must be 1 or greater", "error");
-                    } else {
-                      setForm({ ...form, glucose_target_max: val });
-                    }
-                  }}
-                />
+                type="number"
+                min="1"
+                placeholder="e.g. 150"
+                className={isMinMaxError || isMaxExtremeError ? errorInputClass : ""}
+                value={form.glucose_target_max}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, glucose_target_max: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, glucose_target_max: "1" });
+                    showToast("Target Glucose Max must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, glucose_target_max: val });
+                  }
+                }}
+              />
+              {isMinMaxError && (
+                <p className="text-[11px] text-red-500 mt-1">Must be greater than Min</p>
+              )}
+              {isMaxExtremeError && !isMinMaxError && (
+                <p className="text-[11px] text-red-500 mt-1">Must be less than Max Extreme</p>
+              )}
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isTargetUnitError ? "text-red-500" : ""}`}>
                 Target Unit <span className="text-red-500">*</span>
               </label>
-
               <Input
-              placeholder="e.g. mg/dl"
+                placeholder="e.g. mg/dl"
+                className={isTargetUnitError ? errorInputClass : ""}
                 value={form.glucose_target_unit}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    glucose_target_unit: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  let value = e.target.value;
+                  const superscriptMap: { [key: string]: string } = {
+                    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+                    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+                  };
+                  value = value.replace(/\^([0-9])/g, (match, p1) => superscriptMap[p1] || match);
+                  const sanitized = value.replace(/[^a-zA-Z\/\(\)\.\u0370-\u03FF\u2070-\u2079²³\^]/g, "");
+                  setForm({ ...form, glucose_target_unit: sanitized });
+                }}
               />
+              {isTargetUnitError && (
+                <p className="text-[11px] text-red-500 mt-1">Invalid character '^'</p>
+              )}
             </div>
           </div>
 
           {/* Row 3 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isMinExtremeError ? "text-red-500" : ""}`}>
                 Target Glucose Min Extreme <span className="text-red-500">*</span>
               </label>
-
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 70"
-                  value={form.glucose_target_min_extreme}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setForm({ ...form, glucose_target_min_extreme: "" });
-                      return;
-                    }
-                    const numVal = parseInt(val, 10);
-                    if (numVal < 1) {
-                      setForm({ ...form, glucose_target_min_extreme: "1" });
-                      showToast("Target Glucose Min Extreme must be 1 or greater", "error");
-                    } else {
-                      setForm({ ...form, glucose_target_min_extreme: val });
-                    }
-                  }}
-                />
+              <Input
+                type="number"
+                min="1"
+                placeholder="e.g. 70"
+                className={isMinExtremeError ? errorInputClass : ""}
+                value={form.glucose_target_min_extreme}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, glucose_target_min_extreme: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, glucose_target_min_extreme: "1" });
+                    showToast("Target Glucose Min Extreme must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, glucose_target_min_extreme: val });
+                  }
+                }}
+              />
+              {isMinExtremeError && (
+                <p className="text-[11px] text-red-500 mt-1">Must be less than Target Min</p>
+              )}
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isMaxExtremeError ? "text-red-500" : ""}`}>
                 Target Glucose Max Extreme <span className="text-red-500">*</span>
               </label>
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 180"
-                  value={form.glucose_target_max_extreme}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setForm({ ...form, glucose_target_max_extreme: "" });
-                      return;
-                    }
-                    const numVal = parseInt(val, 10);
-                    if (numVal < 1) {
-                      setForm({ ...form, glucose_target_max_extreme: "1" });
-                      showToast("Target Glucose Max Extreme must be 1 or greater", "error");
-                    } else {
-                      setForm({ ...form, glucose_target_max_extreme: val });
-                    }
-                  }}
-                />
+              <Input
+                type="number"
+                min="1"
+                placeholder="e.g. 180"
+                className={isMaxExtremeError ? errorInputClass : ""}
+                value={form.glucose_target_max_extreme}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, glucose_target_max_extreme: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, glucose_target_max_extreme: "1" });
+                    showToast("Target Glucose Max Extreme must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, glucose_target_max_extreme: val });
+                  }
+                }}
+              />
+              {isMaxExtremeError && (
+                <p className="text-[11px] text-red-500 mt-1">Must be greater than Target Max</p>
+              )}
             </div>
           </div>
 
@@ -387,25 +448,25 @@ export default function ModalEditProtocol({
               </label>
 
               <Input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 10"
-                  value={form.glucose_drop_trigger_percentage}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setForm({ ...form, glucose_drop_trigger_percentage: "" });
-                      return;
-                    }
-                    const numVal = parseInt(val, 10);
-                    if (numVal < 1) {
-                      setForm({ ...form, glucose_drop_trigger_percentage: "1" });
-                      showToast("Glucose Drop Trigger must be 1 or greater", "error");
-                    } else {
-                      setForm({ ...form, glucose_drop_trigger_percentage: val });
-                    }
-                  }}
-                />
+                type="number"
+                min="1"
+                placeholder="e.g. 10"
+                value={form.glucose_drop_trigger_percentage}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, glucose_drop_trigger_percentage: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, glucose_drop_trigger_percentage: "1" });
+                    showToast("Glucose Drop Trigger must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, glucose_drop_trigger_percentage: val });
+                  }
+                }}
+              />
             </div>
 
             <div>
@@ -414,42 +475,49 @@ export default function ModalEditProtocol({
               </label>
 
               <Input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 2"
-                  value={form.initial_glucose_infusion_rate}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "") {
-                      setForm({ ...form, initial_glucose_infusion_rate: "" });
-                      return;
-                    }
-                    const numVal = parseInt(val, 10);
-                    if (numVal < 1) {
-                      setForm({ ...form, initial_glucose_infusion_rate: "1" });
-                      showToast("Initial Infusion Rate must be 1 or greater", "error");
-                    } else {
-                      setForm({ ...form, initial_glucose_infusion_rate: val });
-                    }
-                  }}
-                />
+                type="number"
+                min="1"
+                placeholder="e.g. 2"
+                value={form.initial_glucose_infusion_rate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setForm({ ...form, initial_glucose_infusion_rate: "" });
+                    return;
+                  }
+                  const numVal = parseInt(val, 10);
+                  if (numVal < 1) {
+                    setForm({ ...form, initial_glucose_infusion_rate: "1" });
+                    showToast("Initial Infusion Rate must be 1 or greater", "error");
+                  } else {
+                    setForm({ ...form, initial_glucose_infusion_rate: val });
+                  }
+                }}
+              />
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isInfusionUnitError ? "text-red-500" : ""}`}>
                 Infusion Rate Unit <span className="text-red-500">*</span>
               </label>
-
               <Input
                 placeholder="e.g. mg/kgBB/min"
+                className={isInfusionUnitError ? errorInputClass : ""}
                 value={form.initial_glucose_infusion_rate_unit}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    initial_glucose_infusion_rate_unit: e.target.value,
-                  })
-                }
+                onChange={(e) => {
+                  let value = e.target.value;
+                  const superscriptMap: { [key: string]: string } = {
+                    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+                    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+                  };
+                  value = value.replace(/\^([0-9])/g, (match, p1) => superscriptMap[p1] || match);
+                  const sanitized = value.replace(/[^a-zA-Z\/\(\)\.\u0370-\u03FF\u2070-\u2079²³\^]/g, "");
+                  setForm({ ...form, initial_glucose_infusion_rate_unit: sanitized });
+                }}
               />
+              {isInfusionUnitError && (
+                <p className="text-[11px] text-red-500 mt-1">Invalid character '^'</p>
+              )}
             </div>
           </div>
 
