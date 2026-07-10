@@ -165,28 +165,44 @@ export default function ModalEditProtocol({
 
         <div className="space-y-6 py-2">
           {/* Protocol Code */}
-          <div>
-            <label className="text-sm font-medium">
+          <div className="flex flex-col gap-[11px]">
+            <label className="text-sm font-medium text-[#2D2F35]">
               Protocol Code <span className="text-red-500">*</span>
             </label>
             <Input
               placeholder="EGC002"
+              maxLength={25}
               value={form.protocol_code}
               onChange={(e) => setForm({ ...form, protocol_code: e.target.value })}
+              className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.protocol_code.length >= 25
+                ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                : 'text-[#2D2F35]'
+                }`}
             />
+            <span className={`text-xs text-right ${form.protocol_code.length >= 25 ? 'text-red-500' : 'text-gray-400'}`}>
+              {form.protocol_code.length}/25
+            </span>
           </div>
 
           {/* Name + Version */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">
+            <div className="flex flex-col gap-[11px]">
+              <label className="text-sm font-medium text-[#2D2F35]">
                 Protocol Name <span className="text-red-500">*</span>
               </label>
               <Input
                 placeholder="e.g. Euglycemic Clamp"
+                maxLength={100}
                 value={form.protocol_name}
                 onChange={(e) => setForm({ ...form, protocol_name: e.target.value })}
+                className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.protocol_name.length >= 100
+                    ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                    : 'text-[#2D2F35]'
+                  }`}
               />
+              <span className={`text-xs text-right ${form.protocol_name.length >= 100 ? 'text-red-500' : 'text-gray-400'}`}>
+                {form.protocol_name.length}/100
+              </span>
             </div>
             <div>
               <label className={`text-sm font-medium ${isVersionError ? "text-red-500" : ""}`}>
