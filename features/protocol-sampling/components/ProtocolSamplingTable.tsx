@@ -108,7 +108,6 @@ export default function ProtocolSamplingTable({
               >
                 <td className="px-4 py-4">
                   <span className="inline-flex items-center rounded-full border border-[#C4EAEE] bg-[#F1F9FA] px-2 py-1 text-xs text-[#0076D2]">
-                    {/* {item.protocol_id} */}
                     {item.protocol_code} |{" "} {item.version}
                   </span>
                 </td>
@@ -117,11 +116,6 @@ export default function ProtocolSamplingTable({
                   <div className="font-medium text-[#212121]">
                     {item.protocol_name}
                   </div>
-
-                  {/* <div className="text-xs text-[#707784]">
-                    {item.protocol_code} |{" "}
-                    {item.version}
-                  </div> */}
                 </td>
 
                 <td className="px-4 py-4 text-[#212121]">
@@ -129,45 +123,86 @@ export default function ProtocolSamplingTable({
                 </td>
 
                 <td className="px-4 py-4">
-                  {item.sampling_schedules != "0 phase" ? (
-                    <button
-                      onClick={() =>
-                        onSamplingSchedule(item)
-                      }
-                      className="text-left text-xs text-[#0076D2] underline hover:text-[#005DA6]"
-                    >
-                      {item.sampling_schedules}
-                    </button>
+                  {item.is_used ? (
+                    item.sampling_schedules !== "0 phase" ? (
+                      <span 
+                        className="text-xs text-gray-400 cursor-not-allowed select-none"
+                        title="Sampling schedule tidak dapat diubah karena protokol sudah digunakan dalam sesi."
+                      >
+                        {item.sampling_schedules}
+                      </span>
+                    ) : (
+                      <button
+                        disabled
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-300 cursor-not-allowed"
+                        title="Sampling schedule tidak dapat ditambah karena protokol sudah digunakan dalam sesi."
+                      >
+                        <Plus className="w-3 h-3" />
+                        Sampling Schedule
+                      </button>
+                    )
                   ) : (
-                    <button
-                      onClick={() => onSamplingSchedule(item)}
-                      className="inline-flex items-center gap-2 rounded-lg border border-[#0076D2] px-3 py-2 text-xs text-[#0076D2] hover:bg-[#F3FBFF]"
-                    >
-                      <Plus className="w-3 h-3" />
-                      Sampling Schedule
-                    </button>
+                    item.sampling_schedules !== "0 phase" ? (
+                      <button
+                        onClick={() => onSamplingSchedule(item)}
+                        className="text-left text-xs text-[#0076D2] underline hover:text-[#005DA6]"
+                      >
+                        {item.sampling_schedules}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onSamplingSchedule(item)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-[#0076D2] px-3 py-2 text-xs text-[#0076D2] hover:bg-[#F3FBFF]"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Sampling Schedule
+                      </button>
+                    )
                   )}
                 </td>
 
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <Eye
-                      className="w-4 h-4 cursor-pointer text-[#0076D2]"
-                      onClick={() => onView(item)}
-                    />
-
-                    {canEditPhase && (
-                      <Pencil
-                        className="w-4 h-4 cursor-pointer text-[#FFB800]"
-                        onClick={() => onEdit(item)}
+                    {/* Tombol View */}
+                    <span title="View Detail" className="inline-flex">
+                      <Eye
+                        className="w-4 h-4 cursor-pointer text-[#0076D2] hover:text-[#005DA6] transition-colors"
+                        onClick={() => onView(item)}
                       />
+                    </span>
+
+                    {/* Tombol Edit */}
+                    {canEditPhase && (
+                      <span 
+                        title={item.is_used ? "Protokol ini telah digunakan dalam sesi aktif sehingga tidak dapat diubah." : "Edit"} 
+                        className="inline-flex"
+                      >
+                        <Pencil
+                          className={`w-4 h-4 transition-colors ${
+                            item.is_used
+                              ? "cursor-not-allowed text-gray-300 opacity-50"
+                              : "cursor-pointer text-[#FFB800] hover:text-[#DCA000]"
+                          }`}
+                          onClick={() => !item.is_used && onEdit(item)}
+                        />
+                      </span>
                     )}
 
+                    {/* Tombol Delete */}
                     {canDeletePhase && (
-                      <Trash2
-                        className="w-4 h-4 cursor-pointer text-[#FF5B5B]"
-                        onClick={() => onDelete(item)}
-                      />
+                      <span 
+                        title={item.is_used ? "Protokol ini telah digunakan dalam sesi aktif sehingga tidak dapat dihapus." : "Delete"} 
+                        className="inline-flex"
+                      >
+                        <Trash2
+                          className={`w-4 h-4 transition-colors ${
+                            item.is_used
+                              ? "cursor-not-allowed text-gray-300 opacity-50"
+                              : "cursor-pointer text-[#FF5B5B] hover:text-[#D94141]"
+                          }`}
+                          onClick={() => !item.is_used && onDelete(item)}
+                        />
+                      </span>
                     )}
                   </div>
                 </td>
