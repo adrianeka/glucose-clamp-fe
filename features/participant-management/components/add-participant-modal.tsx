@@ -125,16 +125,16 @@ export function AddParticipantModal({
             <FieldLabel>Medical Record</FieldLabel>
             <Input
               value={form.medicalRecordNo}
-              maxLength={50}
+              maxLength={20}
               onChange={(e) => handleChange({ medicalRecordNo: e.target.value })}
-              className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.medicalRecordNo.length >= 50
+              className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.medicalRecordNo.length >= 20
                 ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
                 : 'text-[#2D2F35]'
                 }`}
               placeholder="e.g. MR889106"
             />
-            <span className={`text-xs text-right ${form.medicalRecordNo.length >= 50 ? 'text-red-500' : 'text-gray-400'}`}>
-              {form.medicalRecordNo.length}/50
+            <span className={`text-xs text-right ${form.medicalRecordNo.length >= 20 ? 'text-red-500' : 'text-gray-400'}`}>
+              {form.medicalRecordNo.length}/20
             </span>
           </div>
 
