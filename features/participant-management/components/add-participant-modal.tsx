@@ -125,10 +125,17 @@ export function AddParticipantModal({
             <FieldLabel>Medical Record</FieldLabel>
             <Input
               value={form.medicalRecordNo}
+              maxLength={50}
               onChange={(e) => handleChange({ medicalRecordNo: e.target.value })}
-              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
+              className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.medicalRecordNo.length >= 50
+                ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                : 'text-[#2D2F35]'
+                }`}
               placeholder="e.g. MR889106"
             />
+            <span className={`text-xs text-right ${form.medicalRecordNo.length >= 50 ? 'text-red-500' : 'text-gray-400'}`}>
+              {form.medicalRecordNo.length}/50
+            </span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
@@ -136,10 +143,17 @@ export function AddParticipantModal({
               <FieldLabel>Full Name</FieldLabel>
               <Input
                 value={form.fullName}
+                maxLength={100}
                 onChange={(e) => handleChange({ fullName: e.target.value })}
-                className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
+                className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.fullName.length >= 100
+                  ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                  : 'text-[#2D2F35]'
+                  }`}
                 placeholder="e.g. Adrian Saputra"
               />
+              <span className={`text-xs text-right ${form.fullName.length >= 100 ? 'text-red-500' : 'text-gray-400'}`}>
+                {form.fullName.length}/100
+              </span>
             </div>
 
             <div className="flex-1 flex flex-col gap-[11px]">
@@ -184,14 +198,14 @@ export function AddParticipantModal({
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D2F35] pointer-events-none z-20"
                 />
-                <div 
+                <div
                   className={cn(
                     "absolute inset-0 flex items-center pl-11 bg-[#FAFAFA] border border-[#E2E4E6] rounded-md text-base font-normal pointer-events-none z-10 h-[42px]",
                     form.dob ? "text-[#2D2F35]" : "text-[#A9ADB5]"
                   )}
                 >
-                  {form.dob 
-                    ? form.dob.split("-").reverse().join("/") 
+                  {form.dob
+                    ? form.dob.split("-").reverse().join("/")
                     : "dd/mm/yyyy"
                   }
                 </div>
@@ -201,7 +215,7 @@ export function AddParticipantModal({
                   onChange={(e) => handleChange({ dob: e.target.value })}
                   className="opacity-0 absolute inset-0 w-full h-[42px] z-15 cursor-pointer [color-scheme:light] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0"
                 />
-                
+
                 <div className="h-[42px] w-full" />
               </div>
             </div>
@@ -210,15 +224,26 @@ export function AddParticipantModal({
               <div className="relative">
                 <Phone
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D2F35] pointer-events-none"
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${form.phone.length >= 16 ? 'text-red-500' : 'text-[#2D2F35]'
+                    }`}
                 />
                 <Input
                   value={form.phone}
-                  onChange={(e) => handleChange({ phone: e.target.value })}
-                  className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2] w-full"
+                  maxLength={16}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    handleChange({ phone: value });
+                  }}
+                  className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2] w-full ${form.phone.length >= 16
+                    ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                    : 'text-[#2D2F35]'
+                    }`}
                   placeholder="e.g. 081234567890"
                 />
               </div>
+              <span className={`text-xs text-right ${form.phone.length >= 16 ? 'text-red-500' : 'text-gray-400'}`}>
+                {form.phone.length}/16
+              </span>
             </div>
           </div>
         </div>

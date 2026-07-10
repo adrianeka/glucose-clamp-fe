@@ -120,16 +120,16 @@ export function EditParticipantModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleCancel()}>
       <DialogContent
-        className="p-0 gap-0 rounded-xl overflow-hidden border-0 shadow-xl [&>button]:hidden w-[calc(100%-32px)] max-w-[560px] md:w-[560px]"
+        className="p-0 gap-0 rounded-xl border-0 shadow-xl [&>button]:hidden w-[calc(100%-32px)] max-w-[560px] md:w-[560px] flex flex-col overflow-hidden"
       >
         <button
           onClick={handleCancel}
-          className="!flex absolute top-6 right-8 w-6 h-6 items-center justify-center text-[#707784] hover:opacity-70"
+          className="!flex absolute top-6 right-8 w-6 h-6 items-center justify-center text-[#707784] hover:opacity-70 z-50"
         >
           <span className="text-2xl leading-none">−</span>
         </button>
 
-        <DialogHeader className="px-6 md:px-8 pt-6 pb-5 space-y-0">
+        <DialogHeader className="px-6 md:px-8 pt-6 pb-5 space-y-0 shrink-0">
           <DialogTitle className="text-[#2D2F35] text-2xl font-bold leading-7">
             Edit Participant
           </DialogTitle>
@@ -138,8 +138,10 @@ export function EditParticipantModal({
           </p>
         </DialogHeader>
 
-        <div className="px-6 md:px-8 pb-4 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 max-h-[60vh] overflow-y-auto">
-          {/* Mengubah layout baris menjadi flex-col di layar kecil dan flex-row di layar tablet ke atas */}
+        {/* Form Container: Ditambahkan kalkulasi tinggi dinamis dan scroll yang aman */}
+        <div className="px-6 md:px-8 pb-6 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 max-h-[calc(100vh-180px)] md:max-h-[60vh] overflow-y-auto">
+
+          {/* Baris 1: ID Participant & Medical Record */}
           <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
             <div className="flex-1 flex flex-col gap-[11px]">
               <FieldLabel>ID Participant</FieldLabel>
@@ -150,23 +152,40 @@ export function EditParticipantModal({
               />
             </div>
             <div className="flex-1 flex flex-col gap-[11px]">
-              <FieldLabel>Medical Record No.</FieldLabel>
+              <FieldLabel>Medical Record</FieldLabel>
               <Input
                 value={form.medicalRecordNo}
+                maxLength={50}
                 onChange={(e) => handleChange({ medicalRecordNo: e.target.value })}
-                className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
+                className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.medicalRecordNo.length >= 50
+                  ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                  : 'text-[#2D2F35]'
+                  }`}
+                placeholder="e.g. MR889106"
               />
+              <span className={`text-xs text-right ${form.medicalRecordNo.length >= 50 ? 'text-red-500' : 'text-gray-400'}`}>
+                {form.medicalRecordNo.length}/50
+              </span>
             </div>
           </div>
 
+          {/* Baris 2: Full Name & Gender */}
           <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
             <div className="flex-1 flex flex-col gap-[11px]">
               <FieldLabel>Full Name</FieldLabel>
               <Input
                 value={form.fullName}
+                maxLength={100}
                 onChange={(e) => handleChange({ fullName: e.target.value })}
-                className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
+                className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.fullName.length >= 100
+                  ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                  : 'text-[#2D2F35]'
+                  }`}
+                placeholder="e.g. Adrian Saputra"
               />
+              <span className={`text-xs text-right ${form.fullName.length >= 100 ? 'text-red-500' : 'text-gray-400'}`}>
+                {form.fullName.length}/100
+              </span>
             </div>
 
             <div className="flex-1 flex flex-col gap-[11px]">
@@ -203,6 +222,7 @@ export function EditParticipantModal({
             </div>
           </div>
 
+          {/* Baris 3: Date of Birth & Phone Number */}
           <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
             <div className="flex-1 flex flex-col gap-[11px]">
               <FieldLabel>Date of Birth</FieldLabel>
@@ -211,14 +231,14 @@ export function EditParticipantModal({
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D2F35] pointer-events-none z-20"
                 />
-                <div 
+                <div
                   className={cn(
                     "absolute inset-0 flex items-center pl-11 bg-[#FAFAFA] border border-[#E2E4E6] rounded-md text-base font-normal pointer-events-none z-10 h-[42px]",
                     form.dob ? "text-[#2D2F35]" : "text-[#A9ADB5]"
                   )}
                 >
-                  {form.dob 
-                    ? form.dob.split("-").reverse().join("/") 
+                  {form.dob
+                    ? form.dob.split("-").reverse().join("/")
                     : "dd/mm/yyyy"
                   }
                 </div>
@@ -228,28 +248,41 @@ export function EditParticipantModal({
                   onChange={(e) => handleChange({ dob: e.target.value })}
                   className="opacity-0 absolute inset-0 w-full h-[42px] z-15 cursor-pointer [color-scheme:light] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0"
                 />
-                
                 <div className="h-[42px] w-full" />
               </div>
             </div>
+
             <div className="flex-1 flex flex-col gap-[11px]">
               <FieldLabel>Phone Number</FieldLabel>
               <div className="relative">
                 <Phone
                   size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2D2F35] pointer-events-none"
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ${form.phone.length >= 16 ? 'text-red-500' : 'text-[#2D2F35]'}`}
                 />
                 <Input
                   value={form.phone}
-                  onChange={(e) => handleChange({ phone: e.target.value })}
-                  className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2] w-full"
+                  maxLength={16}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    handleChange({ phone: value });
+                  }}
+                  className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] pl-11 focus-visible:ring-[#0076D2] w-full ${form.phone.length >= 16
+                    ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                    : 'text-[#2D2F35]'
+                    }`}
+                  placeholder="e.g. 081234567890"
                 />
               </div>
+              <span className={`text-xs text-right ${form.phone.length >= 16 ? 'text-red-500' : 'text-gray-400'}`}>
+                {form.phone.length}/16
+              </span>
             </div>
           </div>
+
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 px-6 md:px-8 py-6 mt-2 border-t border-[#E2E4E6]">
+        {/* Footer Tombol Aksi: Berada di luar scrollbox utama agar posisinya tetap 'sticky' di bawah */}
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 px-6 md:px-8 py-6 border-t border-[#E2E4E6] bg-white shrink-0">
           <Button
             type="button"
             variant="outline"
