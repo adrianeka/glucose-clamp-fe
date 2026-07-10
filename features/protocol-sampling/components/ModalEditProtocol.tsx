@@ -78,9 +78,22 @@ export default function ModalEditProtocol({
   const maxTarget = Number(form.glucose_target_max);
   const minExtreme = Number(form.glucose_target_min_extreme);
   const maxExtreme = Number(form.glucose_target_max_extreme);
+  const versionNum = Number(form.version);
+  const durationNum = Number(form.duration_hours);
+  const dropTriggerNum = Number(form.glucose_drop_trigger_percentage);
+  const infusionRateNum = Number(form.initial_glucose_infusion_rate);
+
   const isDoseUnitError = form.insulin_dose_unit.includes("^");
   const isTargetUnitError = form.glucose_target_unit.includes("^");
   const isInfusionUnitError = form.initial_glucose_infusion_rate_unit.includes("^");
+
+  const isVersionError = versionNum > 999.9 || form.version.length > 5;
+  const isDurationError = durationNum > 720;
+  const isInsulinDoseError = Number(form.insulin_dose_rule) > 999.9;
+  const isDropTriggerError = dropTriggerNum > 100;
+  const isInfusionRateError = infusionRateNum > 999.9;
+  const isGlucoseTargetOverflow =
+    minTarget > 999 || maxTarget > 999 || minExtreme > 999 || maxExtreme > 999;
 
   const isMinMaxError =
     form.glucose_target_min && form.glucose_target_max && minTarget >= maxTarget;
@@ -91,7 +104,8 @@ export default function ModalEditProtocol({
   const isMaxExtremeError =
     form.glucose_target_max && form.glucose_target_max_extreme && maxTarget >= maxExtreme;
 
-  const isTargetLogicValid = !isMinMaxError && !isMinExtremeError && !isMaxExtremeError;
+  const isTargetLogicValid =
+    !isMinMaxError && !isMinExtremeError && !isMaxExtremeError && !isGlucoseTargetOverflow;
 
   const isFormReady =
     form.protocol_code.trim() &&
@@ -109,7 +123,9 @@ export default function ModalEditProtocol({
     form.initial_glucose_infusion_rate &&
     form.initial_glucose_infusion_rate_unit.trim() &&
     isTargetLogicValid &&
-    !isDoseUnitError && !isTargetUnitError && !isInfusionUnitError;
+    !isDoseUnitError && !isTargetUnitError && !isInfusionUnitError &&
+    !isVersionError && !isDurationError && !isInsulinDoseError &&
+    !isDropTriggerError && !isInfusionRateError;
 
   const handleSubmit = () => {
     onSubmit(data.protocol_id, {
@@ -148,22 +164,15 @@ export default function ModalEditProtocol({
         </DialogHeader>
 
         <div className="space-y-6 py-2">
-
           {/* Protocol Code */}
           <div>
             <label className="text-sm font-medium">
               Protocol Code <span className="text-red-500">*</span>
             </label>
-
             <Input
               placeholder="EGC002"
               value={form.protocol_code}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  protocol_code: e.target.value,
-                })
-              }
+              onChange={(e) => setForm({ ...form, protocol_code: e.target.value })}
             />
           </div>
 
@@ -173,36 +182,40 @@ export default function ModalEditProtocol({
               <label className="text-sm font-medium">
                 Protocol Name <span className="text-red-500">*</span>
               </label>
-
               <Input
                 placeholder="e.g. Euglycemic Clamp"
                 value={form.protocol_name}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    protocol_name: e.target.value,
-                  })
-                }
+                onChange={(e) => setForm({ ...form, protocol_name: e.target.value })}
               />
             </div>
-
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isVersionError ? "text-red-500" : ""}`}>
                 Version <span className="text-red-500">*</span>
               </label>
-
               <Input
                 placeholder="e.g. 1.0"
+                className={isVersionError ? errorInputClass : ""}
                 value={form.version}
                 onChange={(e) => {
-                  const sanitizedValue = e.target.value.replace(/,/g, ".");
+                  let sanitized = e.target.value.replace(/,/g, ".");
+                  sanitized = sanitized.replace(/[^0-9.]/g, "");
 
-                  setForm({
-                    ...form,
-                    version: sanitizedValue,
-                  });
+                  const parts = sanitized.split(".");
+                  if (parts.length > 2) {
+                    sanitized = parts[0] + "." + parts.slice(1).join("");
+                  }
+                  // Batasi maksimal 10 angka di belakang koma
+                  if (parts[1] && parts[1].length > 10) {
+                    sanitized = parts[0] + "." + parts[1].slice(0, 10);
+                  }
+                  if (sanitized.length > 15) return;
+
+                  setForm({ ...form, version: sanitized });
                 }}
               />
+              {isVersionError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal versi adalah 999.9</p>
+              )}
             </div>
           </div>
 
@@ -211,17 +224,18 @@ export default function ModalEditProtocol({
           {/* Row 1 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isDurationError ? "text-red-500" : ""}`}>
                 Duration (hours) <span className="text-red-500">*</span>
               </label>
-
               <Input
-                type="number"
-                min="1"
+                type="text" // Diubah ke text agar pembatasan regex string berjalan sempurna tanpa intervensi browser
                 placeholder="e.g. 24"
+                className={isDurationError ? errorInputClass : ""}
                 value={form.duration_hours}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  let val = e.target.value.replace(/[^0-9]/g, ""); // Hanya boleh angka bulat
+                  if (val.length > 5) return; // Mencegah spam angka bulat kepanjangan
+
                   if (val === "") {
                     setForm({ ...form, duration_hours: "" });
                     return;
@@ -235,31 +249,41 @@ export default function ModalEditProtocol({
                   }
                 }}
               />
-
+              {isDurationError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal 720 jam (30 hari)</p>
+              )}
             </div>
 
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isInsulinDoseError ? "text-red-500" : ""}`}>
                 Insulin Dose <span className="text-red-500">*</span>
               </label>
-
               <Input
                 placeholder="e.g. 0.5"
+                className={isInsulinDoseError ? errorInputClass : ""}
                 value={form.insulin_dose_rule}
                 onChange={(e) => {
                   let sanitized = e.target.value.replace(/,/g, ".");
                   sanitized = sanitized.replace(/[^0-9.]/g, "");
+
                   const parts = sanitized.split(".");
                   if (parts.length > 2) {
                     sanitized = parts[0] + "." + parts.slice(1).join("");
                   }
-                  setForm({
-                    ...form,
-                    insulin_dose_rule: sanitized,
-                  });
+                  // Batasi maksimal 10 angka di belakang koma
+                  if (parts[1] && parts[1].length > 10) {
+                    sanitized = parts[0] + "." + parts[1].slice(0, 10);
+                  }
+                  if (sanitized.length > 15) return;
+
+                  setForm({ ...form, insulin_dose_rule: sanitized });
                 }}
               />
+              {isInsulinDoseError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal dosis adalah 999.9</p>
+              )}
             </div>
+
             <div>
               <label className={`text-sm font-medium ${isDoseUnitError ? "text-red-500" : ""}`}>
                 Dose Unit <span className="text-red-500">*</span>
@@ -288,17 +312,18 @@ export default function ModalEditProtocol({
           {/* Row 2 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className={`text-sm font-medium ${isMinMaxError ? "text-red-500" : ""}`}>
+              <label className={`text-sm font-medium ${(isMinMaxError || minTarget > 999) ? "text-red-500" : ""}`}>
                 Target Glucose Min <span className="text-red-500">*</span>
               </label>
               <Input
-                type="number"
-                min="1"
+                type="text"
                 placeholder="e.g. 80"
-                className={isMinMaxError ? errorInputClass : ""}
+                className={(isMinMaxError || minTarget > 999) ? errorInputClass : ""}
                 value={form.glucose_target_min}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  let val = e.target.value.replace(/[^0-9]/g, "");
+                  if (val.length > 5) return;
+
                   if (val === "") {
                     setForm({ ...form, glucose_target_min: "" });
                     return;
@@ -315,20 +340,24 @@ export default function ModalEditProtocol({
               {isMinMaxError && (
                 <p className="text-[11px] text-red-500 mt-1">Must be less than Max</p>
               )}
+              {minTarget > 999 && !isMinMaxError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal target 999 mg/dL</p>
+              )}
             </div>
 
             <div>
-              <label className={`text-sm font-medium ${isMinMaxError || isMaxExtremeError ? "text-red-500" : ""}`}>
+              <label className={`text-sm font-medium ${(isMinMaxError || isMaxExtremeError || maxTarget > 999) ? "text-red-500" : ""}`}>
                 Target Glucose Max <span className="text-red-500">*</span>
               </label>
               <Input
-                type="number"
-                min="1"
+                type="text"
                 placeholder="e.g. 150"
-                className={isMinMaxError || isMaxExtremeError ? errorInputClass : ""}
+                className={(isMinMaxError || isMaxExtremeError || maxTarget > 999) ? errorInputClass : ""}
                 value={form.glucose_target_max}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  let val = e.target.value.replace(/[^0-9]/g, "");
+                  if (val.length > 5) return;
+
                   if (val === "") {
                     setForm({ ...form, glucose_target_max: "" });
                     return;
@@ -347,6 +376,9 @@ export default function ModalEditProtocol({
               )}
               {isMaxExtremeError && !isMinMaxError && (
                 <p className="text-[11px] text-red-500 mt-1">Must be less than Max Extreme</p>
+              )}
+              {maxTarget > 999 && !isMinMaxError && !isMaxExtremeError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal target 999 mg/dL</p>
               )}
             </div>
 
@@ -378,17 +410,18 @@ export default function ModalEditProtocol({
           {/* Row 3 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={`text-sm font-medium ${isMinExtremeError ? "text-red-500" : ""}`}>
+              <label className={`text-sm font-medium ${(isMinExtremeError || minExtreme > 999) ? "text-red-500" : ""}`}>
                 Target Glucose Min Extreme <span className="text-red-500">*</span>
               </label>
               <Input
-                type="number"
-                min="1"
+                type="text"
                 placeholder="e.g. 70"
-                className={isMinExtremeError ? errorInputClass : ""}
+                className={(isMinExtremeError || minExtreme > 999) ? errorInputClass : ""}
                 value={form.glucose_target_min_extreme}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  let val = e.target.value.replace(/[^0-9]/g, "");
+                  if (val.length > 5) return;
+
                   if (val === "") {
                     setForm({ ...form, glucose_target_min_extreme: "" });
                     return;
@@ -405,20 +438,24 @@ export default function ModalEditProtocol({
               {isMinExtremeError && (
                 <p className="text-[11px] text-red-500 mt-1">Must be less than Target Min</p>
               )}
+              {minExtreme > 999 && !isMinExtremeError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal target 999 mg/dL</p>
+              )}
             </div>
 
             <div>
-              <label className={`text-sm font-medium ${isMaxExtremeError ? "text-red-500" : ""}`}>
+              <label className={`text-sm font-medium ${(isMaxExtremeError || maxExtreme > 999) ? "text-red-500" : ""}`}>
                 Target Glucose Max Extreme <span className="text-red-500">*</span>
               </label>
               <Input
-                type="number"
-                min="1"
+                type="text"
                 placeholder="e.g. 180"
-                className={isMaxExtremeError ? errorInputClass : ""}
+                className={(isMaxExtremeError || maxExtreme > 999) ? errorInputClass : ""}
                 value={form.glucose_target_max_extreme}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  let val = e.target.value.replace(/[^0-9]/g, "");
+                  if (val.length > 5) return;
+
                   if (val === "") {
                     setForm({ ...form, glucose_target_max_extreme: "" });
                     return;
@@ -435,25 +472,29 @@ export default function ModalEditProtocol({
               {isMaxExtremeError && (
                 <p className="text-[11px] text-red-500 mt-1">Must be greater than Target Max</p>
               )}
+              {maxExtreme > 999 && !isMaxExtremeError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal target 999 mg/dL</p>
+              )}
             </div>
           </div>
 
           <div className="border-t" />
 
-          {/* Row 4 (Infusion Parameters - Tambahan Baru) */}
+          {/* Row 4 (Infusion Parameters) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isDropTriggerError ? "text-red-500" : ""}`}>
                 Glucose Drop Trigger (%) <span className="text-red-500">*</span>
               </label>
-
               <Input
-                type="number"
-                min="1"
+                type="text"
                 placeholder="e.g. 10"
+                className={isDropTriggerError ? errorInputClass : ""}
                 value={form.glucose_drop_trigger_percentage}
                 onChange={(e) => {
-                  const val = e.target.value;
+                  let val = e.target.value.replace(/[^0-9]/g, "");
+                  if (val.length > 5) return;
+
                   if (val === "") {
                     setForm({ ...form, glucose_drop_trigger_percentage: "" });
                     return;
@@ -467,35 +508,39 @@ export default function ModalEditProtocol({
                   }
                 }}
               />
+              {isDropTriggerError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal persentase 100%</p>
+              )}
             </div>
-
             <div>
-              <label className="text-sm font-medium">
+              <label className={`text-sm font-medium ${isInfusionRateError ? "text-red-500" : ""}`}>
                 Initial Infusion Rate <span className="text-red-500">*</span>
               </label>
-
               <Input
-                type="number"
-                min="1"
                 placeholder="e.g. 2"
+                className={isInfusionRateError ? errorInputClass : ""}
                 value={form.initial_glucose_infusion_rate}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") {
-                    setForm({ ...form, initial_glucose_infusion_rate: "" });
-                    return;
+                  let sanitized = e.target.value.replace(/,/g, ".");
+                  sanitized = sanitized.replace(/[^0-9.]/g, "");
+
+                  const parts = sanitized.split(".");
+                  if (parts.length > 2) {
+                    sanitized = parts[0] + "." + parts.slice(1).join("");
                   }
-                  const numVal = parseInt(val, 10);
-                  if (numVal < 1) {
-                    setForm({ ...form, initial_glucose_infusion_rate: "1" });
-                    showToast("Initial Infusion Rate must be 1 or greater", "error");
-                  } else {
-                    setForm({ ...form, initial_glucose_infusion_rate: val });
+                  // Batasi maksimal 10 angka di belakang koma
+                  if (parts[1] && parts[1].length > 10) {
+                    sanitized = parts[0] + "." + parts[1].slice(0, 10);
                   }
+                  if (sanitized.length > 15) return;
+
+                  setForm({ ...form, initial_glucose_infusion_rate: sanitized });
                 }}
               />
+              {isInfusionRateError && (
+                <p className="text-[11px] text-red-500 mt-1">Maksimal kecepatan 999.9</p>
+              )}
             </div>
-
             <div>
               <label className={`text-sm font-medium ${isInfusionUnitError ? "text-red-500" : ""}`}>
                 Infusion Rate Unit <span className="text-red-500">*</span>
@@ -520,9 +565,7 @@ export default function ModalEditProtocol({
               )}
             </div>
           </div>
-
         </div>
-
         <div className="flex justify-end gap-3 border-t pt-4">
           <Button
             variant="outline"
