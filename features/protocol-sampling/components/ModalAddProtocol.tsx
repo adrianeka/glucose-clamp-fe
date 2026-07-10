@@ -147,7 +147,14 @@ export default function ModalAddProtocol({
               <Input
                 placeholder="e.g. 1.0"
                 value={form.version}
-                onChange={(e) => setForm({ ...form, version: e.target.value })}
+                onChange={(e) => {
+                  const sanitizedValue = e.target.value.replace(/,/g, ".");
+
+                  setForm({
+                    ...form,
+                    version: sanitizedValue,
+                  });
+                }}
               />
             </div>
           </div>
