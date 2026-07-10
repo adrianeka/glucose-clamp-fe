@@ -129,16 +129,16 @@ export function AddPhaseModal({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleMinimize()}>
       <DialogContent
-        className="w-[92vw] sm:w-[560px] max-w-[560px] p-0 gap-0 rounded-2xl overflow-hidden border-0 shadow-xl [&>button]:hidden focus-visible:outline-none"
+        className="w-[92vw] sm:w-[560px] max-w-[560px] p-0 gap-0 rounded-2xl border-0 shadow-xl [&>button]:hidden focus-visible:outline-none h-auto max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden"
       >
         <button
           onClick={handleMinimize}
-          className="!flex absolute top-6 right-6 sm:right-8 w-6 h-6 items-center justify-center text-[#707784] hover:opacity-70 focus:outline-none"
+          className="!flex absolute top-6 right-6 sm:right-8 w-6 h-6 items-center justify-center text-[#707784] hover:opacity-70 focus:outline-none z-50"
         >
           <span className="text-2xl leading-none">−</span>
         </button>
 
-        <DialogHeader className="px-6 sm:px-8 pt-6 pb-5 space-y-0">
+        <DialogHeader className="px-6 sm:px-8 pt-6 pb-5 space-y-0 shrink-0">
           <DialogTitle className="text-[#2D2F35] text-xl sm:text-2xl font-bold leading-7">
             Add New Phase
           </DialogTitle>
@@ -147,18 +147,24 @@ export function AddPhaseModal({
           </p>
         </DialogHeader>
 
-        {/* Form Inputs Ditumpuk Vertikal ke Bawah Sesuai Gambar Mockup */}
         {/* Form Inputs */}
-        <div className="px-6 sm:px-8 pb-4 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 bg-white">
+        <div className="px-6 sm:px-8 pb-6 flex flex-col gap-5 border-t border-[#E2E4E6] pt-5 bg-white flex-1 overflow-y-auto">
           {/* Phase Code */}
           <div className="flex flex-col gap-[11px]">
             <FieldLabel>Phase Code</FieldLabel>
             <Input
               value={form.code}
+              maxLength={20}
               onChange={(e) => handleChange({ code: e.target.value })}
-              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2]"
+              className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.code.length >= 20
+                ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                : 'text-[#2D2F35]'
+                }`}
               placeholder="Phase Code"
             />
+            <span className={`text-xs text-right ${form.code.length >= 20 ? 'text-red-500' : 'text-gray-400'}`}>
+              {form.code.length}/20
+            </span>
           </div>
 
           {/* Phase Name */}
@@ -166,10 +172,17 @@ export function AddPhaseModal({
             <FieldLabel>Phase Name</FieldLabel>
             <Input
               value={form.name}
+              maxLength={100}
               onChange={(e) => handleChange({ name: e.target.value })}
-              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2]"
+              className={`bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full ${form.name.length >= 100
+                ? 'text-red-500 border-red-500 focus-visible:ring-red-500'
+                : 'text-[#2D2F35]'
+                }`}
               placeholder="Phase Name"
             />
+            <span className={`text-xs text-right ${form.name.length >= 100 ? 'text-red-500' : 'text-gray-400'}`}>
+              {form.name.length}/100
+            </span>
           </div>
 
           {/* Type Selection */}
@@ -212,21 +225,21 @@ export function AddPhaseModal({
                   return;
                 }
                 const numVal = parseInt(val, 10);
-                if (numVal < 1 ) {
+                if (numVal < 1) {
                   handleChange({ priority: "1" });
                   showToast("Priority must be 1 or greater", "error");
                 } else {
                   handleChange({ priority: val });
                 }
               }}
-              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2]"
+              className="bg-[#FAFAFA] border-[#E2E4E6] rounded-md text-[#2D2F35] text-base font-normal leading-6 h-[42px] focus-visible:ring-[#0076D2] w-full"
               placeholder="0"
             />
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 px-6 sm:px-8 py-6 border-t border-[#E2E4E6] bg-white">
+        <div className="flex justify-end gap-3 px-6 sm:px-8 py-6 border-t border-[#E2E4E6] bg-white shrink-0">
           <Button
             type="button"
             variant="outline"
